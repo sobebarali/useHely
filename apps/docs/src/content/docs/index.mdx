@@ -1,40 +1,87 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
-template: splash # Remove or comment out this line to display the site sidebar on this page.
+title: Hospital Management System
+description: Documentation for the HMS multi-tenant hospital management platform.
+template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: A comprehensive, multi-tenant SaaS platform for hospital operations management.
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Getting Started
+      link: /guides/getting-started/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
+    - text: API Reference
+      link: /api/01-hospital/
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## Features
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
+	<Card title="Multi-Tenant Architecture" icon="setting">
+		Isolated data per hospital with schema-per-tenant design. Each hospital operates independently with secure data isolation.
 	</Card>
-	<Card title="Change page layout" icon="document">
-		Delete `template: splash` in `src/content/docs/index.mdx` to display a
-		sidebar on this page.
+	<Card title="Role-Based Access Control" icon="approve-check">
+		Pre-defined roles (Admin, Doctor, Nurse, Pharmacist, Receptionist) with customizable permissions and fine-grained ABAC policies.
 	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
+	<Card title="Patient Management" icon="document">
+		Complete patient lifecycle from registration to discharge. Support for OPD and IPD workflows with comprehensive records.
 	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
+	<Card title="Appointment Scheduling" icon="list-format">
+		Doctor availability, appointment booking, queue management, and real-time status tracking.
 	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
+	<Card title="Prescription & Pharmacy" icon="pencil">
+		Digital prescriptions, pharmacy dispensing workflows, inventory management, and stock tracking.
+	</Card>
+	<Card title="Reports & Analytics" icon="open-book">
+		Comprehensive reporting for patients, appointments, prescriptions, and operational metrics.
 	</Card>
 </CardGrid>
+
+## Quick Links
+
+<CardGrid>
+	<Card title="Guides" icon="rocket">
+		- [Getting Started](/guides/getting-started/)
+		- [Architecture Overview](/guides/architecture/)
+		- [Authentication Guide](/guides/authentication/)
+	</Card>
+	<Card title="Core APIs" icon="seti:json">
+		- [Hospital & Tenant](/api/01-hospital/)
+		- [Authentication](/api/02-authentication/)
+		- [Users](/api/03-users/)
+		- [Patients](/api/04-patients/)
+	</Card>
+	<Card title="Clinical APIs" icon="heart">
+		- [Prescriptions](/api/05-prescriptions/)
+		- [Appointments](/api/07-appointments/)
+		- [Vitals](/api/08-vitals/)
+		- [Dispensing](/api/09-dispensing/)
+	</Card>
+	<Card title="Admin APIs" icon="setting">
+		- [Departments](/api/10-departments/)
+		- [Dashboard](/api/11-dashboard/)
+		- [Reports](/api/12-reports/)
+		- [Inventory](/api/13-inventory/)
+	</Card>
+</CardGrid>
+
+## User Roles
+
+| Role | Primary Functions |
+|------|-------------------|
+| **Hospital Admin** | Hospital configuration, user management, departments, reports |
+| **Doctor** | Patient consultations, prescriptions, appointments |
+| **Nurse** | Patient care, vitals recording, medication administration |
+| **Pharmacist** | Prescription dispensing, inventory management |
+| **Receptionist** | Patient registration, appointment scheduling, check-in |
+
+## Tech Stack
+
+| Layer | Technologies |
+|-------|--------------|
+| **Frontend** | React, TanStack Router, shadcn/ui, TailwindCSS |
+| **Backend** | Node.js, Express.js, Better-Auth |
+| **Database** | MongoDB Atlas, Redis |
+| **Infrastructure** | Docker, Nginx, GitHub Actions |
