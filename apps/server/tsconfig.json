@@ -10,6 +10,6 @@
 		"jsx": "react-jsx",
 		"types": ["node", "vitest/globals"]
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "__tests__/**/*"],
 	"exclude": ["node_modules", "dist"]
 }

@@ -1,6 +1,6 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { app } from "../index";
+import { app } from "../src/index";
 
 describe("Server Health Check", () => {
 	it("should return 200 OK on GET /", async () => {

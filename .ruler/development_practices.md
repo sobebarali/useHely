@@ -18,7 +18,7 @@
 - No mocking - use real API calls and real database
 
 ### Running Tests
-- Domain tests: `vitest src/__tests__/{domain}/`
+- Domain tests: `vitest __tests__/{domain}/`
 - Connected domain tests: Test related domains too
 - Never run all tests during development (too slow)
 - Full test suite runs in CI/CD only
