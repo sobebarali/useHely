@@ -73,6 +73,85 @@ hms/
 │   └── db/          # Database schema & queries
 ```
 
+## Module Structure (Per Domain)
+
+Each API domain follows a consistent layered architecture with one file per endpoint per layer:
+
+```
+apps/server/src/apis/{domain}/
+├── controllers/          # HTTP request/response handling
+│   ├── {endpoint1}.{domain}.controller.ts
+│   ├── {endpoint2}.{domain}.controller.ts
+│   └── {endpoint3}.{domain}.controller.ts
+├── services/            # Business logic
+│   ├── {endpoint1}.{domain}.service.ts
+│   ├── {endpoint2}.{domain}.service.ts
+│   └── {endpoint3}.{domain}.service.ts
+├── repositories/        # Database operations
+│   ├── {endpoint1}.{domain}.repository.ts
+│   ├── {endpoint2}.{domain}.repository.ts
+│   └── {endpoint3}.{domain}.repository.ts
+├── dtos/               # Data Transfer Objects
+│   ├── {endpoint1}.{domain}.dto.ts
+│   ├── {endpoint2}.{domain}.dto.ts
+│   └── {endpoint3}.{domain}.dto.ts
+├── validations/        # Input validation schemas (Zod)
+│   ├── {endpoint1}.{domain}.validation.ts
+│   ├── {endpoint2}.{domain}.validation.ts
+│   └── {endpoint3}.{domain}.validation.ts
+├── middlewares/        # Domain-specific middleware
+│   └── {domain}.middleware.ts
+└── {domain}.routes.ts  # Route definitions
+```
+
+**Example: Patients Domain**
+
+```
+apps/server/src/apis/patients/
+├── controllers/
+│   ├── register.patients.controller.ts
+│   ├── list.patients.controller.ts
+│   ├── get-by-id.patients.controller.ts
+│   ├── update.patients.controller.ts
+│   └── delete.patients.controller.ts
+├── services/
+│   ├── register.patients.service.ts
+│   ├── list.patients.service.ts
+│   ├── get-by-id.patients.service.ts
+│   ├── update.patients.service.ts
+│   └── delete.patients.service.ts
+├── repositories/
+│   ├── register.patients.repository.ts
+│   ├── list.patients.repository.ts
+│   ├── get-by-id.patients.repository.ts
+│   ├── update.patients.repository.ts
+│   └── delete.patients.repository.ts
+├── dtos/
+│   ├── register.patients.dto.ts
+│   ├── list.patients.dto.ts
+│   ├── get-by-id.patients.dto.ts
+│   ├── update.patients.dto.ts
+│   └── delete.patients.dto.ts
+├── validations/
+│   ├── register.patients.validation.ts
+│   ├── list.patients.validation.ts
+│   ├── get-by-id.patients.validation.ts
+│   ├── update.patients.validation.ts
+│   └── delete.patients.validation.ts
+├── middlewares/
+│   └── patients.middleware.ts
+└── patients.routes.ts
+```
+
+**Layer Responsibilities:**
+- **Routes** - Endpoint definitions, route-level middleware registration
+- **Validations** - Zod schemas for request validation (body, params, query)
+- **DTOs** - Data Transfer Objects for type-safe data transfer between layers
+- **Controllers** - HTTP handling, extract data from request, call service, return response
+- **Services** - Business logic, orchestration, multi-repository coordination
+- **Repositories** - Database queries, single model CRUD operations
+- **Middlewares** - Domain-specific middleware (authorization, validation, etc.)
+
 ## Available Scripts
 
 - `npm run dev`: Start all applications in development mode

@@ -127,13 +127,54 @@ Each functional module contains:
 
 ```
 module/
-├── controller/     # HTTP request handlers
-├── service/        # Business logic
-├── repository/     # Data access
-├── model/          # Mongoose schemas
-├── dto/            # Data transfer objects
-├── validation/     # Input validation
-└── routes/         # Route definitions
+├── controllers/    # HTTP request handlers
+├── services/       # Business logic
+├── repositories/   # Data access
+├── dtos/          # Data Transfer Objects (type definitions)
+├── validations/   # Input validation (Zod schemas)
+├── middlewares/   # Domain-specific middleware
+└── routes.ts      # Route definitions
+```
+
+### Layer Details
+
+| Layer | Purpose | Naming Convention |
+|-------|---------|------------------|
+| Routes | Endpoint definitions and middleware | `{domain}.routes.ts` |
+| Validations | Request validation schemas | `{endpoint}.{domain}.validation.ts` |
+| DTOs | Type definitions for data transfer | `{endpoint}.{domain}.dto.ts` |
+| Controllers | HTTP request/response handling | `{endpoint}.{domain}.controller.ts` |
+| Services | Business logic and orchestration | `{endpoint}.{domain}.service.ts` |
+| Repositories | Database operations | `{endpoint}.{domain}.repository.ts` |
+| Middlewares | Domain middleware | `{domain}.middleware.ts` |
+
+### Example: Patients Domain
+
+```
+apps/server/src/apis/patients/
+├── controllers/
+│   ├── register.patients.controller.ts
+│   ├── list.patients.controller.ts
+│   └── get-by-id.patients.controller.ts
+├── services/
+│   ├── register.patients.service.ts
+│   ├── list.patients.service.ts
+│   └── get-by-id.patients.service.ts
+├── repositories/
+│   ├── register.patients.repository.ts
+│   ├── list.patients.repository.ts
+│   └── get-by-id.patients.repository.ts
+├── dtos/
+│   ├── register.patients.dto.ts
+│   ├── list.patients.dto.ts
+│   └── get-by-id.patients.dto.ts
+├── validations/
+│   ├── register.patients.validation.ts
+│   ├── list.patients.validation.ts
+│   └── get-by-id.patients.validation.ts
+├── middlewares/
+│   └── patients.middleware.ts
+└── patients.routes.ts
 ```
 
 ## Security Architecture

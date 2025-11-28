@@ -96,3 +96,271 @@
 
 ## Domain Organization
 - `hospital`, `authentication`, `users`, `patients`, `prescriptions`, `appointments`, `vitals`, `dispensing`, `departments`, `dashboard`, `reports`, `inventory`
+
+## API Implementation Pattern
+
+### File-Per-Endpoint Structure
+
+Each endpoint requires dedicated files in each layer. Follow this order when implementing:
+
+**1. DTO Layer** (`dtos/{endpoint}.{domain}.dto.ts`)
+- Define TypeScript interfaces/types for data transfer
+- Input DTOs for request data
+- Output DTOs for response data
+- No logic, only type definitions
+
+Example:
+```typescript
+// Input DTO
+export interface RegisterPatientInput {
+	firstName: string;
+	lastName: string;
+	dateOfBirth: string;
+	gender: "MALE" | "FEMALE" | "OTHER";
+	bloodGroup?: string;
+	phone: string;
+	email?: string;
+	address: {
+		street: string;
+		city: string;
+		state: string;
+		postalCode: string;
+		country: string;
+	};
+	emergencyContact: {
+		name: string;
+		relationship: string;
+		phone: string;
+	};
+	patientType: "OPD" | "IPD";
+	department?: string;
+	assignedDoctor?: string;
+}
+
+// Output DTO
+export interface RegisterPatientOutput {
+	id: string;
+	patientId: string;
+	firstName: string;
+	lastName: string;
+	dateOfBirth: string;
+	gender: string;
+	patientType: string;
+	status: string;
+	createdAt: string;
+}
+```
+
+**2. Validation Layer** (`validations/{endpoint}.{domain}.validation.ts`)
+- Define Zod schemas for request validation
+- Validate body, params, query, and headers
+- Export validation schemas only
+
+Example:
+```typescript
+import { z } from "zod";
+
+export const registerPatientSchema = z.object({
+	body: z.object({
+		firstName: z.string().min(1),
+		lastName: z.string().min(1),
+		dateOfBirth: z.string().datetime(),
+		gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+		bloodGroup: z.string().optional(),
+		phone: z.string(),
+		email: z.string().email().optional(),
+	}),
+});
+
+// Optionally export type from validation schema
+export type RegisterPatientValidated = z.infer<typeof registerPatientSchema.shape.body>;
+```
+
+**3. Repository Layer** (`repositories/{endpoint}.{domain}.repository.ts`)
+- Database operations only
+- No business logic
+- Return database results directly
+
+Example:
+```typescript
+import { Patient } from "@repo/db";
+import type { RegisterPatientInput } from "../dtos/register.patients.dto";
+
+export async function createPatient({
+	tenantId,
+	data,
+}: {
+	tenantId: string;
+	data: RegisterPatientInput;
+}) {
+	const patient = await Patient.create({
+		tenantId,
+		...data,
+	});
+	return patient;
+}
+```
+
+**4. Service Layer** (`services/{endpoint}.{domain}.service.ts`)
+- Business logic and orchestration
+- Call one or more repositories
+- Handle transactions
+- No HTTP concerns
+
+Example:
+```typescript
+import { createPatient as createPatientRepo } from "../repositories/register.patients.repository";
+import type { RegisterPatientInput, RegisterPatientOutput } from "../dtos/register.patients.dto";
+
+export async function registerPatient({
+	tenantId,
+	data,
+}: {
+	tenantId: string;
+	data: RegisterPatientInput;
+}): Promise<RegisterPatientOutput> {
+	// Business logic: Generate patient ID, validate, etc.
+	const patient = await createPatientRepo({ tenantId, data });
+	
+	// Additional logic: Send welcome email, create audit log, etc.
+	
+	// Map to output DTO
+	return {
+		id: patient._id,
+		patientId: patient.patientId,
+		firstName: patient.firstName,
+		lastName: patient.lastName,
+		dateOfBirth: patient.dateOfBirth,
+		gender: patient.gender,
+		patientType: patient.patientType,
+		status: patient.status,
+		createdAt: patient.createdAt.toISOString(),
+	};
+}
+```
+
+**5. Controller Layer** (`controllers/{endpoint}.{domain}.controller.ts`)
+- HTTP request/response handling only
+- Extract data from request
+- Call service
+- Format and return response
+- Handle errors
+
+Example:
+```typescript
+import type { Request, Response } from "express";
+import { registerPatient } from "../services/register.patients.service";
+
+export async function registerPatientController(req: Request, res: Response) {
+	try {
+		const tenantId = req.user.tenantId; // From auth middleware
+		const patient = await registerPatient({
+			tenantId,
+			data: req.body,
+		});
+		
+		res.status(201).json({
+			success: true,
+			data: patient,
+		});
+	} catch (error) {
+		// Error handling
+		res.status(500).json({
+			success: false,
+			error: "Failed to register patient",
+		});
+	}
+}
+```
+
+**6. Routes Layer** (`{domain}.routes.ts`)
+- Register all endpoints
+- Apply middleware
+- Map HTTP methods to controllers
+
+Example:
+```typescript
+import { Router } from "express";
+import { authenticate } from "@/middlewares/auth";
+import { authorize } from "@/middlewares/authorize";
+import { validate } from "@/middlewares/validate";
+import { registerPatientSchema } from "./validations/register.patients.validation";
+import { registerPatientController } from "./controllers/register.patients.controller";
+
+const router = Router();
+
+// All routes require authentication
+router.use(authenticate);
+
+// POST /patients - Register new patient
+router.post(
+	"/",
+	authorize("PATIENT:CREATE"),
+	validate(registerPatientSchema),
+	registerPatientController
+);
+
+// Additional routes...
+
+export default router;
+```
+
+### Implementation Checklist
+
+When creating a new endpoint, follow these steps in order:
+
+- [ ] **DTOs**: Create type definitions in `dtos/{endpoint}.{domain}.dto.ts`
+- [ ] **Validation**: Create validation schema in `validations/{endpoint}.{domain}.validation.ts`
+- [ ] **Repository**: Create database operations in `repositories/{endpoint}.{domain}.repository.ts`
+- [ ] **Service**: Create business logic in `services/{endpoint}.{domain}.service.ts`
+- [ ] **Controller**: Create HTTP handler in `controllers/{endpoint}.{domain}.controller.ts`
+- [ ] **Routes**: Register route in `{domain}.routes.ts` with middleware
+- [ ] **Middleware**: Add domain-specific middleware in `middlewares/{domain}.middleware.ts` if needed
+- [ ] **Tests**: Write tests in `__tests__/{domain}/{endpoint}/{scenario}.test.ts`
+- [ ] **Documentation**: Update API docs in `apps/docs/src/content/docs/api/{domain}.md`
+
+### File Organization Example
+
+For a complete patients domain with common CRUD operations:
+
+```
+apps/server/src/apis/patients/
+├── controllers/
+│   ├── register.patients.controller.ts
+│   ├── list.patients.controller.ts
+│   ├── get-by-id.patients.controller.ts
+│   ├── update.patients.controller.ts
+│   ├── delete.patients.controller.ts
+│   └── search.patients.controller.ts
+├── services/
+│   ├── register.patients.service.ts
+│   ├── list.patients.service.ts
+│   ├── get-by-id.patients.service.ts
+│   ├── update.patients.service.ts
+│   ├── delete.patients.service.ts
+│   └── search.patients.service.ts
+├── repositories/
+│   ├── register.patients.repository.ts
+│   ├── list.patients.repository.ts
+│   ├── get-by-id.patients.repository.ts
+│   ├── update.patients.repository.ts
+│   ├── delete.patients.repository.ts
+│   └── search.patients.repository.ts
+├── dtos/
+│   ├── register.patients.dto.ts
+│   ├── list.patients.dto.ts
+│   ├── get-by-id.patients.dto.ts
+│   ├── update.patients.dto.ts
+│   ├── delete.patients.dto.ts
+│   └── search.patients.dto.ts
+├── validations/
+│   ├── register.patients.validation.ts
+│   ├── list.patients.validation.ts
+│   ├── get-by-id.patients.validation.ts
+│   ├── update.patients.validation.ts
+│   ├── delete.patients.validation.ts
+│   └── search.patients.validation.ts
+├── middlewares/
+│   └── patients.middleware.ts
+└── patients.routes.ts
+```

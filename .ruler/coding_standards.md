@@ -14,6 +14,32 @@
 - Service files: `{entity}.service.ts`
 - Test files: `{scenario}.test.ts`
 
+### API Module Organization
+- Domain directory: `apps/server/src/apis/{domain}/`
+- **One file per endpoint per layer** - Each endpoint has dedicated files across all layers
+- Controller files: `{endpoint}.{domain}.controller.ts`
+- Service files: `{endpoint}.{domain}.service.ts`
+- Repository files: `{endpoint}.{domain}.repository.ts`
+- DTO files: `{endpoint}.{domain}.dto.ts`
+- Validation files: `{endpoint}.{domain}.validation.ts`
+- Middleware files: `{domain}.middleware.ts` (shared across domain)
+- Route files: `{domain}.routes.ts` (main router)
+
+### Layer File Structure
+Each endpoint must have dedicated files across layers:
+- **Routes** (`{domain}.routes.ts`): Register all domain endpoints with middleware
+- **Validations** (`{endpoint}.{domain}.validation.ts`): Zod schemas only, no logic
+- **DTOs** (`{endpoint}.{domain}.dto.ts`): TypeScript interfaces/types for data transfer, no logic
+- **Controllers** (`{endpoint}.{domain}.controller.ts`): Request/response handling only, no business logic
+- **Services** (`{endpoint}.{domain}.service.ts`): Business logic only, no HTTP concerns
+- **Repositories** (`{endpoint}.{domain}.repository.ts`): Database operations only, no business logic
+- **Middlewares** (`{domain}.middleware.ts`): Domain-level middleware shared across endpoints
+
+### Endpoint Naming in Files
+- Use descriptive endpoint names: `register`, `list`, `get-by-id`, `update`, `delete`, `search`
+- Use kebab-case for multi-word endpoints: `get-by-id`, `search-by-name`, `bulk-update`
+- Be consistent across all layers for the same endpoint
+
 ### Function Parameters
 - Use object destructuring with inline types for parameters
 - Avoid separate interfaces for single-function parameters
