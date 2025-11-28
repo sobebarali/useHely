@@ -3,6 +3,7 @@ import { auth } from "@hms/auth";
 import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
+import hospitalRoutes from "./apis/hospital/hospital.routes";
 
 export const app = express();
 
@@ -18,6 +19,9 @@ app.use(
 app.all("/api/auth{/*path}", toNodeHandler(auth));
 
 app.use(express.json());
+
+// API Routes
+app.use("/api/hospitals", hospitalRoutes);
 
 app.get("/", (_req, res) => {
 	res.status(200).send("OK");

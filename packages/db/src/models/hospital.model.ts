@@ -34,6 +34,7 @@ const hospitalSchema = new Schema(
 		contactEmail: { type: String, required: true },
 		contactPhone: { type: String, required: true },
 		adminEmail: { type: String, required: true },
+		adminPhone: { type: String, required: true },
 		status: {
 			type: String,
 			enum: Object.values(HospitalStatus),
