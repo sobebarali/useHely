@@ -42,7 +42,7 @@ const temperatureSchema = new Schema(
 		value: { type: Number },
 		unit: { type: String, enum: Object.values(TemperatureUnit) },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const bloodPressureSchema = new Schema(
@@ -50,7 +50,7 @@ const bloodPressureSchema = new Schema(
 		systolic: { type: Number },
 		diastolic: { type: Number },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const weightSchema = new Schema(
@@ -58,7 +58,7 @@ const weightSchema = new Schema(
 		value: { type: Number },
 		unit: { type: String, enum: Object.values(WeightUnit) },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const heightSchema = new Schema(
@@ -66,7 +66,7 @@ const heightSchema = new Schema(
 		value: { type: Number },
 		unit: { type: String, enum: Object.values(HeightUnit) },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const bloodGlucoseSchema = new Schema(
@@ -75,7 +75,7 @@ const bloodGlucoseSchema = new Schema(
 		unit: { type: String, enum: Object.values(GlucoseUnit) },
 		timing: { type: String, enum: Object.values(GlucoseTiming) },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const alertSchema = new Schema(
@@ -85,7 +85,7 @@ const alertSchema = new Schema(
 		value: { type: Number },
 		severity: { type: String, enum: Object.values(AlertSeverity) },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -115,7 +115,7 @@ const vitalsSchema = new Schema(
 	{
 		collection: "vitals",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

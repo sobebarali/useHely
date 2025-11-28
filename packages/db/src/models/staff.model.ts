@@ -38,8 +38,6 @@ const staffSchema = new Schema(
 			enum: Object.values(StaffStatus),
 			default: StaffStatus.ACTIVE,
 		},
-		passwordHistory: [{ type: String }],
-		forcePasswordChange: { type: Boolean, default: false },
 		lastLogin: { type: Date },
 		createdAt: { type: Date, required: true },
 		updatedAt: { type: Date, required: true },
@@ -47,7 +45,7 @@ const staffSchema = new Schema(
 	{
 		collection: "staff",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

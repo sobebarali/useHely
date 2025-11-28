@@ -28,7 +28,7 @@ Required. Bearer token with `VITALS:CREATE` permission.
 | admissionId | string | No | Associated admission ID (IPD) |
 | temperature | object | No | Temperature reading |
 | temperature.value | number | Yes | Temperature value |
-| temperature.unit | string | Yes | `celsius` or `fahrenheit` |
+| temperature.unit | string | Yes | `CELSIUS` or `FAHRENHEIT` |
 | bloodPressure | object | No | Blood pressure reading |
 | bloodPressure.systolic | number | Yes | Systolic pressure (mmHg) |
 | bloodPressure.diastolic | number | Yes | Diastolic pressure (mmHg) |
@@ -37,14 +37,14 @@ Required. Bearer token with `VITALS:CREATE` permission.
 | oxygenSaturation | number | No | SpO2 percentage |
 | weight | object | No | Weight measurement |
 | weight.value | number | Yes | Weight value |
-| weight.unit | string | Yes | `kg` or `lb` |
+| weight.unit | string | Yes | `KG` or `LB` |
 | height | object | No | Height measurement |
 | height.value | number | Yes | Height value |
-| height.unit | string | Yes | `cm` or `in` |
+| height.unit | string | Yes | `CM` or `IN` |
 | bloodGlucose | object | No | Blood glucose reading |
 | bloodGlucose.value | number | Yes | Glucose level |
-| bloodGlucose.unit | string | Yes | `mg/dL` or `mmol/L` |
-| bloodGlucose.timing | string | Yes | `fasting`, `random`, `postprandial` |
+| bloodGlucose.unit | string | Yes | `MG_DL` or `MMOL_L` |
+| bloodGlucose.timing | string | Yes | `FASTING`, `RANDOM`, `POSTPRANDIAL` |
 | painLevel | number | No | Pain scale (0-10) |
 | notes | string | No | Additional observations |
 

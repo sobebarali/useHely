@@ -9,6 +9,8 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**",
+			"!**/.astro",
+			"!**/data-store.json",
 			"!**/.next",
 			"!**/dist",
 			"!**/.turbo",

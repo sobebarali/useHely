@@ -60,7 +60,7 @@ const medicineSchema = new Schema(
 	{
 		collection: "medicine",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

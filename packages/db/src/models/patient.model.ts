@@ -30,7 +30,7 @@ const addressSchema = new Schema(
 		postalCode: { type: String },
 		country: { type: String },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const emergencyContactSchema = new Schema(
@@ -39,7 +39,7 @@ const emergencyContactSchema = new Schema(
 		relationship: { type: String, required: true },
 		phone: { type: String, required: true },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -80,7 +80,7 @@ const patientSchema = new Schema(
 	{
 		collection: "patient",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

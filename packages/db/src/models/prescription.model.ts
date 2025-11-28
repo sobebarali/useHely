@@ -14,6 +14,7 @@ export const PrescriptionStatus = {
 // Sub-schemas
 const medicineItemSchema = new Schema(
 	{
+		medicineId: { type: String, ref: "Medicine" },
 		name: { type: String, required: true },
 		genericName: { type: String },
 		dosage: { type: String, required: true },
@@ -25,11 +26,12 @@ const medicineItemSchema = new Schema(
 		dispensed: { type: Boolean, default: false },
 		dispensedQuantity: { type: Number, default: 0 },
 	},
-	{ _id: true }
+	{ _id: true },
 );
 
 const templateMedicineSchema = new Schema(
 	{
+		medicineId: { type: String, ref: "Medicine" },
 		name: { type: String, required: true },
 		genericName: { type: String },
 		dosage: { type: String },
@@ -38,7 +40,7 @@ const templateMedicineSchema = new Schema(
 		route: { type: String },
 		instructions: { type: String },
 	},
-	{ _id: false }
+	{ _id: true },
 );
 
 // Main Prescription schema
@@ -66,7 +68,7 @@ const prescriptionSchema = new Schema(
 	{
 		collection: "prescription",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
@@ -93,7 +95,7 @@ const prescriptionTemplateSchema = new Schema(
 	{
 		collection: "prescription_template",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
@@ -101,6 +103,9 @@ prescriptionTemplateSchema.index({ tenantId: 1, name: 1 }, { unique: true });
 prescriptionTemplateSchema.index({ tenantId: 1, category: 1 });
 
 const Prescription = model("Prescription", prescriptionSchema);
-const PrescriptionTemplate = model("PrescriptionTemplate", prescriptionTemplateSchema);
+const PrescriptionTemplate = model(
+	"PrescriptionTemplate",
+	prescriptionTemplateSchema,
+);
 
 export { Prescription, PrescriptionTemplate };

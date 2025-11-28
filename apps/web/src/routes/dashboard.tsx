@@ -1,6 +1,6 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/dashboard")({
 	component: RouteComponent,
@@ -20,7 +20,8 @@ export const Route = createFileRoute("/dashboard")({
 function RouteComponent() {
 	const { session, customerState } = Route.useRouteContext();
 
-	const hasProSubscription = customerState?.activeSubscriptions?.length! > 0;
+	const hasProSubscription =
+		(customerState?.activeSubscriptions?.length ?? 0) > 0;
 	console.log("Active subscriptions:", customerState?.activeSubscriptions);
 
 	return (

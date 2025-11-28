@@ -32,7 +32,7 @@ const dispensingMedicineSchema = new Schema(
 			default: MedicineDispensingStatus.PENDING,
 		},
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -59,7 +59,7 @@ const dispensingSchema = new Schema(
 	{
 		collection: "dispensing",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

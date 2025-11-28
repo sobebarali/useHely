@@ -20,15 +20,7 @@ const addressSchema = new Schema(
 		postalCode: { type: String },
 		country: { type: String },
 	},
-	{ _id: false }
-);
-
-const contactSchema = new Schema(
-	{
-		email: { type: String },
-		phone: { type: String },
-	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -39,7 +31,8 @@ const hospitalSchema = new Schema(
 		slug: { type: String, required: true, unique: true },
 		licenseNumber: { type: String, required: true, unique: true },
 		address: { type: addressSchema },
-		contact: { type: contactSchema },
+		contactEmail: { type: String, required: true },
+		contactPhone: { type: String, required: true },
 		adminEmail: { type: String, required: true },
 		status: {
 			type: String,
@@ -55,12 +48,10 @@ const hospitalSchema = new Schema(
 	{
 		collection: "hospital",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
-hospitalSchema.index({ licenseNumber: 1 }, { unique: true });
-hospitalSchema.index({ slug: 1 }, { unique: true });
 hospitalSchema.index({ status: 1 });
 hospitalSchema.index({ createdAt: -1 });
 

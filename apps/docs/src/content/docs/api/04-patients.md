@@ -26,7 +26,7 @@ Required. Bearer token with `PATIENT:CREATE` permission.
 | firstName | string | Yes | Patient's first name |
 | lastName | string | Yes | Patient's last name |
 | dateOfBirth | string | Yes | Date of birth (ISO 8601) |
-| gender | string | Yes | `male`, `female`, `other` |
+| gender | string | Yes | `MALE`, `FEMALE`, `OTHER` |
 | bloodGroup | string | No | Blood group (A+, A-, B+, B-, AB+, AB-, O+, O-) |
 | phone | string | Yes | Contact phone number |
 | email | string | No | Email address |

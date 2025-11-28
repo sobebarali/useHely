@@ -21,7 +21,7 @@ const batchSchema = new Schema(
 		receivedDate: { type: Date, required: true },
 		supplier: { type: String },
 	},
-	{ _id: true }
+	{ _id: true },
 );
 
 // Main Inventory schema
@@ -42,7 +42,7 @@ const inventorySchema = new Schema(
 	{
 		collection: "inventory",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
@@ -72,15 +72,22 @@ const inventoryTransactionSchema = new Schema(
 	{
 		collection: "inventory_transaction",
 		timestamps: { createdAt: true, updatedAt: false },
-	}
+	},
 );
 
 // Indexes
-inventoryTransactionSchema.index({ tenantId: 1, inventoryId: 1, performedAt: -1 });
+inventoryTransactionSchema.index({
+	tenantId: 1,
+	inventoryId: 1,
+	performedAt: -1,
+});
 inventoryTransactionSchema.index({ tenantId: 1, type: 1, performedAt: -1 });
 inventoryTransactionSchema.index({ tenantId: 1, performedAt: -1 });
 
 const Inventory = model("Inventory", inventorySchema);
-const InventoryTransaction = model("InventoryTransaction", inventoryTransactionSchema);
+const InventoryTransaction = model(
+	"InventoryTransaction",
+	inventoryTransactionSchema,
+);
 
 export { Inventory, InventoryTransaction };

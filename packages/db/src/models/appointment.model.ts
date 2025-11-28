@@ -33,7 +33,7 @@ const timeSlotSchema = new Schema(
 		start: { type: String, required: true },
 		end: { type: String, required: true },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -77,11 +77,14 @@ const appointmentSchema = new Schema(
 	{
 		collection: "appointment",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
-appointmentSchema.index({ tenantId: 1, appointmentNumber: 1 }, { unique: true });
+appointmentSchema.index(
+	{ tenantId: 1, appointmentNumber: 1 },
+	{ unique: true },
+);
 appointmentSchema.index({ tenantId: 1, patientId: 1, date: 1 });
 appointmentSchema.index({ tenantId: 1, doctorId: 1, date: 1 });
 appointmentSchema.index({ tenantId: 1, departmentId: 1, date: 1 });

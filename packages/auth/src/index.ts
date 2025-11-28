@@ -1,8 +1,8 @@
-import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { polar, checkout, portal } from "@polar-sh/better-auth";
-import { polarClient } from "./lib/payments";
 import { client } from "@hms/db";
+import { checkout, polar, portal } from "@polar-sh/better-auth";
+import { type BetterAuthOptions, betterAuth } from "better-auth";
+import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { polarClient } from "./lib/payments";
 
 export const auth = betterAuth<BetterAuthOptions>({
 	database: mongodbAdapter(client),

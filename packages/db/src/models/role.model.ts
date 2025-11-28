@@ -17,7 +17,7 @@ const roleSchema = new Schema(
 	{
 		collection: "role",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes

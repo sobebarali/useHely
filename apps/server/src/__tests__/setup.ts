@@ -1,5 +1,5 @@
-import { beforeAll, afterAll, afterEach } from "vitest";
 import dotenv from "dotenv";
+import { afterAll, afterEach, beforeAll } from "vitest";
 
 // Load test environment variables
 dotenv.config({ path: ".env.test" });

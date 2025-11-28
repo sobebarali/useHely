@@ -24,7 +24,7 @@ const operatingHoursSchema = new Schema(
 		start: { type: String },
 		end: { type: String },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const weeklyHoursSchema = new Schema(
@@ -37,7 +37,7 @@ const weeklyHoursSchema = new Schema(
 		saturday: { type: operatingHoursSchema },
 		sunday: { type: operatingHoursSchema },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 const contactSchema = new Schema(
@@ -45,7 +45,7 @@ const contactSchema = new Schema(
 		phone: { type: String },
 		email: { type: String },
 	},
-	{ _id: false }
+	{ _id: false },
 );
 
 // Main schema
@@ -77,7 +77,7 @@ const departmentSchema = new Schema(
 	{
 		collection: "department",
 		timestamps: true,
-	}
+	},
 );
 
 // Indexes
@@ -85,7 +85,7 @@ departmentSchema.index({ tenantId: 1, code: 1 }, { unique: true });
 departmentSchema.index({ tenantId: 1, name: 1 }, { unique: true });
 departmentSchema.index({ tenantId: 1, status: 1 });
 departmentSchema.index({ tenantId: 1, type: 1 });
-departmentSchema.index({ parentId: 1 });
+departmentSchema.index({ tenantId: 1, parentId: 1 });
 
 const Department = model("Department", departmentSchema);
 
