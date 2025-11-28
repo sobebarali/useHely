@@ -1,12 +1,12 @@
 import { createServiceLogger } from "../../../lib/logger";
-import type {
-	UpdateHospitalInput,
-	UpdateHospitalOutput,
-} from "../dtos/update.hospital.dto";
 import {
 	findHospitalById,
 	updateHospitalById,
 } from "../repositories/update.hospital.repository";
+import type {
+	UpdateHospitalInput,
+	UpdateHospitalOutput,
+} from "../validations/update.hospital.validation";
 
 const logger = createServiceLogger("updateHospital");
 

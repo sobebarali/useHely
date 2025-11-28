@@ -130,8 +130,7 @@ module/
 ├── controllers/    # HTTP request handlers
 ├── services/       # Business logic
 ├── repositories/   # Data access
-├── dtos/          # Data Transfer Objects (type definitions)
-├── validations/   # Input validation (Zod schemas)
+├── validations/   # Zod schemas + type definitions (Input & Output)
 ├── middlewares/   # Domain-specific middleware
 └── routes.ts      # Route definitions
 ```
@@ -141,8 +140,7 @@ module/
 | Layer | Purpose | Naming Convention |
 |-------|---------|------------------|
 | Routes | Endpoint definitions and middleware | `{domain}.routes.ts` |
-| Validations | Request validation schemas | `{endpoint}.{domain}.validation.ts` |
-| DTOs | Type definitions for data transfer | `{endpoint}.{domain}.dto.ts` |
+| Validations | Request validation schemas & type definitions | `{endpoint}.{domain}.validation.ts` |
 | Controllers | HTTP request/response handling | `{endpoint}.{domain}.controller.ts` |
 | Services | Business logic and orchestration | `{endpoint}.{domain}.service.ts` |
 | Repositories | Database operations | `{endpoint}.{domain}.repository.ts` |
@@ -164,10 +162,6 @@ apps/server/src/apis/patients/
 │   ├── register.patients.repository.ts
 │   ├── list.patients.repository.ts
 │   └── get-by-id.patients.repository.ts
-├── dtos/
-│   ├── register.patients.dto.ts
-│   ├── list.patients.dto.ts
-│   └── get-by-id.patients.dto.ts
 ├── validations/
 │   ├── register.patients.validation.ts
 │   ├── list.patients.validation.ts

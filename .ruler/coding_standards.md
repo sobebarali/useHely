@@ -20,7 +20,6 @@
 - Controller files: `{endpoint}.{domain}.controller.ts`
 - Service files: `{endpoint}.{domain}.service.ts`
 - Repository files: `{endpoint}.{domain}.repository.ts`
-- DTO files: `{endpoint}.{domain}.dto.ts`
 - Validation files: `{endpoint}.{domain}.validation.ts`
 - Middleware files: `{domain}.middleware.ts` (shared across domain)
 - Route files: `{domain}.routes.ts` (main router)
@@ -28,8 +27,7 @@
 ### Layer File Structure
 Each endpoint must have dedicated files across layers:
 - **Routes** (`{domain}.routes.ts`): Register all domain endpoints with middleware
-- **Validations** (`{endpoint}.{domain}.validation.ts`): Zod schemas only, no logic
-- **DTOs** (`{endpoint}.{domain}.dto.ts`): TypeScript interfaces/types for data transfer, no logic
+- **Validations** (`{endpoint}.{domain}.validation.ts`): Zod schemas for runtime validation, Input types (inferred from Zod), Output types (manually defined interfaces)
 - **Controllers** (`{endpoint}.{domain}.controller.ts`): Request/response handling only, no business logic
 - **Services** (`{endpoint}.{domain}.service.ts`): Business logic only, no HTTP concerns
 - **Repositories** (`{endpoint}.{domain}.repository.ts`): Database operations only, no business logic

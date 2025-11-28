@@ -4,6 +4,7 @@ import { z } from "zod";
 const uuidRegex =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+// Zod schema for runtime validation
 export const updateHospitalSchema = z.object({
 	params: z.object({
 		id: z
@@ -36,6 +37,24 @@ export const updateHospitalSchema = z.object({
 		}),
 });
 
-export type UpdateHospitalValidated = z.infer<
+// Input type - inferred from Zod (single source of truth)
+export type UpdateHospitalInput = z.infer<
 	typeof updateHospitalSchema.shape.body
 >;
+
+// Output type - manually defined for response structure
+export interface UpdateHospitalOutput {
+	id: string;
+	name: string;
+	address: {
+		street: string;
+		city: string;
+		state: string;
+		postalCode: string;
+		country: string;
+	};
+	contactEmail: string;
+	contactPhone: string;
+	status: string;
+	updatedAt: string;
+}

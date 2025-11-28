@@ -1,10 +1,10 @@
 import { HospitalStatus } from "@hms/db";
 import { createServiceLogger, logError } from "../../../lib/logger";
-import type { VerifyHospitalOutput } from "../dtos/verify.hospital.dto";
 import {
 	findHospitalById,
 	updateHospitalVerification,
 } from "../repositories/verify.hospital.repository";
+import type { VerifyHospitalOutput } from "../validations/verify.hospital.validation";
 
 const logger = createServiceLogger("verifyHospital");
 

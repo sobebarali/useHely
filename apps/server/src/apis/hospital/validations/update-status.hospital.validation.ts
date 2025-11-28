@@ -13,6 +13,7 @@ const validStatuses = [
 	"INACTIVE",
 ] as const;
 
+// Zod schema for runtime validation
 export const updateStatusHospitalSchema = z.object({
 	params: z.object({
 		id: z
@@ -28,6 +29,14 @@ export const updateStatusHospitalSchema = z.object({
 	}),
 });
 
-export type UpdateStatusHospitalValidated = z.infer<
+// Input type - inferred from Zod (single source of truth)
+export type UpdateStatusInput = z.infer<
 	typeof updateStatusHospitalSchema.shape.body
 >;
+
+// Output type - manually defined for response structure
+export interface UpdateStatusOutput {
+	id: string;
+	status: string;
+	updatedAt: string;
+}

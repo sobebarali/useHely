@@ -2,12 +2,12 @@ import { randomBytes } from "node:crypto";
 import { v4 as uuidv4 } from "uuid";
 import { sendHospitalVerificationEmail } from "../../../lib/email/hospital-email.service";
 import { createServiceLogger, logError } from "../../../lib/logger";
-import type { RegisterHospitalOutput } from "../dtos/register.hospital.dto";
 import {
 	createHospital,
 	findHospitalByAdminEmail,
 	findHospitalByLicense,
 } from "../repositories/register.hospital.repository";
+import type { RegisterHospitalOutput } from "../validations/register.hospital.validation";
 
 const logger = createServiceLogger("registerHospital");
 

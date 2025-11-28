@@ -1,6 +1,6 @@
 import { createServiceLogger, logError } from "../../../lib/logger";
-import type { GetHospitalByIdOutput } from "../dtos/get-by-id.hospital.dto";
 import { findHospitalById } from "../repositories/get-by-id.hospital.repository";
+import type { GetHospitalByIdOutput } from "../validations/get-by-id.hospital.validation";
 
 const logger = createServiceLogger("getHospitalById");
 

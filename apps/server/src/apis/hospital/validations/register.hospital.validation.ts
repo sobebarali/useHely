@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Zod schema for runtime validation
 export const registerHospitalSchema = z.object({
 	body: z.object({
 		name: z.string().min(1, "Hospital name is required"),
@@ -18,6 +19,17 @@ export const registerHospitalSchema = z.object({
 	}),
 });
 
-export type RegisterHospitalValidated = z.infer<
+// Input type - inferred from Zod (single source of truth)
+export type RegisterHospitalInput = z.infer<
 	typeof registerHospitalSchema.shape.body
 >;
+
+// Output type - manually defined for response structure
+export interface RegisterHospitalOutput {
+	id: string;
+	tenantId: string;
+	name: string;
+	status: string;
+	adminUsername: string;
+	message: string;
+}

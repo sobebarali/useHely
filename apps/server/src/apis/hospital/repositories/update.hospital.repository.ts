@@ -4,7 +4,7 @@ import {
 	logDatabaseOperation,
 	logError,
 } from "../../../lib/logger";
-import type { UpdateHospitalInput } from "../dtos/update.hospital.dto";
+import type { UpdateHospitalInput } from "../validations/update.hospital.validation";
 
 const logger = createRepositoryLogger("updateHospital");
 

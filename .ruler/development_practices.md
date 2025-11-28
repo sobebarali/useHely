@@ -103,41 +103,33 @@
 
 Each endpoint requires dedicated files in each layer. Follow this order when implementing:
 
-**1. DTO Layer** (`dtos/{endpoint}.{domain}.dto.ts`)
-- Define TypeScript interfaces/types for data transfer
-- Input DTOs for request data
-- Output DTOs for response data
-- No logic, only type definitions
+**1. Validation Layer** (`validations/{endpoint}.{domain}.validation.ts`)
+- Define Zod schemas for runtime validation of request data
+- Export Input types inferred from Zod (single source of truth)
+- Define Output types as interfaces for response data
+- Input types are validated at runtime, output types are for type safety only
 
 Example:
 ```typescript
-// Input DTO
-export interface RegisterPatientInput {
-	firstName: string;
-	lastName: string;
-	dateOfBirth: string;
-	gender: "MALE" | "FEMALE" | "OTHER";
-	bloodGroup?: string;
-	phone: string;
-	email?: string;
-	address: {
-		street: string;
-		city: string;
-		state: string;
-		postalCode: string;
-		country: string;
-	};
-	emergencyContact: {
-		name: string;
-		relationship: string;
-		phone: string;
-	};
-	patientType: "OPD" | "IPD";
-	department?: string;
-	assignedDoctor?: string;
-}
+import { z } from "zod";
 
-// Output DTO
+// Zod schema for runtime validation
+export const registerPatientSchema = z.object({
+	body: z.object({
+		firstName: z.string().min(1),
+		lastName: z.string().min(1),
+		dateOfBirth: z.string().datetime(),
+		gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+		bloodGroup: z.string().optional(),
+		phone: z.string(),
+		email: z.string().email().optional(),
+	}),
+});
+
+// Input type - inferred from Zod (single source of truth)
+export type RegisterPatientInput = z.infer<typeof registerPatientSchema.shape.body>;
+
+// Output type - manually defined for response structure
 export interface RegisterPatientOutput {
 	id: string;
 	patientId: string;
@@ -151,32 +143,7 @@ export interface RegisterPatientOutput {
 }
 ```
 
-**2. Validation Layer** (`validations/{endpoint}.{domain}.validation.ts`)
-- Define Zod schemas for request validation
-- Validate body, params, query, and headers
-- Export validation schemas only
-
-Example:
-```typescript
-import { z } from "zod";
-
-export const registerPatientSchema = z.object({
-	body: z.object({
-		firstName: z.string().min(1),
-		lastName: z.string().min(1),
-		dateOfBirth: z.string().datetime(),
-		gender: z.enum(["MALE", "FEMALE", "OTHER"]),
-		bloodGroup: z.string().optional(),
-		phone: z.string(),
-		email: z.string().email().optional(),
-	}),
-});
-
-// Optionally export type from validation schema
-export type RegisterPatientValidated = z.infer<typeof registerPatientSchema.shape.body>;
-```
-
-**3. Repository Layer** (`repositories/{endpoint}.{domain}.repository.ts`)
+**2. Repository Layer** (`repositories/{endpoint}.{domain}.repository.ts`)
 - Database operations only
 - No business logic
 - Return database results directly
@@ -184,7 +151,7 @@ export type RegisterPatientValidated = z.infer<typeof registerPatientSchema.shap
 Example:
 ```typescript
 import { Patient } from "@repo/db";
-import type { RegisterPatientInput } from "../dtos/register.patients.dto";
+import type { RegisterPatientInput } from "../validations/register.patients.validation";
 
 export async function createPatient({
 	tenantId,
@@ -201,7 +168,7 @@ export async function createPatient({
 }
 ```
 
-**4. Service Layer** (`services/{endpoint}.{domain}.service.ts`)
+**3. Service Layer** (`services/{endpoint}.{domain}.service.ts`)
 - Business logic and orchestration
 - Call one or more repositories
 - Handle transactions
@@ -210,7 +177,7 @@ export async function createPatient({
 Example:
 ```typescript
 import { createPatient as createPatientRepo } from "../repositories/register.patients.repository";
-import type { RegisterPatientInput, RegisterPatientOutput } from "../dtos/register.patients.dto";
+import type { RegisterPatientInput, RegisterPatientOutput } from "../validations/register.patients.validation";
 
 export async function registerPatient({
 	tenantId,
@@ -239,7 +206,7 @@ export async function registerPatient({
 }
 ```
 
-**5. Controller Layer** (`controllers/{endpoint}.{domain}.controller.ts`)
+**4. Controller Layer** (`controllers/{endpoint}.{domain}.controller.ts`)
 - HTTP request/response handling only
 - Extract data from request
 - Call service
@@ -273,7 +240,7 @@ export async function registerPatientController(req: Request, res: Response) {
 }
 ```
 
-**6. Routes Layer** (`{domain}.routes.ts`)
+**5. Routes Layer** (`{domain}.routes.ts`)
 - Register all endpoints
 - Apply middleware
 - Map HTTP methods to controllers
@@ -309,8 +276,7 @@ export default router;
 
 When creating a new endpoint, follow these steps in order:
 
-- [ ] **DTOs**: Create type definitions in `dtos/{endpoint}.{domain}.dto.ts`
-- [ ] **Validation**: Create validation schema in `validations/{endpoint}.{domain}.validation.ts`
+- [ ] **Validation**: Create validation schema with Input and Output types in `validations/{endpoint}.{domain}.validation.ts`
 - [ ] **Repository**: Create database operations in `repositories/{endpoint}.{domain}.repository.ts`
 - [ ] **Service**: Create business logic in `services/{endpoint}.{domain}.service.ts`
 - [ ] **Controller**: Create HTTP handler in `controllers/{endpoint}.{domain}.controller.ts`
@@ -346,13 +312,6 @@ apps/server/src/apis/patients/
 │   ├── update.patients.repository.ts
 │   ├── delete.patients.repository.ts
 │   └── search.patients.repository.ts
-├── dtos/
-│   ├── register.patients.dto.ts
-│   ├── list.patients.dto.ts
-│   ├── get-by-id.patients.dto.ts
-│   ├── update.patients.dto.ts
-│   ├── delete.patients.dto.ts
-│   └── search.patients.dto.ts
 ├── validations/
 │   ├── register.patients.validation.ts
 │   ├── list.patients.validation.ts

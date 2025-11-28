@@ -26,7 +26,6 @@ apps/server/src/apis/{domain}/
 ├── controllers/{endpoint}.{domain}.controller.ts
 ├── services/{endpoint}.{domain}.service.ts
 ├── repositories/{endpoint}.{domain}.repository.ts
-├── dtos/{endpoint}.{domain}.dto.ts
 ├── validations/{endpoint}.{domain}.validation.ts
 ├── middlewares/{domain}.middleware.ts
 └── {domain}.routes.ts
@@ -34,8 +33,7 @@ apps/server/src/apis/{domain}/
 
 **Layer Responsibilities:**
 - **Routes** (`{domain}.routes.ts`) - Endpoint definitions, middleware registration, route composition
-- **Validations** (`{endpoint}.{domain}.validation.ts`) - Zod schemas for request validation only
-- **DTOs** (`{endpoint}.{domain}.dto.ts`) - Type definitions for data transfer between layers
+- **Validations** (`{endpoint}.{domain}.validation.ts`) - Zod schemas for request validation, Input types (inferred from Zod), Output types (manually defined interfaces)
 - **Controllers** (`{endpoint}.{domain}.controller.ts`) - HTTP handling, request extraction, response formatting
 - **Services** (`{endpoint}.{domain}.service.ts`) - Business logic, orchestration, transaction management
 - **Repositories** (`{endpoint}.{domain}.repository.ts`) - Database queries, model operations
@@ -45,7 +43,6 @@ apps/server/src/apis/{domain}/
 - Controllers: `{endpoint}.{domain}.controller.ts` (e.g., `register.patients.controller.ts`)
 - Services: `{endpoint}.{domain}.service.ts` (e.g., `register.patients.service.ts`)
 - Repositories: `{endpoint}.{domain}.repository.ts` (e.g., `register.patients.repository.ts`)
-- DTOs: `{endpoint}.{domain}.dto.ts` (e.g., `register.patients.dto.ts`)
 - Validations: `{endpoint}.{domain}.validation.ts` (e.g., `register.patients.validation.ts`)
 - Middlewares: `{domain}.middleware.ts` (e.g., `patients.middleware.ts`)
 - Routes: `{domain}.routes.ts` (e.g., `patients.routes.ts`)
@@ -57,6 +54,7 @@ apps/server/src/apis/{domain}/
 - Enables parallel development on different endpoints
 - Simplifies testing and maintenance
 - Reduces merge conflicts in team environments
+- Zod as single source of truth for input types ensures validation and types are always in sync
 
 ## Multi-Tenant Architecture
 

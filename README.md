@@ -91,11 +91,7 @@ apps/server/src/apis/{domain}/
 │   ├── {endpoint1}.{domain}.repository.ts
 │   ├── {endpoint2}.{domain}.repository.ts
 │   └── {endpoint3}.{domain}.repository.ts
-├── dtos/               # Data Transfer Objects
-│   ├── {endpoint1}.{domain}.dto.ts
-│   ├── {endpoint2}.{domain}.dto.ts
-│   └── {endpoint3}.{domain}.dto.ts
-├── validations/        # Input validation schemas (Zod)
+├── validations/        # Zod schemas + type definitions (Input & Output)
 │   ├── {endpoint1}.{domain}.validation.ts
 │   ├── {endpoint2}.{domain}.validation.ts
 │   └── {endpoint3}.{domain}.validation.ts
@@ -126,12 +122,6 @@ apps/server/src/apis/patients/
 │   ├── get-by-id.patients.repository.ts
 │   ├── update.patients.repository.ts
 │   └── delete.patients.repository.ts
-├── dtos/
-│   ├── register.patients.dto.ts
-│   ├── list.patients.dto.ts
-│   ├── get-by-id.patients.dto.ts
-│   ├── update.patients.dto.ts
-│   └── delete.patients.dto.ts
 ├── validations/
 │   ├── register.patients.validation.ts
 │   ├── list.patients.validation.ts
@@ -145,8 +135,7 @@ apps/server/src/apis/patients/
 
 **Layer Responsibilities:**
 - **Routes** - Endpoint definitions, route-level middleware registration
-- **Validations** - Zod schemas for request validation (body, params, query)
-- **DTOs** - Data Transfer Objects for type-safe data transfer between layers
+- **Validations** - Zod schemas for request validation, Input types (inferred from Zod), Output types (manually defined interfaces)
 - **Controllers** - HTTP handling, extract data from request, call service, return response
 - **Services** - Business logic, orchestration, multi-repository coordination
 - **Repositories** - Database queries, single model CRUD operations
