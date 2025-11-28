@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { v4 as uuidv4 } from "uuid";
+import { sendHospitalVerificationEmail } from "../../../lib/email/hospital-email.service";
 import { createServiceLogger, logError } from "../../../lib/logger";
 import type { RegisterHospitalOutput } from "../dtos/register.hospital.dto";
 import {
@@ -145,8 +146,33 @@ export async function registerHospital({
 			"Hospital created successfully",
 		);
 
-		// TODO: Send verification email (implement later)
-		logger.debug("Verification email sending skipped (not implemented)");
+		// Send verification email
+		try {
+			logger.info({ adminEmail }, "Sending verification email");
+			const verificationUrl = `${process.env.BETTER_AUTH_URL}/verify-hospital/${hospitalId}?token=${verificationToken}`;
+
+			await sendHospitalVerificationEmail({
+				to: adminEmail,
+				data: {
+					hospitalName: name,
+					licenseNumber,
+					adminUsername,
+					verificationUrl,
+					supportEmail: contactEmail,
+				},
+			});
+
+			logger.info({ adminEmail }, "Verification email sent successfully");
+		} catch (emailError) {
+			logError(logger, emailError, "Failed to send verification email", {
+				hospitalId,
+				adminEmail,
+			});
+			// Don't throw - hospital was created successfully, email failure shouldn't block registration
+			logger.warn(
+				"Hospital registration completed but verification email failed to send",
+			);
+		}
 
 		return {
 			id: String(hospital._id),
