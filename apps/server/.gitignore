@@ -21,7 +21,6 @@ dist/
 .vercel
 prisma/generated/
 
-
 # deps
 node_modules/
 /node_modules
@@ -53,3 +52,4 @@ lerna-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+

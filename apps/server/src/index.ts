@@ -4,7 +4,7 @@ import express from "express";
 import { auth } from "@hms/auth";
 import { toNodeHandler } from "better-auth/node";
 
-const app = express();
+export const app = express();
 
 app.use(
 	cors({
@@ -23,7 +23,10 @@ app.get("/", (_req, res) => {
 	res.status(200).send("OK");
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-	console.log(`Server is running on port ${port}`);
-});
+// Only start server if not in test environment
+if (process.env.NODE_ENV !== "test") {
+	const port = process.env.PORT || 3000;
+	app.listen(port, () => {
+		console.log(`Server is running on port ${port}`);
+	});
+}
