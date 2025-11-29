@@ -17,8 +17,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardStaffIndexRouteImport } from './routes/dashboard/staff/index'
-import { Route as DashboardStaffAddRouteImport } from './routes/dashboard/staff/add'
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
 
 const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
@@ -61,14 +61,14 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStaffIndexRoute = DashboardStaffIndexRouteImport.update({
   id: '/staff/',
   path: '/staff/',
-  getParentRoute: () => DashboardRoute,
-} as any)
-const DashboardStaffAddRoute = DashboardStaffAddRouteImport.update({
-  id: '/staff/add',
-  path: '/staff/add',
   getParentRoute: () => DashboardRoute,
 } as any)
 const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
@@ -86,21 +86,20 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
-  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register-hospital': typeof RegisterHospitalRoute
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
-  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesById {
@@ -113,8 +112,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
-  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff/': typeof DashboardStaffIndexRoute
 }
 export interface FileRouteTypes {
@@ -128,21 +127,20 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/'
     | '/dashboard/staff/$id'
-    | '/dashboard/staff/add'
     | '/dashboard/staff'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/dashboard'
     | '/forgot-password'
     | '/login'
     | '/register-hospital'
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard'
     | '/dashboard/staff/$id'
-    | '/dashboard/staff/add'
     | '/dashboard/staff'
   id:
     | '__root__'
@@ -154,8 +152,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/'
     | '/dashboard/staff/$id'
-    | '/dashboard/staff/add'
     | '/dashboard/staff/'
   fileRoutesById: FileRoutesById
 }
@@ -228,18 +226,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/staff/': {
       id: '/dashboard/staff/'
       path: '/staff'
       fullPath: '/dashboard/staff'
       preLoaderRoute: typeof DashboardStaffIndexRouteImport
-      parentRoute: typeof DashboardRoute
-    }
-    '/dashboard/staff/add': {
-      id: '/dashboard/staff/add'
-      path: '/staff/add'
-      fullPath: '/dashboard/staff/add'
-      preLoaderRoute: typeof DashboardStaffAddRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/staff/$id': {
@@ -253,14 +251,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardStaffIdRoute: typeof DashboardStaffIdRoute
-  DashboardStaffAddRoute: typeof DashboardStaffAddRoute
   DashboardStaffIndexRoute: typeof DashboardStaffIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardIndexRoute: DashboardIndexRoute,
   DashboardStaffIdRoute: DashboardStaffIdRoute,
-  DashboardStaffAddRoute: DashboardStaffAddRoute,
   DashboardStaffIndexRoute: DashboardStaffIndexRoute,
 }
 

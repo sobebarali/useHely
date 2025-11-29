@@ -137,3 +137,93 @@ Each endpoint must have dedicated files across layers:
 - Prefer SVG for icons and simple illustrations
 - Cache static assets appropriately
 - Use CSS animations for simple effects instead of heavy libraries
+
+## TanStack Router Conventions
+
+### Route File Structure
+TanStack Router uses file-based routing with automatic route generation. Routes are defined in `apps/web/src/routes/`.
+
+### Layout Routes Pattern
+**CRITICAL**: When creating nested routes that share a common layout, use the layout route pattern:
+
+1. **Layout Route** (`{section}.tsx`): Renders shared layout with `<Outlet />` for child content
+2. **Index Route** (`{section}/index.tsx`): Default content shown at the section root
+3. **Child Routes** (`{section}/{page}.tsx`): Individual pages rendered inside the layout
+
+**Example - Dashboard with nested pages:**
+```
+routes/
+├── dashboard.tsx           # Layout route with <Outlet />
+└── dashboard/
+    ├── index.tsx           # /dashboard - Dashboard home content
+    ├── staff/
+    │   ├── index.tsx       # /dashboard/staff - Staff list
+    │   ├── add.tsx         # /dashboard/staff/add - Add staff form
+    │   └── $id.tsx         # /dashboard/staff/:id - Staff details
+    └── patients/
+        └── index.tsx       # /dashboard/patients - Patients list
+```
+
+**Layout Route Pattern:**
+```tsx
+// dashboard.tsx - Layout route
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { DashboardLayout } from "@/components/dashboard-layout";
+
+export const Route = createFileRoute("/dashboard")({
+  component: DashboardLayoutRoute,
+  beforeLoad: async () => {
+    // Auth check runs once for all child routes
+    if (!authClient.isAuthenticated()) {
+      throw redirect({ to: "/login" });
+    }
+  },
+});
+
+function DashboardLayoutRoute() {
+  // Shared layout logic (session, user info, etc.)
+  return (
+    <DashboardLayout user={user} hospital={hospital}>
+      <Outlet /> {/* Child routes render here */}
+    </DashboardLayout>
+  );
+}
+```
+
+**Child Route Pattern:**
+```tsx
+// dashboard/staff/index.tsx - Child route (NO layout wrapper)
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/dashboard/staff/")({
+  component: StaffListPage,
+});
+
+function StaffListPage() {
+  // Only render page content - layout is handled by parent
+  return (
+    <div className="p-6">
+      <h1>Staff List</h1>
+      {/* Page content */}
+    </div>
+  );
+}
+```
+
+### Common Mistakes to Avoid
+
+1. **DON'T wrap child routes in layout components** - The parent layout route handles this
+2. **DON'T duplicate auth checks** - Parent route's `beforeLoad` runs for all children
+3. **DON'T forget `<Outlet />`** - Without it, child routes won't render
+4. **DO use fragments or divs** - Child components should return simple containers
+
+### Route Naming Conventions
+- Use kebab-case for route files: `forgot-password.tsx`, `reset-password.tsx`
+- Use `index.tsx` for default/list pages within a directory
+- Use `$param.tsx` for dynamic routes: `$id.tsx` for `/staff/:id`
+- Use descriptive names: `add.tsx` instead of `new.tsx` or `create.tsx`
+
+### Authentication in Routes
+- Place auth checks in the parent layout route's `beforeLoad`
+- Child routes inherit parent authentication automatically
+- Use `redirect({ to: "/login" })` for unauthenticated users

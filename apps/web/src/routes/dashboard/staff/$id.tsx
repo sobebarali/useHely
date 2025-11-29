@@ -16,7 +16,6 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
-import { DashboardLayout } from "@/components/dashboard-layout";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -46,7 +45,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useSession } from "@/hooks/use-auth";
 import {
 	useDeactivateUser,
 	useForcePasswordChange,
@@ -68,7 +66,6 @@ export const Route = createFileRoute("/dashboard/staff/$id")({
 function StaffDetailPage() {
 	const navigate = useNavigate();
 	const { id } = useParams({ from: "/dashboard/staff/$id" });
-	const { data: session, isLoading: sessionLoading } = useSession();
 	const { data: staffMember, isLoading: staffLoading } = useUser(id);
 
 	const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
@@ -153,52 +150,25 @@ function StaffDetailPage() {
 		}
 	};
 
-	if (sessionLoading || staffLoading) {
+	if (staffLoading) {
 		return (
-			<div className="flex h-screen items-center justify-center">
+			<div className="flex h-64 items-center justify-center">
 				<Loader2 className="h-8 w-8 animate-spin" />
 			</div>
 		);
 	}
 
-	if (!session) return null;
-
 	if (!staffMember) {
 		return (
-			<DashboardLayout
-				user={{
-					name:
-						`${session.firstName} ${session.lastName}`.trim() ||
-						session.username,
-					email: session.email,
-				}}
-				hospital={{
-					name: session.hospital?.name || "Unknown Hospital",
-					plan: "Pro",
-				}}
-				pageTitle="Staff Details"
-			>
-				<div className="flex flex-col items-center justify-center gap-4 p-8">
-					<h2 className="font-semibold text-xl">Staff member not found</h2>
-					<Button onClick={() => navigate({ to: "/dashboard/staff" })}>
-						<ArrowLeft className="mr-2 h-4 w-4" />
-						Back to Staff List
-					</Button>
-				</div>
-			</DashboardLayout>
+			<div className="flex flex-col items-center justify-center gap-4 p-8">
+				<h2 className="font-semibold text-xl">Staff member not found</h2>
+				<Button onClick={() => navigate({ to: "/dashboard/staff" })}>
+					<ArrowLeft className="mr-2 h-4 w-4" />
+					Back to Staff List
+				</Button>
+			</div>
 		);
 	}
-
-	const user = {
-		name: `${session.firstName} ${session.lastName}`.trim() || session.username,
-		email: session.email,
-		image: undefined,
-	};
-
-	const hospital = {
-		name: session.hospital?.name || "Unknown Hospital",
-		plan: "Pro",
-	};
 
 	const statusVariant =
 		staffMember.status === "ACTIVE"
@@ -208,7 +178,7 @@ function StaffDetailPage() {
 				: "destructive";
 
 	return (
-		<DashboardLayout user={user} hospital={hospital} pageTitle="Staff Details">
+		<>
 			<div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
 				{/* Header */}
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -573,6 +543,6 @@ function StaffDetailPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</DashboardLayout>
+		</>
 	);
 }

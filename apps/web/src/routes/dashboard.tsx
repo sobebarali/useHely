@@ -1,13 +1,11 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import Loader from "@/components/loader";
-import { SectionCards } from "@/components/section-cards";
 import { useSession } from "@/hooks/use-auth";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard")({
-	component: RouteComponent,
+	component: DashboardLayoutRoute,
 	beforeLoad: async () => {
 		// Check if user is authenticated
 		if (!authClient.isAuthenticated()) {
@@ -18,7 +16,7 @@ export const Route = createFileRoute("/dashboard")({
 	},
 });
 
-function RouteComponent() {
+function DashboardLayoutRoute() {
 	const { data: session, isLoading } = useSession();
 
 	if (isLoading) {
@@ -47,12 +45,7 @@ function RouteComponent() {
 
 	return (
 		<DashboardLayout user={user} hospital={hospital} pageTitle="Dashboard">
-			<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-				<SectionCards />
-				<div className="px-4 lg:px-6">
-					<ChartAreaInteractive />
-				</div>
-			</div>
+			<Outlet />
 		</DashboardLayout>
 	);
 }

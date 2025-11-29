@@ -1,4 +1,4 @@
-import { Role, Staff, User } from "@hms/db";
+import { Department, Role, Staff, User } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -95,6 +95,15 @@ export async function listUsers({
 		const roles = await Role.find({ _id: { $in: roleIds } }).lean();
 		const roleMap = new Map(roles.map((r) => [String(r._id), r]));
 
+		// Get all unique department IDs
+		const departmentIds = [
+			...new Set(staffRecords.map((s) => s.departmentId).filter(Boolean)),
+		];
+		const departments = await Department.find({
+			_id: { $in: departmentIds },
+		}).lean();
+		const departmentMap = new Map(departments.map((d) => [String(d._id), d]));
+
 		// Combine data
 		const data = staffRecords.map((staff) => {
 			const user = userMap.get(String(staff.userId));
@@ -104,6 +113,9 @@ export async function listUsers({
 					? { id: String(role._id), name: role.name }
 					: { id: String(roleId), name: "Unknown" };
 			});
+			const department = staff.departmentId
+				? departmentMap.get(String(staff.departmentId))
+				: null;
 
 			return {
 				id: String(staff._id),
@@ -111,7 +123,7 @@ export async function listUsers({
 				email: user?.email || "",
 				firstName: staff.firstName || "",
 				lastName: staff.lastName || "",
-				department: String(staff.departmentId || ""),
+				department: department?.name || "",
 				roles: staffRoles,
 				status: staff.status || "ACTIVE",
 				createdAt: staff.createdAt?.toISOString() || new Date().toISOString(),
