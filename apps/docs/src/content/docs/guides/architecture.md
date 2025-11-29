@@ -230,6 +230,100 @@ apps/server/src/apis/patients/
 | Dashboard stats | 30 seconds | Manual refresh |
 | Lookup data | 1 hour | Admin update |
 
+## Security Infrastructure
+
+### Encryption Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Application Layer                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
+│  │  Mongoose   │  │  Encryption │  │   Key Management    │ │
+│  │  Middleware │──│   Service   │──│      Client         │ │
+│  └─────────────┘  └─────────────┘  └─────────────────────┘ │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+    ┌────▼────┐        ┌─────▼─────┐       ┌─────▼─────┐
+    │ MongoDB │        │  AWS KMS  │       │  Audit    │
+    │ (CSFLE) │        │  / Vault  │       │   Logs    │
+    └─────────┘        └───────────┘       └───────────┘
+```
+
+### Data Protection
+
+| Layer | Protection |
+|-------|------------|
+| Transit | HTTPS/TLS 1.3 |
+| Rest | AES-256-GCM field-level encryption |
+| Keys | AWS KMS / HashiCorp Vault |
+| Logs | PII masking, append-only audit |
+
+### Encrypted Fields
+
+| Model | Encrypted Fields |
+|-------|------------------|
+| Patient | firstName, lastName, dateOfBirth, phone, email, address |
+| Prescription | diagnosis, notes |
+| Vitals | All health metrics |
+
+### Compliance Stack
+
+| Standard | Implementation |
+|----------|----------------|
+| HIPAA | Audit logs, encryption, access controls, 6-year retention |
+| GDPR | Data export, deletion, consent management, portability |
+| SOC 2 | MFA, security monitoring, change detection |
+
+### Audit Trail
+
+- Immutable, append-only audit logs
+- Cryptographic hash chain for integrity
+- All PHI access tracked
+- 6-year retention (HIPAA requirement)
+
+## High Availability Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Load Balancer                          │
+│                      (Health Checks)                         │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   ┌────▼────┐       ┌────▼────┐       ┌────▼────┐
+   │  API    │       │  API    │       │  API    │
+   │ Node 1  │       │ Node 2  │       │ Node 3  │
+   └────┬────┘       └────┬────┘       └────┬────┘
+        │                 │                 │
+        └─────────────────┼─────────────────┘
+                          │
+        ┌─────────────────┼─────────────────┐
+        │                 │                 │
+   ┌────▼────┐       ┌────▼────┐       ┌────▼────┐
+   │ MongoDB │       │  Redis  │       │ Metrics │
+   │ Cluster │       │ Cluster │       │  Stack  │
+   └─────────┘       └─────────┘       └─────────┘
+```
+
+### Health Endpoints
+
+| Endpoint | Purpose |
+|----------|---------|
+| `/health` | Full health check with dependencies |
+| `/health/live` | Kubernetes liveness probe |
+| `/health/ready` | Kubernetes readiness probe |
+| `/metrics` | Prometheus metrics |
+
+### Monitoring
+
+- Prometheus metrics collection
+- P50/P95/P99 latency tracking
+- Error rate monitoring
+- Active session tracking
+
 ## Scalability Considerations
 
 ### Horizontal Scaling

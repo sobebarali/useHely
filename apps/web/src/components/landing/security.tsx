@@ -93,12 +93,12 @@ const roles = [
 ];
 
 const complianceItems = [
-	"End-to-end encryption",
-	"HIPAA considerations",
-	"GDPR compliance ready",
-	"SOC 2 practices",
-	"Regular security audits",
-	"99.9% uptime SLA",
+	"Field-level encryption",
+	"HIPAA-ready architecture",
+	"GDPR-ready infrastructure",
+	"SOC 2-aligned practices",
+	"Comprehensive audit logging",
+	"High availability architecture",
 ];
 
 export function Security() {
@@ -257,11 +257,11 @@ export function Security() {
 				<div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Lock className="h-4 w-4" />
-						<span className="text-sm">256-bit Encryption</span>
+						<span className="text-sm">AES-256 Encryption</span>
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Shield className="h-4 w-4" />
-						<span className="text-sm">HIPAA Ready</span>
+						<span className="text-sm">HIPAA-Ready</span>
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Database className="h-4 w-4" />
@@ -269,7 +269,7 @@ export function Security() {
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Server className="h-4 w-4" />
-						<span className="text-sm">99.9% Uptime</span>
+						<span className="text-sm">High Availability</span>
 					</div>
 				</div>
 			</div>

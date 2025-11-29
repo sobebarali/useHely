@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Building2, FileText } from "lucide-react";
+import { ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Footer() {
@@ -37,7 +37,7 @@ export function Footer() {
 						<div>
 							<div className="flex items-center gap-2">
 								<Building2 className="h-6 w-6 text-primary" />
-								<span className="font-bold text-lg">HMS</span>
+								<span className="font-bold text-lg">useHely</span>
 							</div>
 							<p className="mt-4 text-muted-foreground text-sm">
 								Multi-tenant Hospital Management System for modern healthcare
@@ -57,16 +57,6 @@ export function Footer() {
 								<li>
 									<a href="#pricing" className="hover:text-foreground">
 										Pricing
-									</a>
-								</li>
-								<li>
-									<a
-										href="http://localhost:4321"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="hover:text-foreground"
-									>
-										API Documentation
 									</a>
 								</li>
 							</ul>
@@ -126,18 +116,9 @@ export function Footer() {
 					{/* Bottom */}
 					<div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 sm:flex-row">
 						<p className="text-muted-foreground text-sm">
-							&copy; {new Date().getFullYear()} HMS. All rights reserved.
+							&copy; {new Date().getFullYear()} useHely. All rights reserved.
 						</p>
 						<div className="flex items-center gap-4">
-							<a
-								href="http://localhost:4321"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-muted-foreground transition-colors hover:text-foreground"
-							>
-								<FileText className="h-5 w-5" />
-								<span className="sr-only">Documentation</span>
-							</a>
 							<a
 								href="https://github.com"
 								target="_blank"

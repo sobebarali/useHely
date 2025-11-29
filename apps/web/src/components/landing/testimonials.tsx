@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 const testimonials = [
 	{
 		quote:
-			"HMS transformed how we manage patient flow. The OPD queue system alone saved us hours every day. Our staff can now focus on patient care instead of paperwork.",
+			"useHely transformed how we manage patient flow. The OPD queue system alone saved us hours every day. Our staff can now focus on patient care instead of paperwork.",
 		author: "Dr. Sarah Chen",
 		role: "Medical Director",
 		hospital: "City General Hospital",
@@ -65,7 +65,7 @@ export function Testimonials() {
 					</h2>
 					<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
 						See what healthcare professionals are saying about transforming
-						their hospital operations with HMS.
+						their hospital operations with useHely.
 					</p>
 				</div>
 

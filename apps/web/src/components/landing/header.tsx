@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 const navLinks = [
 	{ href: "#features", label: "Features" },
 	{ href: "#pricing", label: "Pricing" },
-	{ href: "http://localhost:4321", label: "API Docs", external: true },
 ];
 
 export function Header() {
@@ -20,32 +19,20 @@ export function Header() {
 					{/* Logo */}
 					<Link to="/" className="flex items-center gap-2">
 						<Building2 className="h-6 w-6 text-primary" />
-						<span className="font-bold text-lg">HMS</span>
+						<span className="font-bold text-lg">useHely</span>
 					</Link>
 
 					{/* Desktop Navigation */}
 					<nav className="hidden items-center gap-6 md:flex">
-						{navLinks.map((link) =>
-							link.external ? (
-								<a
-									key={link.href}
-									href={link.href}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									{link.label}
-								</a>
-							) : (
-								<a
-									key={link.href}
-									href={link.href}
-									className="font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
-								>
-									{link.label}
-								</a>
-							),
-						)}
+						{navLinks.map((link) => (
+							<a
+								key={link.href}
+								href={link.href}
+								className="font-medium text-muted-foreground text-sm transition-colors hover:text-foreground"
+							>
+								{link.label}
+							</a>
+						))}
 					</nav>
 
 					{/* Desktop CTA */}
@@ -81,29 +68,16 @@ export function Header() {
 				)}
 			>
 				<div className="space-y-1 px-4 py-4">
-					{navLinks.map((link) =>
-						link.external ? (
-							<a
-								key={link.href}
-								href={link.href}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="block rounded-md px-3 py-2 font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-								onClick={() => setMobileMenuOpen(false)}
-							>
-								{link.label}
-							</a>
-						) : (
-							<a
-								key={link.href}
-								href={link.href}
-								className="block rounded-md px-3 py-2 font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
-								onClick={() => setMobileMenuOpen(false)}
-							>
-								{link.label}
-							</a>
-						),
-					)}
+					{navLinks.map((link) => (
+						<a
+							key={link.href}
+							href={link.href}
+							className="block rounded-md px-3 py-2 font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+							onClick={() => setMobileMenuOpen(false)}
+						>
+							{link.label}
+						</a>
+					))}
 					<div className="mt-4 flex flex-col gap-2 pt-4">
 						<Button variant="outline" asChild>
 							<Link to="/login">Log In</Link>

@@ -41,7 +41,7 @@ export function Hero() {
 						</h1>
 
 						<p className="mt-6 max-w-xl text-lg text-muted-foreground">
-							Multi-tenant HMS that lets hospitals self-register, manage
+							Multi-tenant platform that lets hospitals self-register, manage
 							patients, appointments, prescriptions, and pharmacy - all with
 							enterprise-grade security and role-based access control.
 						</p>

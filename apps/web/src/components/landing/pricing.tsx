@@ -77,7 +77,7 @@ export function Pricing() {
 					</h2>
 					<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
 						Start small and upgrade as your hospital grows. All plans include
-						core HMS features.
+						core useHely features.
 					</p>
 				</div>
 
