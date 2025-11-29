@@ -1,3 +1,4 @@
+import { InternalError, NotFoundError } from "../../../errors";
 import { invalidateHospitalCache } from "../../../lib/cache/hospital.cache";
 import { createServiceLogger } from "../../../lib/logger";
 import {
@@ -32,11 +33,7 @@ export async function updateHospital({
 
 	if (!existingHospital) {
 		logger.warn({ hospitalId: id }, "Hospital not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "Hospital not found",
-		};
+		throw new NotFoundError("Hospital not found");
 	}
 
 	logger.debug({ hospitalId: id }, "Hospital found, proceeding with update");
@@ -46,11 +43,7 @@ export async function updateHospital({
 
 	if (!updatedHospital) {
 		logger.error({ hospitalId: id }, "Failed to update hospital");
-		throw {
-			status: 500,
-			code: "UPDATE_FAILED",
-			message: "Failed to update hospital",
-		};
+		throw new InternalError("Failed to update hospital", "UPDATE_FAILED");
 	}
 
 	logger.info(

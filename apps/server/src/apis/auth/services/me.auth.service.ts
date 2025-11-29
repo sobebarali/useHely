@@ -1,3 +1,4 @@
+import { UnauthorizedError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
@@ -25,11 +26,7 @@ export async function getCurrentUser({
 
 	if (!user) {
 		logger.warn({ userId }, "User not found");
-		throw {
-			status: 401,
-			code: "UNAUTHORIZED",
-			message: "User not found",
-		};
+		throw new UnauthorizedError("User not found");
 	}
 
 	// Find staff record

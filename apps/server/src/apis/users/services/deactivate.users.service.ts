@@ -1,3 +1,4 @@
+import { ForbiddenError, InternalError, NotFoundError } from "../../../errors";
 import { invalidateAllUserSessions } from "../../../lib/cache/auth.cache";
 import { createServiceLogger } from "../../../lib/logger";
 import { deactivateStaff } from "../repositories/deactivate.users.repository";
@@ -27,31 +28,22 @@ export async function deactivateUserService({
 	const existingStaff = await findStaffById({ tenantId, staffId: userId });
 	if (!existingStaff) {
 		logger.warn({ tenantId, userId }, "User not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "User not found",
-		};
+		throw new NotFoundError("User not found");
 	}
 
 	// Check if trying to deactivate own account
 	if (String(existingStaff._id) === requesterId) {
 		logger.warn({ tenantId, userId }, "User tried to deactivate self");
-		throw {
-			status: 403,
-			code: "SELF_DEACTIVATION",
-			message: "Cannot deactivate your own account",
-		};
+		throw new ForbiddenError(
+			"Cannot deactivate your own account",
+			"SELF_DEACTIVATION",
+		);
 	}
 
 	// Deactivate the staff record
 	const deactivatedStaff = await deactivateStaff({ tenantId, staffId: userId });
 	if (!deactivatedStaff) {
-		throw {
-			status: 500,
-			code: "INTERNAL_ERROR",
-			message: "Failed to deactivate user",
-		};
+		throw new InternalError("Failed to deactivate user");
 	}
 
 	// Invalidate all sessions in database

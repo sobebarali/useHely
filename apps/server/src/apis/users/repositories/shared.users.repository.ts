@@ -1,10 +1,15 @@
 import { Department, Role, Session, Staff, User } from "@hms/db";
-import bcrypt from "bcryptjs";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
 	logError,
 } from "../../../lib/logger";
+
+// Re-export crypto utilities for backward compatibility
+export {
+	generateTemporaryPassword,
+	hashPassword,
+} from "../../../utils/crypto";
 
 const logger = createRepositoryLogger("sharedUsers");
 
@@ -362,37 +367,4 @@ export async function invalidateUserSessions({ userId }: { userId: string }) {
 		logError(logger, error, "Failed to invalidate user sessions", { userId });
 		throw error;
 	}
-}
-
-/**
- * Generate a temporary password
- */
-export function generateTemporaryPassword(): string {
-	const chars =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
-	let password = "";
-
-	// Ensure at least one of each required type
-	password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)];
-	password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)];
-	password += "0123456789"[Math.floor(Math.random() * 10)];
-	password += "@$!%*?&"[Math.floor(Math.random() * 7)];
-
-	// Fill the rest
-	for (let i = 4; i < 12; i++) {
-		password += chars[Math.floor(Math.random() * chars.length)];
-	}
-
-	// Shuffle the password
-	return password
-		.split("")
-		.sort(() => Math.random() - 0.5)
-		.join("");
-}
-
-/**
- * Hash a password
- */
-export async function hashPassword(password: string): Promise<string> {
-	return bcrypt.hash(password, 10);
 }

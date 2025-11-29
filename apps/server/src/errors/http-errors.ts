@@ -15,7 +15,7 @@ import { AppError } from "./app-error";
 export class BadRequestError extends AppError {
 	constructor(
 		message = "Bad request",
-		code = ERROR_CODES.INVALID_INPUT,
+		code: string = ERROR_CODES.INVALID_INPUT,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -35,7 +35,7 @@ export class BadRequestError extends AppError {
 export class NotFoundError extends AppError {
 	constructor(
 		message = "Resource not found",
-		code = ERROR_CODES.NOT_FOUND,
+		code: string = ERROR_CODES.NOT_FOUND,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -55,7 +55,7 @@ export class NotFoundError extends AppError {
 export class ConflictError extends AppError {
 	constructor(
 		message = "Resource already exists",
-		code = ERROR_CODES.CONFLICT,
+		code: string = ERROR_CODES.CONFLICT,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -75,7 +75,7 @@ export class ConflictError extends AppError {
 export class ValidationError extends AppError {
 	constructor(
 		message = "Validation failed",
-		code = ERROR_CODES.VALIDATION_ERROR,
+		code: string = ERROR_CODES.VALIDATION_ERROR,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -95,7 +95,7 @@ export class ValidationError extends AppError {
 export class RateLimitError extends AppError {
 	constructor(
 		message = "Too many requests, please try again later",
-		code = ERROR_CODES.RATE_LIMIT_EXCEEDED,
+		code: string = ERROR_CODES.RATE_LIMIT_EXCEEDED,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -115,7 +115,7 @@ export class RateLimitError extends AppError {
 export class InternalError extends AppError {
 	constructor(
 		message = "An unexpected error occurred",
-		code = ERROR_CODES.INTERNAL_ERROR,
+		code: string = ERROR_CODES.INTERNAL_ERROR,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -136,7 +136,7 @@ export class InternalError extends AppError {
 export class ServiceUnavailableError extends AppError {
 	constructor(
 		message = "Service temporarily unavailable",
-		code = ERROR_CODES.SERVICE_UNAVAILABLE,
+		code: string = ERROR_CODES.SERVICE_UNAVAILABLE,
 		details?: Record<string, unknown>,
 	) {
 		super({

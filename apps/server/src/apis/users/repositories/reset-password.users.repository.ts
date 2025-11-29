@@ -1,10 +1,10 @@
 import { Account, Staff, Verification } from "@hms/db";
-import bcrypt from "bcryptjs";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
 	logError,
 } from "../../../lib/logger";
+import { comparePassword } from "../../../utils/crypto";
 
 const logger = createRepositoryLogger("resetPassword");
 
@@ -112,7 +112,7 @@ export async function checkPasswordHistory({
 
 		// Check if new password matches any of the last 3 passwords
 		for (const oldHash of staff.passwordHistory) {
-			const matches = await bcrypt.compare(newPassword, oldHash as string);
+			const matches = await comparePassword(newPassword, oldHash as string);
 			if (matches) {
 				return true;
 			}

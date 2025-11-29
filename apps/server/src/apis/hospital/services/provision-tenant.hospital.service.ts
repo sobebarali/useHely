@@ -1,5 +1,6 @@
 import { Role } from "@hms/db";
 import { RoleNames } from "../../../constants";
+import { InternalError } from "../../../errors";
 import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
 import { createServiceLogger, logError } from "../../../lib/logger";
 import { sendEmail } from "../../../lib/mailer";
@@ -90,11 +91,7 @@ export async function provisionTenant({
 
 		if (!hospitalAdminRole) {
 			logger.error({ tenantId }, "HOSPITAL_ADMIN role not found after seeding");
-			throw {
-				status: 500,
-				code: "INTERNAL_ERROR",
-				message: "Failed to find HOSPITAL_ADMIN role",
-			};
+			throw new InternalError("Failed to find HOSPITAL_ADMIN role");
 		}
 
 		// Step 5: Generate temporary password and create admin user

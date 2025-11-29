@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { v4 as uuidv4 } from "uuid";
+import { ConflictError } from "../../../errors";
 import { setVerificationToken } from "../../../lib/cache/hospital.cache";
 import { sendHospitalVerificationEmail } from "../../../lib/email/hospital-email.service";
 import { createServiceLogger, logError } from "../../../lib/logger";
@@ -54,11 +55,10 @@ export async function registerHospital({
 			},
 			"License number already exists",
 		);
-		throw {
-			status: 409,
-			code: "LICENSE_EXISTS",
-			message: "License number already registered",
-		};
+		throw new ConflictError(
+			"License number already registered",
+			"LICENSE_EXISTS",
+		);
 	}
 	logger.debug("License number is unique");
 
@@ -76,11 +76,7 @@ export async function registerHospital({
 			},
 			"Admin email already exists",
 		);
-		throw {
-			status: 409,
-			code: "EMAIL_EXISTS",
-			message: "Admin email already in use",
-		};
+		throw new ConflictError("Admin email already in use", "EMAIL_EXISTS");
 	}
 	logger.debug("Admin email is unique");
 

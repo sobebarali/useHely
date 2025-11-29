@@ -14,7 +14,7 @@ import { AppError } from "./app-error";
 export class UnauthorizedError extends AppError {
 	constructor(
 		message = "Authentication required",
-		code = AUTH_ERROR_CODES.UNAUTHORIZED,
+		code: string = AUTH_ERROR_CODES.UNAUTHORIZED,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -34,7 +34,7 @@ export class UnauthorizedError extends AppError {
 export class InvalidCredentialsError extends AppError {
 	constructor(
 		message = "Invalid username or password",
-		code = AUTH_ERROR_CODES.INVALID_CREDENTIALS,
+		code: string = AUTH_ERROR_CODES.INVALID_CREDENTIALS,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -54,7 +54,7 @@ export class InvalidCredentialsError extends AppError {
 export class InvalidTokenError extends AppError {
 	constructor(
 		message = "Invalid or expired token",
-		code = AUTH_ERROR_CODES.INVALID_TOKEN,
+		code: string = AUTH_ERROR_CODES.INVALID_TOKEN,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -74,7 +74,7 @@ export class InvalidTokenError extends AppError {
 export class ForbiddenError extends AppError {
 	constructor(
 		message = "You do not have permission to perform this action",
-		code = AUTH_ERROR_CODES.FORBIDDEN,
+		code: string = AUTH_ERROR_CODES.FORBIDDEN,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -94,7 +94,7 @@ export class ForbiddenError extends AppError {
 export class AccountLockedError extends AppError {
 	constructor(
 		message = "Account is locked due to too many failed login attempts. Please try again later.",
-		code = AUTH_ERROR_CODES.ACCOUNT_LOCKED,
+		code: string = AUTH_ERROR_CODES.ACCOUNT_LOCKED,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -114,7 +114,7 @@ export class AccountLockedError extends AppError {
 export class PasswordExpiredError extends AppError {
 	constructor(
 		message = "Your password has expired. Please reset your password to continue.",
-		code = AUTH_ERROR_CODES.PASSWORD_EXPIRED,
+		code: string = AUTH_ERROR_CODES.PASSWORD_EXPIRED,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -134,7 +134,7 @@ export class PasswordExpiredError extends AppError {
 export class TenantInactiveError extends AppError {
 	constructor(
 		message = "Your organization is not active. Please contact support.",
-		code = AUTH_ERROR_CODES.TENANT_INACTIVE,
+		code: string = AUTH_ERROR_CODES.TENANT_INACTIVE,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -154,7 +154,7 @@ export class TenantInactiveError extends AppError {
 export class InvalidGrantError extends AppError {
 	constructor(
 		message = "Invalid or unsupported grant type",
-		code = AUTH_ERROR_CODES.INVALID_GRANT,
+		code: string = AUTH_ERROR_CODES.INVALID_GRANT,
 		details?: Record<string, unknown>,
 	) {
 		super({
@@ -174,7 +174,7 @@ export class InvalidGrantError extends AppError {
 export class SessionExpiredError extends AppError {
 	constructor(
 		message = "Your session has expired. Please log in again.",
-		code = AUTH_ERROR_CODES.SESSION_EXPIRED,
+		code: string = AUTH_ERROR_CODES.SESSION_EXPIRED,
 		details?: Record<string, unknown>,
 	) {
 		super({

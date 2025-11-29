@@ -1,4 +1,5 @@
 import { HospitalStatus } from "@hms/db";
+import { BadRequestError, ConflictError, NotFoundError } from "../../../errors";
 import {
 	deleteVerificationToken,
 	getVerificationToken,
@@ -34,11 +35,7 @@ export async function verifyHospital({
 
 	if (!hospital) {
 		logger.warn({ hospitalId: id }, "Hospital not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "Hospital not found",
-		};
+		throw new NotFoundError("Hospital not found");
 	}
 
 	logger.debug(
@@ -58,11 +55,7 @@ export async function verifyHospital({
 			},
 			"Hospital already verified",
 		);
-		throw {
-			status: 409,
-			code: "ALREADY_VERIFIED",
-			message: "Hospital is already verified",
-		};
+		throw new ConflictError("Hospital is already verified", "ALREADY_VERIFIED");
 	}
 
 	// Validate token
@@ -79,11 +72,7 @@ export async function verifyHospital({
 			},
 			"Invalid verification token",
 		);
-		throw {
-			status: 400,
-			code: "INVALID_TOKEN",
-			message: "Invalid verification token",
-		};
+		throw new BadRequestError("Invalid verification token", "INVALID_TOKEN");
 	}
 
 	// Check if token expired
@@ -98,11 +87,10 @@ export async function verifyHospital({
 			},
 			"Verification token expired",
 		);
-		throw {
-			status: 400,
-			code: "TOKEN_EXPIRED",
-			message: "Verification token has expired",
-		};
+		throw new BadRequestError(
+			"Verification token has expired",
+			"TOKEN_EXPIRED",
+		);
 	}
 
 	logger.debug({ hospitalId: id }, "Token is valid, updating hospital status");

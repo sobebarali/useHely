@@ -1,5 +1,13 @@
 import { randomBytes } from "node:crypto";
-import bcrypt from "bcryptjs";
+import { TOKEN_CONFIG } from "../../../constants";
+import {
+	AccountLockedError,
+	InvalidCredentialsError,
+	InvalidGrantError,
+	InvalidTokenError,
+	PasswordExpiredError,
+	TenantInactiveError,
+} from "../../../errors";
 import {
 	cacheSession,
 	clearFailedLogins,
@@ -7,6 +15,7 @@ import {
 	recordFailedLogin,
 } from "../../../lib/cache/auth.cache";
 import { createServiceLogger } from "../../../lib/logger";
+import { comparePassword } from "../../../utils/crypto";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
 	findStaffByUserAndTenant,
@@ -30,10 +39,6 @@ import {
 } from "../validations/token.auth.validation";
 
 const logger = createServiceLogger("tokenAuth");
-
-// Token expiry times in seconds
-const ACCESS_TOKEN_EXPIRY = 3600; // 1 hour
-const REFRESH_TOKEN_EXPIRY = 604800; // 7 days
 
 /**
  * Generate access and refresh tokens for OAuth2 token request
@@ -64,18 +69,12 @@ export async function generateTokens({
 
 		case GrantType.AUTHORIZATION_CODE:
 			// Not implemented yet - would require OAuth client registration
-			throw {
-				status: 400,
-				code: "INVALID_GRANT",
-				message: "Authorization code grant is not yet supported",
-			};
+			throw new InvalidGrantError(
+				"Authorization code grant is not yet supported",
+			);
 
 		default:
-			throw {
-				status: 400,
-				code: "INVALID_GRANT",
-				message: "Unsupported grant type",
-			};
+			throw new InvalidGrantError("Unsupported grant type");
 	}
 }
 
@@ -105,23 +104,14 @@ async function handlePasswordGrant({
 			{ username: `****@${username.split("@")[1] || "***"}` },
 			"Account is locked",
 		);
-		throw {
-			status: 403,
-			code: "ACCOUNT_LOCKED",
-			message:
-				"Account is locked due to too many failed login attempts. Please try again later.",
-		};
+		throw new AccountLockedError();
 	}
 
 	// Check if tenant exists and is active
 	const hospital = await findHospitalById({ hospitalId: tenant_id });
 	if (!hospital) {
 		logger.warn({ tenantId: tenant_id }, "Tenant not found");
-		throw {
-			status: 403,
-			code: "TENANT_INACTIVE",
-			message: "Organization not found",
-		};
+		throw new TenantInactiveError("Organization not found");
 	}
 
 	if (hospital.status !== "ACTIVE" && hospital.status !== "VERIFIED") {
@@ -129,11 +119,9 @@ async function handlePasswordGrant({
 			{ tenantId: tenant_id, status: hospital.status },
 			"Tenant is not active",
 		);
-		throw {
-			status: 403,
-			code: "TENANT_INACTIVE",
-			message: "Your organization is not active. Please contact support.",
-		};
+		throw new TenantInactiveError(
+			"Your organization is not active. Please contact support.",
+		);
 	}
 
 	// Find user by email
@@ -144,11 +132,7 @@ async function handlePasswordGrant({
 			{ username: `****@${username.split("@")[1] || "***"}` },
 			"User not found",
 		);
-		throw {
-			status: 401,
-			code: "INVALID_CREDENTIALS",
-			message: "Invalid username or password",
-		};
+		throw new InvalidCredentialsError();
 	}
 
 	// Find credential account
@@ -156,15 +140,11 @@ async function handlePasswordGrant({
 	if (!account || !account.password) {
 		await recordFailedLogin({ identifier: username });
 		logger.warn({ userId: user._id }, "No credential account found");
-		throw {
-			status: 401,
-			code: "INVALID_CREDENTIALS",
-			message: "Invalid username or password",
-		};
+		throw new InvalidCredentialsError();
 	}
 
 	// Verify password
-	const passwordValid = await bcrypt.compare(password, account.password);
+	const passwordValid = await comparePassword(password, account.password);
 	if (!passwordValid) {
 		const { attempts, isLocked } = await recordFailedLogin({
 			identifier: username,
@@ -177,11 +157,7 @@ async function handlePasswordGrant({
 			},
 			"Invalid password",
 		);
-		throw {
-			status: 401,
-			code: "INVALID_CREDENTIALS",
-			message: "Invalid username or password",
-		};
+		throw new InvalidCredentialsError();
 	}
 
 	// Find staff record for this user in the specified tenant
@@ -195,11 +171,9 @@ async function handlePasswordGrant({
 			{ userId: user._id, tenantId: tenant_id },
 			"User not associated with tenant",
 		);
-		throw {
-			status: 403,
-			code: "TENANT_INACTIVE",
-			message: "You are not associated with this organization",
-		};
+		throw new TenantInactiveError(
+			"You are not associated with this organization",
+		);
 	}
 
 	if (staff.status !== "ACTIVE") {
@@ -209,19 +183,12 @@ async function handlePasswordGrant({
 		);
 
 		if (staff.status === "PASSWORD_EXPIRED") {
-			throw {
-				status: 403,
-				code: "PASSWORD_EXPIRED",
-				message:
-					"Your password has expired. Please reset your password to continue.",
-			};
+			throw new PasswordExpiredError();
 		}
 
-		throw {
-			status: 403,
-			code: "ACCOUNT_LOCKED",
-			message: "Your account is not active. Please contact your administrator.",
-		};
+		throw new AccountLockedError(
+			"Your account is not active. Please contact your administrator.",
+		);
 	}
 
 	// Get roles and permissions
@@ -237,8 +204,12 @@ async function handlePasswordGrant({
 	const accessToken = randomBytes(32).toString("hex");
 	const refreshToken = randomBytes(32).toString("hex");
 
-	const accessExpiresAt = new Date(Date.now() + ACCESS_TOKEN_EXPIRY * 1000);
-	const refreshExpiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000);
+	const accessExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY * 1000,
+	);
+	const refreshExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY * 1000,
+	);
 
 	// Create sessions in database
 	await createSession({
@@ -264,7 +235,7 @@ async function handlePasswordGrant({
 		tenantId: tenant_id,
 		roles: roleNames,
 		permissions: uniquePermissions,
-		expiresIn: ACCESS_TOKEN_EXPIRY,
+		expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
 	});
 
 	// Clear failed login attempts on successful login
@@ -285,9 +256,9 @@ async function handlePasswordGrant({
 	return {
 		access_token: accessToken,
 		token_type: "Bearer",
-		expires_in: ACCESS_TOKEN_EXPIRY,
+		expires_in: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
 		refresh_token: refreshToken,
-		refresh_expires_in: REFRESH_TOKEN_EXPIRY,
+		refresh_expires_in: TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY,
 	};
 }
 
@@ -311,11 +282,7 @@ async function handleRefreshTokenGrant({
 	const session = await findSessionByToken({ token: refresh_token });
 	if (!session) {
 		logger.warn("Invalid refresh token");
-		throw {
-			status: 401,
-			code: "INVALID_TOKEN",
-			message: "Invalid or expired refresh token",
-		};
+		throw new InvalidTokenError("Invalid or expired refresh token");
 	}
 
 	const userId = String(session.userId);
@@ -326,11 +293,7 @@ async function handleRefreshTokenGrant({
 
 	if (!staff) {
 		logger.warn({ userId }, "No staff record found for user");
-		throw {
-			status: 401,
-			code: "INVALID_TOKEN",
-			message: "User not found",
-		};
+		throw new InvalidTokenError("User not found");
 	}
 
 	const tenantId = String(staff.tenantId);
@@ -341,11 +304,7 @@ async function handleRefreshTokenGrant({
 		!hospital ||
 		(hospital.status !== "ACTIVE" && hospital.status !== "VERIFIED")
 	) {
-		throw {
-			status: 403,
-			code: "TENANT_INACTIVE",
-			message: "Your organization is not active",
-		};
+		throw new TenantInactiveError("Your organization is not active");
 	}
 
 	// Get roles and permissions
@@ -359,7 +318,9 @@ async function handleRefreshTokenGrant({
 
 	// Generate new access token
 	const accessToken = randomBytes(32).toString("hex");
-	const accessExpiresAt = new Date(Date.now() + ACCESS_TOKEN_EXPIRY * 1000);
+	const accessExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY * 1000,
+	);
 
 	// Create new access token session
 	await createSession({
@@ -377,7 +338,7 @@ async function handleRefreshTokenGrant({
 		tenantId,
 		roles: roleNames,
 		permissions: uniquePermissions,
-		expiresIn: ACCESS_TOKEN_EXPIRY,
+		expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
 	});
 
 	logger.info({ userId, tenantId }, "Refresh token grant successful");
@@ -386,7 +347,7 @@ async function handleRefreshTokenGrant({
 	return {
 		access_token: accessToken,
 		token_type: "Bearer",
-		expires_in: ACCESS_TOKEN_EXPIRY,
+		expires_in: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
 		refresh_token: refresh_token,
 		refresh_expires_in: Math.floor(
 			(new Date(session.expiresAt).getTime() - Date.now()) / 1000,

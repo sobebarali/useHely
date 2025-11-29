@@ -1,3 +1,8 @@
+import {
+	BadRequestError,
+	ConflictError,
+	ForbiddenError,
+} from "../../../errors";
 import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
 import { createServiceLogger } from "../../../lib/logger";
 import { sendEmail } from "../../../lib/mailer";
@@ -37,22 +42,17 @@ export async function createUserService({
 	const existingStaff = await findStaffByEmail({ tenantId, email });
 	if (existingStaff) {
 		logger.warn({ tenantId, email }, "Email already exists in tenant");
-		throw {
-			status: 409,
-			code: "EMAIL_EXISTS",
-			message: "Email already in use within this organization",
-		};
+		throw new ConflictError(
+			"Email already in use within this organization",
+			"EMAIL_EXISTS",
+		);
 	}
 
 	// Verify hospital exists and get slug for username
 	const hospital = await findHospitalById({ hospitalId: tenantId });
 	if (!hospital) {
 		logger.error({ tenantId }, "Hospital not found");
-		throw {
-			status: 400,
-			code: "INVALID_REQUEST",
-			message: "Invalid organization",
-		};
+		throw new BadRequestError("Invalid organization", "INVALID_REQUEST");
 	}
 
 	// Verify department exists
@@ -62,11 +62,7 @@ export async function createUserService({
 	});
 	if (!departmentRecord) {
 		logger.warn({ tenantId, department }, "Department not found");
-		throw {
-			status: 400,
-			code: "INVALID_REQUEST",
-			message: "Invalid department",
-		};
+		throw new BadRequestError("Invalid department", "INVALID_REQUEST");
 	}
 
 	// Verify all roles exist and belong to tenant
@@ -75,11 +71,10 @@ export async function createUserService({
 		const foundRoleIds = roleRecords.map((r) => String(r._id));
 		const invalidRoles = roles.filter((id) => !foundRoleIds.includes(id));
 		logger.warn({ tenantId, invalidRoles }, "Invalid role IDs");
-		throw {
-			status: 400,
-			code: "INVALID_ROLE",
-			message: "One or more role IDs are invalid",
-		};
+		throw new BadRequestError(
+			"One or more role IDs are invalid",
+			"INVALID_ROLE",
+		);
 	}
 
 	// Check that user cannot assign roles higher than their own
@@ -93,11 +88,7 @@ export async function createUserService({
 				{ tenantId, userRoles },
 				"Non-admin trying to assign system roles",
 			);
-			throw {
-				status: 403,
-				code: "FORBIDDEN",
-				message: "You cannot assign system roles",
-			};
+			throw new ForbiddenError("You cannot assign system roles", "FORBIDDEN");
 		}
 	}
 

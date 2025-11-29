@@ -1,4 +1,10 @@
 import { User } from "@hms/db";
+import {
+	BadRequestError,
+	ForbiddenError,
+	InternalError,
+	NotFoundError,
+} from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import {
 	findDepartmentById,
@@ -35,11 +41,7 @@ export async function updateUserService({
 	const existingStaff = await findStaffById({ tenantId, staffId: userId });
 	if (!existingStaff) {
 		logger.warn({ tenantId, userId }, "User not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "User not found",
-		};
+		throw new NotFoundError("User not found");
 	}
 
 	// Validate department if provided
@@ -53,11 +55,7 @@ export async function updateUserService({
 				{ tenantId, department: data.department },
 				"Department not found",
 			);
-			throw {
-				status: 400,
-				code: "INVALID_REQUEST",
-				message: "Invalid department",
-			};
+			throw new BadRequestError("Invalid department", "INVALID_REQUEST");
 		}
 	}
 
@@ -72,32 +70,26 @@ export async function updateUserService({
 				{ tenantId, requesterId },
 				"Non-admin trying to update roles",
 			);
-			throw {
-				status: 403,
-				code: "FORBIDDEN",
-				message: "Only administrators can update user roles",
-			};
+			throw new ForbiddenError(
+				"Only administrators can update user roles",
+				"FORBIDDEN",
+			);
 		}
 
 		const roles = await getRolesByIds({ tenantId, roleIds: data.roles });
 		if (roles.length !== data.roles.length) {
 			logger.warn({ tenantId, roles: data.roles }, "Invalid role IDs");
-			throw {
-				status: 400,
-				code: "INVALID_ROLE",
-				message: "One or more role IDs are invalid",
-			};
+			throw new BadRequestError(
+				"One or more role IDs are invalid",
+				"INVALID_ROLE",
+			);
 		}
 	}
 
 	// Update staff
 	const updatedStaff = await updateStaff({ tenantId, staffId: userId, data });
 	if (!updatedStaff) {
-		throw {
-			status: 500,
-			code: "INTERNAL_ERROR",
-			message: "Failed to update user",
-		};
+		throw new InternalError("Failed to update user");
 	}
 
 	// Get user email

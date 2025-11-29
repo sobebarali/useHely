@@ -1,3 +1,4 @@
+import { NotFoundError } from "../../../errors";
 import {
 	getCachedHospital,
 	setCachedHospital,
@@ -28,11 +29,7 @@ export async function getHospitalById({
 
 		if (!hospital) {
 			logger.warn({ hospitalId: id }, "Hospital not found");
-			throw {
-				status: 404,
-				code: "NOT_FOUND",
-				message: "Hospital not found",
-			};
+			throw new NotFoundError("Hospital not found");
 		}
 
 		logger.info(
@@ -68,7 +65,12 @@ export async function getHospitalById({
 
 		return result;
 	} catch (error) {
-		// Re-throw if it's already a known error with status code
+		// Re-throw AppError instances as-is
+		if (error instanceof NotFoundError) {
+			throw error;
+		}
+
+		// Re-throw if it's already a known error with status code (legacy support)
 		if (typeof error === "object" && error !== null && "status" in error) {
 			throw error;
 		}

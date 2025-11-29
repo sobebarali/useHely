@@ -1,3 +1,4 @@
+import { InternalError, NotFoundError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { setPasswordExpired } from "../repositories/force-password-change.users.repository";
 import { findStaffById } from "../repositories/shared.users.repository";
@@ -21,21 +22,13 @@ export async function forcePasswordChangeService({
 	const staff = await findStaffById({ tenantId, staffId: userId });
 	if (!staff) {
 		logger.warn({ tenantId, userId }, "User not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "User not found",
-		};
+		throw new NotFoundError("User not found");
 	}
 
 	// Set status to PASSWORD_EXPIRED
 	const updatedStaff = await setPasswordExpired({ tenantId, staffId: userId });
 	if (!updatedStaff) {
-		throw {
-			status: 500,
-			code: "INTERNAL_ERROR",
-			message: "Failed to update user status",
-		};
+		throw new InternalError("Failed to update user status");
 	}
 
 	logger.info({ userId, tenantId }, "Password change forced successfully");

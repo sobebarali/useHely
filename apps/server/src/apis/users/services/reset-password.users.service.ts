@@ -1,6 +1,7 @@
-import bcrypt from "bcryptjs";
+import { BadRequestError } from "../../../errors";
 import { invalidateAllUserSessions } from "../../../lib/cache/auth.cache";
 import { createServiceLogger } from "../../../lib/logger";
+import { hashPassword } from "../../../utils/crypto";
 import {
 	checkPasswordHistory,
 	deleteResetToken,
@@ -36,20 +37,17 @@ export async function resetPasswordService({
 	if (!result || !result.verification) {
 		if (result?.expired) {
 			logger.warn("Reset token expired");
-			throw {
-				status: 400,
-				code: "TOKEN_EXPIRED",
-				message:
-					"Reset token has expired. Please request a new password reset.",
-			};
+			throw new BadRequestError(
+				"Reset token has expired. Please request a new password reset.",
+				"TOKEN_EXPIRED",
+			);
 		}
 
 		logger.warn("Invalid reset token");
-		throw {
-			status: 400,
-			code: "INVALID_TOKEN",
-			message: "Invalid or expired reset token",
-		};
+		throw new BadRequestError(
+			"Invalid or expired reset token",
+			"INVALID_TOKEN",
+		);
 	}
 
 	const email = result.verification.identifier;
@@ -58,22 +56,14 @@ export async function resetPasswordService({
 	const user = await findUserByEmail({ email });
 	if (!user) {
 		logger.warn("User not found for reset token");
-		throw {
-			status: 400,
-			code: "INVALID_TOKEN",
-			message: "Invalid reset token",
-		};
+		throw new BadRequestError("Invalid reset token", "INVALID_TOKEN");
 	}
 
 	// Find staff record
 	const staff = await findStaffByUserId({ userId: String(user._id) });
 	if (!staff) {
 		logger.warn("Staff not found for user");
-		throw {
-			status: 400,
-			code: "INVALID_TOKEN",
-			message: "Invalid reset token",
-		};
+		throw new BadRequestError("Invalid reset token", "INVALID_TOKEN");
 	}
 
 	// Check password history
@@ -84,15 +74,14 @@ export async function resetPasswordService({
 
 	if (isReused) {
 		logger.warn("Password reuse attempt");
-		throw {
-			status: 400,
-			code: "PASSWORD_REUSE",
-			message: "Cannot reuse any of your last 3 passwords",
-		};
+		throw new BadRequestError(
+			"Cannot reuse any of your last 3 passwords",
+			"PASSWORD_REUSE",
+		);
 	}
 
 	// Hash new password
-	const hashedPassword = await bcrypt.hash(newPassword, 10);
+	const hashedPassword = await hashPassword(newPassword);
 
 	// Update password
 	await updatePassword({

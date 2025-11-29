@@ -4,6 +4,7 @@ import {
 	type RoleName,
 	RolePermissions,
 } from "../../../constants";
+import { ConflictError, ForbiddenError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import {
 	createRole,
@@ -38,11 +39,10 @@ export async function createRoleService({
 	const existingRole = await findRoleByName({ tenantId, name });
 	if (existingRole) {
 		logger.warn({ tenantId, name }, "Role name already exists");
-		throw {
-			status: 409,
-			code: "ROLE_EXISTS",
-			message: "A role with this name already exists",
-		};
+		throw new ConflictError(
+			"A role with this name already exists",
+			"ROLE_EXISTS",
+		);
 	}
 
 	// Validate that user has permission to grant all requested permissions
@@ -62,11 +62,10 @@ export async function createRoleService({
 			},
 			"User attempted to grant permissions they don't have",
 		);
-		throw {
-			status: 403,
-			code: "PERMISSION_DENIED",
-			message: "You cannot grant permissions you don't have",
-		};
+		throw new ForbiddenError(
+			"You cannot grant permissions you don't have",
+			"PERMISSION_DENIED",
+		);
 	}
 
 	// Validate that user cannot create a role higher than their own
@@ -99,11 +98,10 @@ export async function createRoleService({
 				},
 				"Custom role would exceed user's authority",
 			);
-			throw {
-				status: 403,
-				code: "PERMISSION_DENIED",
-				message: "Custom role would have permissions beyond your authority",
-			};
+			throw new ForbiddenError(
+				"Custom role would have permissions beyond your authority",
+				"PERMISSION_DENIED",
+			);
 		}
 	}
 

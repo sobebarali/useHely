@@ -1,3 +1,4 @@
+import { BadRequestError, InternalError, NotFoundError } from "../../../errors";
 import { invalidateHospitalCache } from "../../../lib/cache/hospital.cache";
 import { createServiceLogger } from "../../../lib/logger";
 import {
@@ -42,11 +43,7 @@ export async function updateStatusHospital({
 
 	if (!existingHospital) {
 		logger.warn({ hospitalId: id }, "Hospital not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "Hospital not found",
-		};
+		throw new NotFoundError("Hospital not found");
 	}
 
 	const currentStatus = existingHospital.status;
@@ -72,11 +69,10 @@ export async function updateStatusHospital({
 			},
 			"Invalid status transition",
 		);
-		throw {
-			status: 400,
-			code: "INVALID_TRANSITION",
-			message: `Cannot transition from ${currentStatus} to ${data.status}`,
-		};
+		throw new BadRequestError(
+			`Cannot transition from ${currentStatus} to ${data.status}`,
+			"INVALID_TRANSITION",
+		);
 	}
 
 	logger.debug({ hospitalId: id }, "Status transition is valid, proceeding");
@@ -89,11 +85,10 @@ export async function updateStatusHospital({
 
 	if (!updatedHospital) {
 		logger.error({ hospitalId: id }, "Failed to update hospital status");
-		throw {
-			status: 500,
-			code: "UPDATE_FAILED",
-			message: "Failed to update hospital status",
-		};
+		throw new InternalError(
+			"Failed to update hospital status",
+			"UPDATE_FAILED",
+		);
 	}
 
 	logger.info(

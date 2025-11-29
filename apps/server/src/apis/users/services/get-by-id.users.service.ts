@@ -1,3 +1,4 @@
+import { NotFoundError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { getStaffById } from "../repositories/get-by-id.users.repository";
 import type { GetUserByIdOutput } from "../validations/get-by-id.users.validation";
@@ -20,11 +21,7 @@ export async function getUserByIdService({
 
 	if (!result) {
 		logger.warn({ tenantId, userId }, "User not found");
-		throw {
-			status: 404,
-			code: "NOT_FOUND",
-			message: "User not found",
-		};
+		throw new NotFoundError("User not found");
 	}
 
 	const { staff, user, roles } = result;
