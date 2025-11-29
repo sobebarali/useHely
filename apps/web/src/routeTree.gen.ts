@@ -19,7 +19,9 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardStaffIndexRouteImport } from './routes/dashboard/staff/index'
+import { Route as DashboardPatientsIndexRouteImport } from './routes/dashboard/patients/index'
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
+import { Route as DashboardPatientsIdRouteImport } from './routes/dashboard/patients/$id'
 
 const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
   id: '/verify-hospital',
@@ -71,9 +73,19 @@ const DashboardStaffIndexRoute = DashboardStaffIndexRouteImport.update({
   path: '/staff/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPatientsIndexRoute = DashboardPatientsIndexRouteImport.update({
+  id: '/patients/',
+  path: '/patients/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
   id: '/staff/$id',
   path: '/staff/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardPatientsIdRoute = DashboardPatientsIdRouteImport.update({
+  id: '/patients/$id',
+  path: '/patients/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
 
@@ -87,7 +99,9 @@ export interface FileRoutesByFullPath {
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesByTo {
@@ -99,7 +113,9 @@ export interface FileRoutesByTo {
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesById {
@@ -113,7 +129,9 @@ export interface FileRoutesById {
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/patients/': typeof DashboardPatientsIndexRoute
   '/dashboard/staff/': typeof DashboardStaffIndexRoute
 }
 export interface FileRouteTypes {
@@ -128,7 +146,9 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify-hospital'
     | '/dashboard/'
+    | '/dashboard/patients/$id'
     | '/dashboard/staff/$id'
+    | '/dashboard/patients'
     | '/dashboard/staff'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -140,7 +160,9 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify-hospital'
     | '/dashboard'
+    | '/dashboard/patients/$id'
     | '/dashboard/staff/$id'
+    | '/dashboard/patients'
     | '/dashboard/staff'
   id:
     | '__root__'
@@ -153,7 +175,9 @@ export interface FileRouteTypes {
     | '/success'
     | '/verify-hospital'
     | '/dashboard/'
+    | '/dashboard/patients/$id'
     | '/dashboard/staff/$id'
+    | '/dashboard/patients/'
     | '/dashboard/staff/'
   fileRoutesById: FileRoutesById
 }
@@ -240,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStaffIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/patients/': {
+      id: '/dashboard/patients/'
+      path: '/patients'
+      fullPath: '/dashboard/patients'
+      preLoaderRoute: typeof DashboardPatientsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/staff/$id': {
       id: '/dashboard/staff/$id'
       path: '/staff/$id'
@@ -247,18 +278,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStaffIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/patients/$id': {
+      id: '/dashboard/patients/$id'
+      path: '/patients/$id'
+      fullPath: '/dashboard/patients/$id'
+      preLoaderRoute: typeof DashboardPatientsIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
 interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardPatientsIdRoute: typeof DashboardPatientsIdRoute
   DashboardStaffIdRoute: typeof DashboardStaffIdRoute
+  DashboardPatientsIndexRoute: typeof DashboardPatientsIndexRoute
   DashboardStaffIndexRoute: typeof DashboardStaffIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardPatientsIdRoute: DashboardPatientsIdRoute,
   DashboardStaffIdRoute: DashboardStaffIdRoute,
+  DashboardPatientsIndexRoute: DashboardPatientsIndexRoute,
   DashboardStaffIndexRoute: DashboardStaffIndexRoute,
 }
 
