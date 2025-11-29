@@ -1,5 +1,7 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { SectionCards } from "@/components/section-cards";
 import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/dashboard")({
@@ -12,34 +14,32 @@ export const Route = createFileRoute("/dashboard")({
 				throw: true,
 			});
 		}
-		const { data: customerState } = await authClient.customer.state();
-		return { session, customerState };
+		return { session };
 	},
 });
 
 function RouteComponent() {
-	const { session, customerState } = Route.useRouteContext();
+	const { session } = Route.useRouteContext();
 
-	const hasProSubscription =
-		(customerState?.activeSubscriptions?.length ?? 0) > 0;
-	console.log("Active subscriptions:", customerState?.activeSubscriptions);
+	const user = {
+		name: session.data?.user.name || "User",
+		email: session.data?.user.email || "",
+		image: session.data?.user.image,
+	};
+
+	const hospital = {
+		name: "City General Hospital",
+		plan: "Pro",
+	};
 
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session.data?.user.name}</p>
-			<p>Plan: {hasProSubscription ? "Pro" : "Free"}</p>
-			{hasProSubscription ? (
-				<Button onClick={async () => await authClient.customer.portal()}>
-					Manage Subscription
-				</Button>
-			) : (
-				<Button
-					onClick={async () => await authClient.checkout({ slug: "pro" })}
-				>
-					Upgrade to Pro
-				</Button>
-			)}
-		</div>
+		<DashboardLayout user={user} hospital={hospital} pageTitle="Dashboard">
+			<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+				<SectionCards />
+				<div className="px-4 lg:px-6">
+					<ChartAreaInteractive />
+				</div>
+			</div>
+		</DashboardLayout>
 	);
 }

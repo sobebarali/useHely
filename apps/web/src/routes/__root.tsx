@@ -2,6 +2,7 @@ import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
+	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import Header from "@/components/header";
@@ -16,11 +17,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "hms",
+				title: "HMS - Hospital Management System",
 			},
 			{
 				name: "description",
-				content: "hms is a web application",
+				content:
+					"Hospital Management System - A comprehensive multi-tenant SaaS platform for hospital operations",
 			},
 		],
 		links: [
@@ -33,6 +35,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
+	const routerState = useRouterState();
+	const pathname = routerState.location.pathname;
+
+	// Don't show header on dashboard routes (they have their own sidebar layout)
+	const isDashboardRoute = pathname.startsWith("/dashboard");
+
 	return (
 		<>
 			<HeadContent />
@@ -42,10 +50,14 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div className="grid h-svh grid-rows-[auto_1fr]">
-					<Header />
+				{isDashboardRoute ? (
 					<Outlet />
-				</div>
+				) : (
+					<div className="grid h-svh grid-rows-[auto_1fr]">
+						<Header />
+						<Outlet />
+					</div>
+				)}
 				<Toaster richColors />
 			</ThemeProvider>
 			<TanStackRouterDevtools position="bottom-left" />
