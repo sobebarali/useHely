@@ -1,7 +1,11 @@
 import { BadRequestError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { listPatients } from "../repositories/list.patients.repository";
-import type { ListPatientsInput } from "../validations/list.patients.validation";
+import { findDepartmentsByIds } from "../repositories/shared.patients.repository";
+import type {
+	ListPatientsInput,
+	ListPatientsOutput,
+} from "../validations/list.patients.validation";
 
 const logger = createServiceLogger("listPatients");
 
@@ -23,7 +27,13 @@ export async function listPatientsService({
 	sortOrder: sortOrderParam,
 }: {
 	tenantId: string;
-} & ListPatientsInput) {
+} & ListPatientsInput): Promise<{
+	data: ListPatientsOutput[];
+	total: number;
+	page: number;
+	limit: number;
+	totalPages: number;
+}> {
 	logger.info(
 		{ tenantId, page: pageParam, limit: limitParam },
 		"Listing patients",
@@ -61,6 +71,39 @@ export async function listPatientsService({
 		sortOrder,
 	});
 
+	// Get all unique department IDs for batch lookup
+	const departmentIds = [
+		...new Set(
+			result.patients.map((p) => p.departmentId).filter(Boolean) as string[],
+		),
+	];
+
+	// Fetch departments in a single batch query
+	const departments =
+		departmentIds.length > 0
+			? await findDepartmentsByIds({ departmentIds })
+			: [];
+	const departmentMap = new Map(
+		departments.map((d) => [String(d._id), d.name]),
+	);
+
+	// Map to output DTO (business logic belongs in service layer)
+	const data: ListPatientsOutput[] = result.patients.map((patient) => ({
+		id: String(patient._id),
+		patientId: patient.patientId,
+		firstName: patient.firstName,
+		lastName: patient.lastName,
+		dateOfBirth: patient.dateOfBirth?.toISOString() || "",
+		gender: patient.gender,
+		phone: patient.phone,
+		patientType: patient.patientType,
+		department: patient.departmentId
+			? departmentMap.get(String(patient.departmentId)) || ""
+			: "",
+		status: patient.status || "ACTIVE",
+		createdAt: patient.createdAt?.toISOString() || new Date().toISOString(),
+	}));
+
 	logger.info(
 		{
 			tenantId,
@@ -71,5 +114,11 @@ export async function listPatientsService({
 		"Patients listed successfully",
 	);
 
-	return result;
+	return {
+		data,
+		total: result.total,
+		page: result.page,
+		limit: result.limit,
+		totalPages: result.totalPages,
+	};
 }

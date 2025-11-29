@@ -1,4 +1,4 @@
-import { Department, Patient, Staff } from "@hms/db";
+import { Patient } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -8,7 +8,8 @@ import {
 const logger = createRepositoryLogger("getPatientById");
 
 /**
- * Get patient by ID with full details
+ * Get patient by ID with related data IDs
+ * Returns raw patient data - business logic (age calculation, etc.) should be in service
  */
 export async function getPatientById({
 	tenantId,
@@ -25,57 +26,21 @@ export async function getPatientById({
 			tenantId,
 		}).lean();
 
-		if (!patient) {
-			logDatabaseOperation(
-				logger,
-				"findOne",
-				"patient",
-				{ tenantId, patientId },
-				{ found: false },
-			);
-			return null;
-		}
-
 		logDatabaseOperation(
 			logger,
 			"findOne",
 			"patient",
 			{ tenantId, patientId },
-			{ _id: patient._id, found: true },
+			patient ? { _id: patient._id, found: true } : { found: false },
 		);
 
-		// Get department if assigned
-		let department = null;
-		if (patient.departmentId) {
-			department = await Department.findById(patient.departmentId).lean();
-		}
-
-		// Get assigned doctor if assigned
-		let assignedDoctor = null;
-		if (patient.assignedDoctorId) {
-			assignedDoctor = await Staff.findById(patient.assignedDoctorId).lean();
-		}
-
-		// Calculate age
-		const birthDate = new Date(patient.dateOfBirth);
-		const today = new Date();
-		let age = today.getFullYear() - birthDate.getFullYear();
-		const monthDiff = today.getMonth() - birthDate.getMonth();
-		if (
-			monthDiff < 0 ||
-			(monthDiff === 0 && today.getDate() < birthDate.getDate())
-		) {
-			age--;
+		if (!patient) {
+			return null;
 		}
 
 		logger.info({ patientId, tenantId }, "Patient retrieved successfully");
 
-		return {
-			patient,
-			department,
-			assignedDoctor,
-			age,
-		};
+		return patient;
 	} catch (error) {
 		logError(logger, error, "Failed to get patient by ID", {
 			tenantId,

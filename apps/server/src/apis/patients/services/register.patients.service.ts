@@ -7,7 +7,10 @@ import {
 	findPatientByPhone,
 	generatePatientId,
 } from "../repositories/shared.patients.repository";
-import type { RegisterPatientInput } from "../validations/register.patients.validation";
+import type {
+	RegisterPatientInput,
+	RegisterPatientOutput,
+} from "../validations/register.patients.validation";
 
 const logger = createServiceLogger("registerPatient");
 
@@ -31,7 +34,7 @@ export async function registerPatientService({
 	photo,
 }: {
 	tenantId: string;
-} & RegisterPatientInput) {
+} & RegisterPatientInput): Promise<RegisterPatientOutput> {
 	logger.info({ tenantId, firstName, lastName }, "Registering new patient");
 
 	// Check for duplicate email if provided

@@ -1,4 +1,4 @@
-import { Department, Patient } from "@hms/db";
+import { Patient } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -9,6 +9,7 @@ const logger = createRepositoryLogger("listPatients");
 
 /**
  * List patients with pagination and filters
+ * Returns raw patient data - DTO mapping should be in service layer
  */
 export async function listPatients({
 	tenantId,
@@ -106,40 +107,10 @@ export async function listPatients({
 			{ count: patients.length, total },
 		);
 
-		// Get all unique department IDs
-		const departmentIds = [
-			...new Set(patients.map((p) => p.departmentId).filter(Boolean)),
-		];
-		const departments = await Department.find({
-			_id: { $in: departmentIds },
-		}).lean();
-		const departmentMap = new Map(departments.map((d) => [String(d._id), d]));
-
-		// Map to output format
-		const data = patients.map((patient) => {
-			const department = patient.departmentId
-				? departmentMap.get(String(patient.departmentId))
-				: null;
-
-			return {
-				id: String(patient._id),
-				patientId: patient.patientId,
-				firstName: patient.firstName,
-				lastName: patient.lastName,
-				dateOfBirth: patient.dateOfBirth?.toISOString() || "",
-				gender: patient.gender,
-				phone: patient.phone,
-				patientType: patient.patientType,
-				department: department?.name || "",
-				status: patient.status || "ACTIVE",
-				createdAt: patient.createdAt?.toISOString() || new Date().toISOString(),
-			};
-		});
-
-		logger.info({ tenantId, count: data.length, total }, "Patients listed");
+		logger.info({ tenantId, count: patients.length, total }, "Patients listed");
 
 		return {
-			data,
+			patients,
 			total,
 			page,
 			limit,

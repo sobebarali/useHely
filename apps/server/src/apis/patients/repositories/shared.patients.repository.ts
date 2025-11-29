@@ -1,4 +1,4 @@
-import { Counter, Patient } from "@hms/db";
+import { Counter, Department, Patient, Staff } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -139,6 +139,88 @@ export async function generatePatientId({
 		return patientId;
 	} catch (error) {
 		logError(logger, error, "Failed to generate patient ID");
+		throw error;
+	}
+}
+
+/**
+ * Find department by ID
+ */
+export async function findDepartmentById({
+	departmentId,
+}: {
+	departmentId: string;
+}) {
+	try {
+		logger.debug({ departmentId }, "Finding department by ID");
+
+		const department = await Department.findById(departmentId).lean();
+
+		logDatabaseOperation(
+			logger,
+			"findOne",
+			"department",
+			{ departmentId },
+			department ? { _id: department._id, found: true } : { found: false },
+		);
+
+		return department;
+	} catch (error) {
+		logError(logger, error, "Failed to find department by ID");
+		throw error;
+	}
+}
+
+/**
+ * Find staff by ID
+ */
+export async function findStaffById({ staffId }: { staffId: string }) {
+	try {
+		logger.debug({ staffId }, "Finding staff by ID");
+
+		const staff = await Staff.findById(staffId).lean();
+
+		logDatabaseOperation(
+			logger,
+			"findOne",
+			"staff",
+			{ staffId },
+			staff ? { _id: staff._id, found: true } : { found: false },
+		);
+
+		return staff;
+	} catch (error) {
+		logError(logger, error, "Failed to find staff by ID");
+		throw error;
+	}
+}
+
+/**
+ * Find departments by IDs
+ */
+export async function findDepartmentsByIds({
+	departmentIds,
+}: {
+	departmentIds: string[];
+}) {
+	try {
+		logger.debug({ count: departmentIds.length }, "Finding departments by IDs");
+
+		const departments = await Department.find({
+			_id: { $in: departmentIds },
+		}).lean();
+
+		logDatabaseOperation(
+			logger,
+			"find",
+			"department",
+			{ count: departmentIds.length },
+			{ found: departments.length },
+		);
+
+		return departments;
+	} catch (error) {
+		logError(logger, error, "Failed to find departments by IDs");
 		throw error;
 	}
 }

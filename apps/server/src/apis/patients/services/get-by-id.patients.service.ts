@@ -1,8 +1,29 @@
 import { NotFoundError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { getPatientById } from "../repositories/get-by-id.patients.repository";
+import {
+	findDepartmentById,
+	findStaffById,
+} from "../repositories/shared.patients.repository";
+import type { GetPatientOutput } from "../validations/get-by-id.patients.validation";
 
 const logger = createServiceLogger("getPatientById");
+
+/**
+ * Calculate age from date of birth
+ */
+function calculateAge(dateOfBirth: Date): number {
+	const today = new Date();
+	let age = today.getFullYear() - dateOfBirth.getFullYear();
+	const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+	if (
+		monthDiff < 0 ||
+		(monthDiff === 0 && today.getDate() < dateOfBirth.getDate())
+	) {
+		age--;
+	}
+	return age;
+}
 
 /**
  * Get patient by ID within the hospital tenant
@@ -13,17 +34,27 @@ export async function getPatientByIdService({
 }: {
 	tenantId: string;
 	patientId: string;
-}) {
+}): Promise<GetPatientOutput> {
 	logger.info({ tenantId, patientId }, "Getting patient by ID");
 
-	const result = await getPatientById({ tenantId, patientId });
+	const patient = await getPatientById({ tenantId, patientId });
 
-	if (!result) {
+	if (!patient) {
 		logger.warn({ tenantId, patientId }, "Patient not found");
 		throw new NotFoundError("Patient not found", "NOT_FOUND");
 	}
 
-	const { patient, department, assignedDoctor, age } = result;
+	// Fetch related data
+	const department = patient.departmentId
+		? await findDepartmentById({ departmentId: patient.departmentId })
+		: null;
+
+	const assignedDoctor = patient.assignedDoctorId
+		? await findStaffById({ staffId: patient.assignedDoctorId })
+		: null;
+
+	// Calculate age (business logic)
+	const age = calculateAge(new Date(patient.dateOfBirth));
 
 	logger.info({ patientId, tenantId }, "Patient retrieved successfully");
 

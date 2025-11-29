@@ -1,9 +1,14 @@
-import { Department } from "@hms/db";
 import { BadRequestError, NotFoundError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
-import { findPatientById } from "../repositories/shared.patients.repository";
+import {
+	findDepartmentById,
+	findPatientById,
+} from "../repositories/shared.patients.repository";
 import { updatePatient } from "../repositories/update.patients.repository";
-import type { UpdatePatientInput } from "../validations/update.patients.validation";
+import type {
+	UpdatePatientInput,
+	UpdatePatientOutput,
+} from "../validations/update.patients.validation";
 
 const logger = createServiceLogger("updatePatient");
 
@@ -24,7 +29,7 @@ export async function updatePatientService({
 }: {
 	tenantId: string;
 	patientId: string;
-} & UpdatePatientInput) {
+} & UpdatePatientInput): Promise<UpdatePatientOutput> {
 	logger.info({ tenantId, patientId }, "Updating patient");
 
 	// Check if patient exists
@@ -34,13 +39,10 @@ export async function updatePatientService({
 		throw new NotFoundError("Patient not found", "NOT_FOUND");
 	}
 
-	// Validate department if provided
+	// Validate department if provided (using repository, not direct model access)
 	if (department) {
-		const dept = await Department.findOne({
-			_id: department,
-			tenantId,
-		}).lean();
-		if (!dept) {
+		const dept = await findDepartmentById({ departmentId: department });
+		if (!dept || dept.tenantId !== tenantId) {
 			logger.warn({ tenantId, department }, "Department not found");
 			throw new BadRequestError("Invalid department", "INVALID_DEPARTMENT");
 		}
@@ -73,10 +75,12 @@ export async function updatePatientService({
 		throw new NotFoundError("Patient not found", "NOT_FOUND");
 	}
 
-	// Get department name if assigned
+	// Get department name if assigned (using repository)
 	let departmentName: string | undefined;
 	if (updatedPatient.departmentId) {
-		const dept = await Department.findById(updatedPatient.departmentId).lean();
+		const dept = await findDepartmentById({
+			departmentId: updatedPatient.departmentId,
+		});
 		departmentName = dept?.name;
 	}
 
