@@ -97,6 +97,19 @@
 ## Domain Organization
 - `hospital`, `authentication`, `users`, `patients`, `prescriptions`, `appointments`, `vitals`, `dispensing`, `departments`, `dashboard`, `reports`, `inventory`
 
+## Server Source Structure
+
+```
+apps/server/src/
+├── apis/          # API domains (hospital, auth, users, etc.)
+├── constants/     # Centralized constants (auth, cache, http, rbac)
+├── errors/        # Typed error classes (AppError, HTTP errors, auth errors)
+├── lib/           # Shared libraries (cache, email, redis, logger)
+├── middlewares/   # Express middlewares (auth, validation, error handling)
+├── utils/         # Utility functions (crypto)
+└── index.ts       # Application entry point
+```
+
 ## API Implementation Pattern
 
 ### File-Per-Endpoint Structure
@@ -213,6 +226,7 @@ Example:
 import { createPatient as createPatientRepo } from "../repositories/register.patients.repository";
 import { findPatientByEmail } from "../repositories/shared.patients.repository";
 import { findDepartmentById } from "../../departments/repositories/shared.departments.repository";
+import { ConflictError, BadRequestError } from "@/errors";
 import type { RegisterPatientInput, RegisterPatientOutput } from "../validations/register.patients.validation";
 
 export async function registerPatient({
@@ -225,13 +239,13 @@ export async function registerPatient({
 	// Check for duplicate email using shared repository
 	const existing = await findPatientByEmail({ tenantId, email: data.email });
 	if (existing) {
-		throw { status: 409, code: "EMAIL_EXISTS", message: "Email already in use" };
+		throw new ConflictError("EMAIL_EXISTS", "Email already in use");
 	}
 	
 	// Validate department exists (cross-domain import)
 	const department = await findDepartmentById({ tenantId, departmentId: data.departmentId });
 	if (!department) {
-		throw { status: 400, code: "INVALID_DEPARTMENT", message: "Department not found" };
+		throw new BadRequestError("INVALID_DEPARTMENT", "Department not found");
 	}
 	
 	// Create patient using endpoint-specific repository

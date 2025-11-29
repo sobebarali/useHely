@@ -52,6 +52,14 @@ Each endpoint must have dedicated files across layers:
 - Prefer early returns over nested conditions
 - Use async/await over raw promises
 
+### Shared Utilities
+- **Crypto utilities** (`utils/crypto.ts`): `hashPassword`, `comparePassword`, `generateTemporaryPassword`
+- **Constants** (`constants/`): Centralized configuration for auth, cache, HTTP, RBAC
+- **Errors** (`errors/`): Typed error classes for consistent error handling
+- Import utilities: `import { hashPassword } from "@/utils/crypto"`
+- Import constants: `import { AUTH_CACHE_TTL } from "@/constants"`
+- Import errors: `import { NotFoundError, ConflictError } from "@/errors"`
+
 ## API Conventions
 
 ### REST Principles
@@ -85,6 +93,16 @@ Each endpoint must have dedicated files across layers:
 - Provide clear, actionable error messages
 - Include field-level validation errors
 - Log detailed errors server-side only
+
+### Error Handling in Services
+- Use typed error classes from `@/errors` instead of throwing plain objects
+- Available error classes:
+  - **HTTP Errors**: `BadRequestError`, `NotFoundError`, `ConflictError`, `ValidationError`, `InternalError`, `RateLimitError`, `ServiceUnavailableError`
+  - **Auth Errors**: `UnauthorizedError`, `ForbiddenError`, `InvalidCredentialsError`, `InvalidTokenError`, `SessionExpiredError`, `AccountLockedError`, `TenantInactiveError`, `PasswordExpiredError`, `InvalidGrantError`
+- Pattern: `throw new NotFoundError("USER_NOT_FOUND", "User not found")`
+- Custom error codes allowed: `throw new ForbiddenError("SELF_DEACTIVATION", "Cannot deactivate yourself")`
+- Error handler middleware automatically formats responses
+- Never throw plain objects: `throw { status, code, message }` (legacy pattern)
 
 ## Media Assets & Resources
 
