@@ -1,4 +1,11 @@
-import { Account, Department, DepartmentType, Staff, User } from "@hms/db";
+import {
+	Account,
+	Department,
+	DepartmentType,
+	type mongoose,
+	Staff,
+	User,
+} from "@hms/db";
 import { v4 as uuidv4 } from "uuid";
 import {
 	createRepositoryLogger,
@@ -20,6 +27,7 @@ export async function createAdminUser({
 	hashedPassword,
 	hospitalAdminRoleId,
 	adminDepartmentId,
+	session,
 }: {
 	tenantId: string;
 	adminEmail: string;
@@ -28,6 +36,7 @@ export async function createAdminUser({
 	hashedPassword: string;
 	hospitalAdminRoleId: string;
 	adminDepartmentId: string;
+	session?: mongoose.ClientSession;
 }) {
 	try {
 		const userId = uuidv4();
@@ -42,14 +51,23 @@ export async function createAdminUser({
 		const lastName = nameParts.slice(1).join(" ") || "User";
 
 		// Create user record
-		const user = await User.create({
-			_id: userId,
-			name: adminName,
-			email: adminEmail,
-			emailVerified: true, // Admin email is already verified through hospital verification
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
+		const users = await User.create(
+			[
+				{
+					_id: userId,
+					name: adminName,
+					email: adminEmail,
+					emailVerified: true, // Admin email is already verified through hospital verification
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			{ session },
+		);
+		const user = users[0];
+		if (!user) {
+			throw new Error("Failed to create user record");
+		}
 
 		logDatabaseOperation(
 			logger,
@@ -60,15 +78,24 @@ export async function createAdminUser({
 		);
 
 		// Create account record with password
-		const account = await Account.create({
-			_id: accountId,
-			accountId: accountId,
-			userId: userId,
-			providerId: "credential",
-			password: hashedPassword,
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
+		const accounts = await Account.create(
+			[
+				{
+					_id: accountId,
+					accountId: accountId,
+					userId: userId,
+					providerId: "credential",
+					password: hashedPassword,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			{ session },
+		);
+		const account = accounts[0];
+		if (!account) {
+			throw new Error("Failed to create account record");
+		}
 
 		logDatabaseOperation(
 			logger,
@@ -79,22 +106,31 @@ export async function createAdminUser({
 		);
 
 		// Create staff record - admin is the first employee
-		const staff = await Staff.create({
-			_id: staffId,
-			tenantId,
-			userId,
-			employeeId: "EMP-00001",
-			firstName,
-			lastName,
-			phone: adminPhone,
-			departmentId: adminDepartmentId,
-			roles: [hospitalAdminRoleId],
-			status: "ACTIVE",
-			passwordHistory: [hashedPassword],
-			forcePasswordChange: true, // Admin should change password on first login
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
+		const staffRecords = await Staff.create(
+			[
+				{
+					_id: staffId,
+					tenantId,
+					userId,
+					employeeId: "EMP-00001",
+					firstName,
+					lastName,
+					phone: adminPhone,
+					departmentId: adminDepartmentId,
+					roles: [hospitalAdminRoleId],
+					status: "ACTIVE",
+					passwordHistory: [hashedPassword],
+					forcePasswordChange: true, // Admin should change password on first login
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			{ session },
+		);
+		const staff = staffRecords[0];
+		if (!staff) {
+			throw new Error("Failed to create staff record");
+		}
 
 		logDatabaseOperation(
 			logger,
@@ -125,25 +161,36 @@ export async function createAdminUser({
  */
 export async function createDefaultDepartment({
 	tenantId,
+	session,
 }: {
 	tenantId: string;
+	session?: mongoose.ClientSession;
 }) {
 	try {
 		const departmentId = uuidv4();
 
 		logger.debug({ tenantId }, "Creating default administration department");
 
-		const department = await Department.create({
-			_id: departmentId,
-			tenantId,
-			name: "Administration",
-			code: "ADMIN",
-			description: "Hospital administration and management department",
-			type: DepartmentType.ADMINISTRATIVE,
-			status: "ACTIVE",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
+		const departments = await Department.create(
+			[
+				{
+					_id: departmentId,
+					tenantId,
+					name: "Administration",
+					code: "ADMIN",
+					description: "Hospital administration and management department",
+					type: DepartmentType.ADMINISTRATIVE,
+					status: "ACTIVE",
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+			],
+			{ session },
+		);
+		const department = departments[0];
+		if (!department) {
+			throw new Error("Failed to create department record");
+		}
 
 		logDatabaseOperation(
 			logger,

@@ -9,7 +9,10 @@ import {
 	findHospitalByAdminEmail,
 	findHospitalByLicense,
 } from "../repositories/shared.hospital.repository";
-import type { RegisterHospitalOutput } from "../validations/register.hospital.validation";
+import type {
+	RegisterHospitalInput,
+	RegisterHospitalOutput,
+} from "../validations/register.hospital.validation";
 
 const logger = createServiceLogger("registerHospital");
 
@@ -21,21 +24,7 @@ export async function registerHospital({
 	licenseNumber,
 	adminEmail,
 	adminPhone,
-}: {
-	name: string;
-	address: {
-		street: string;
-		city: string;
-		state: string;
-		postalCode: string;
-		country: string;
-	};
-	contactEmail: string;
-	contactPhone: string;
-	licenseNumber: string;
-	adminEmail: string;
-	adminPhone: string;
-}): Promise<RegisterHospitalOutput> {
+}: RegisterHospitalInput): Promise<RegisterHospitalOutput> {
 	logger.info(
 		{
 			hospitalName: name,
@@ -80,16 +69,14 @@ export async function registerHospital({
 	}
 	logger.debug("Admin email is unique");
 
-	// Generate unique IDs and tokens
+	// Generate unique ID - hospitalId IS the tenantId
 	const hospitalId = uuidv4();
-	const tenantId = uuidv4();
 
 	logger.debug(
 		{
 			hospitalId,
-			tenantId,
 		},
-		"Generated unique IDs",
+		"Generated hospital ID (used as tenantId)",
 	);
 
 	// Generate slug from hospital name
@@ -137,7 +124,6 @@ export async function registerHospital({
 		logger.info(
 			{
 				hospitalId: String(hospital._id),
-				tenantId,
 				status: hospital.status,
 			},
 			"Hospital created successfully",
@@ -180,7 +166,7 @@ export async function registerHospital({
 
 		return {
 			id: String(hospital._id),
-			tenantId: tenantId,
+			tenantId: hospitalId,
 			name: hospital.name,
 			status: (hospital.status as string) || "PENDING",
 			adminUsername,
@@ -190,7 +176,6 @@ export async function registerHospital({
 	} catch (error) {
 		logError(logger, error, "Failed to create hospital", {
 			hospitalId,
-			tenantId,
 			hospitalName: name,
 		});
 		throw error;

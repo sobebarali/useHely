@@ -1,4 +1,7 @@
 import { Router } from "express";
+import { Permissions } from "../../constants";
+import { authenticate } from "../../middlewares/authenticate";
+import { authorize } from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
 import { getHospitalByIdController } from "./controllers/get-by-id.hospital.controller";
 import { registerHospitalController } from "./controllers/register.hospital.controller";
@@ -13,27 +16,49 @@ import { verifyHospitalSchema } from "./validations/verify.hospital.validation";
 
 const router = Router();
 
-// POST /api/hospitals - Register new hospital
+// ============================================================================
+// Public Routes (No Authentication Required)
+// ============================================================================
+
+// POST /api/hospitals - Register new hospital (public)
 router.post("/", validate(registerHospitalSchema), registerHospitalController);
 
-// GET /api/hospitals/:id - Get hospital by ID
-router.get("/:id", validate(getHospitalByIdSchema), getHospitalByIdController);
-
-// PATCH /api/hospitals/:id - Update hospital
-router.patch("/:id", validate(updateHospitalSchema), updateHospitalController);
-
-// PATCH /api/hospitals/:id/status - Update hospital status
-router.patch(
-	"/:id/status",
-	validate(updateStatusHospitalSchema),
-	updateStatusHospitalController,
-);
-
-// POST /api/hospitals/:id/verify - Verify hospital
+// POST /api/hospitals/:id/verify - Verify hospital (public, uses verification token)
 router.post(
 	"/:id/verify",
 	validate(verifyHospitalSchema),
 	verifyHospitalController,
+);
+
+// ============================================================================
+// Protected Routes (Authentication Required)
+// ============================================================================
+
+// GET /api/hospitals/:id - Get hospital by ID
+router.get(
+	"/:id",
+	authenticate,
+	authorize(Permissions.TENANT_READ),
+	validate(getHospitalByIdSchema),
+	getHospitalByIdController,
+);
+
+// PATCH /api/hospitals/:id - Update hospital
+router.patch(
+	"/:id",
+	authenticate,
+	authorize(Permissions.TENANT_UPDATE),
+	validate(updateHospitalSchema),
+	updateHospitalController,
+);
+
+// PATCH /api/hospitals/:id/status - Update hospital status
+router.patch(
+	"/:id/status",
+	authenticate,
+	authorize(Permissions.TENANT_MANAGE),
+	validate(updateStatusHospitalSchema),
+	updateStatusHospitalController,
 );
 
 export default router;

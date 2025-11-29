@@ -1,4 +1,4 @@
-import { Role } from "@hms/db";
+import { type mongoose, Role } from "@hms/db";
 import { v4 as uuidv4 } from "uuid";
 import { RoleNames, RolePermissions } from "../../constants";
 import { createServiceLogger } from "../logger";
@@ -11,8 +11,10 @@ const logger = createServiceLogger("systemRolesSeed");
  */
 export async function seedSystemRoles({
 	tenantId,
+	session,
 }: {
 	tenantId: string;
+	session?: mongoose.ClientSession;
 }): Promise<void> {
 	logger.info({ tenantId }, "Seeding system roles");
 
@@ -56,7 +58,7 @@ export async function seedSystemRoles({
 			const existingRole = await Role.findOne({
 				tenantId,
 				name: roleData.name,
-			});
+			}).session(session ?? null);
 
 			if (existingRole) {
 				logger.debug(
@@ -69,17 +71,22 @@ export async function seedSystemRoles({
 			// Create the role
 			const roleId = uuidv4();
 
-			await Role.create({
-				_id: roleId,
-				tenantId,
-				name: roleData.name,
-				description: roleData.description,
-				permissions: roleData.permissions,
-				isSystem: true, // Mark as system role
-				isActive: true,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			});
+			await Role.create(
+				[
+					{
+						_id: roleId,
+						tenantId,
+						name: roleData.name,
+						description: roleData.description,
+						permissions: roleData.permissions,
+						isSystem: true, // Mark as system role
+						isActive: true,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+				],
+				{ session },
+			);
 
 			logger.info(
 				{

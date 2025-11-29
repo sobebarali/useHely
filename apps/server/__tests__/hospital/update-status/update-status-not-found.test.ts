@@ -1,33 +1,41 @@
-import { Hospital } from "@hms/db";
-import mongoose from "mongoose";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "../../../src/index";
+import {
+	type AuthTestContext,
+	createAuthTestContext,
+} from "../../helpers/auth-test-context";
 
 describe("PATCH /api/hospitals/:id/status - Hospital not found", () => {
 	const nonExistentHospitalId = uuidv4();
-	const hospitalsToCleanup: string[] = [];
+	let authContext: AuthTestContext;
+	let accessToken: string;
+
+	beforeAll(async () => {
+		// Create auth context with TENANT:MANAGE permission
+		authContext = await createAuthTestContext({
+			roleName: "SUPER_ADMIN",
+			rolePermissions: ["TENANT:READ", "TENANT:UPDATE", "TENANT:MANAGE"],
+		});
+
+		// Get access token
+		const tokens = await authContext.issuePasswordTokens();
+		accessToken = tokens.accessToken;
+	});
 
 	afterAll(async () => {
-		// Clean up any created hospitals (if any)
-		if (hospitalsToCleanup.length > 0) {
-			await Hospital.deleteMany({ _id: { $in: hospitalsToCleanup } });
-		}
+		await authContext.cleanup();
 	});
 
 	it("should return 404 when hospital does not exist", async () => {
-		// Ensure database connection
-		if (mongoose.connection.readyState === 0) {
-			await mongoose.connect(process.env.DATABASE_URL || "");
-		}
-
 		const statusUpdate = {
 			status: "ACTIVE",
 		};
 
 		const response = await request(app)
 			.patch(`/api/hospitals/${nonExistentHospitalId}/status`)
+			.set("Authorization", `Bearer ${accessToken}`)
 			.send(statusUpdate);
 
 		expect(response.status).toBe(404);

@@ -1,4 +1,4 @@
-import { Hospital } from "@hms/db";
+import { Hospital, HospitalStatus } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -59,7 +59,7 @@ export async function createHospital({
 			adminPhone,
 			verificationToken,
 			verificationExpires,
-			status: "PENDING",
+			status: HospitalStatus.PENDING,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});

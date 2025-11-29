@@ -84,8 +84,12 @@ export async function createAuthTestContext(
 	const createdRoleIds: string[] = [];
 	const createdRoleNames: string[] = [];
 
+	// Generate UUIDs for entities to match validation requirements
+	const hospitalId = uuidv4();
+	const userId = uuidv4();
+
 	const hospital = await Hospital.create({
-		_id: `hospital-${uniqueId}`,
+		_id: hospitalId,
 		name: `Test Hospital ${uniqueId}`,
 		slug: `test-hospital-${uniqueId}`,
 		licenseNumber: `LIC-${uniqueId}`,
@@ -106,7 +110,7 @@ export async function createAuthTestContext(
 	});
 
 	const user = await User.create({
-		_id: `user-${uniqueId}`,
+		_id: userId,
 		name: "Test User",
 		email: `user-${uniqueId}@test.com`,
 		emailVerified: true,
@@ -119,7 +123,7 @@ export async function createAuthTestContext(
 
 	if (includeDepartment) {
 		const department = await Department.create({
-			_id: `dept-${uniqueId}`,
+			_id: uuidv4(),
 			tenantId: String(hospital._id),
 			name: departmentOverrides.name ?? `Department ${uniqueId}`,
 			code: departmentOverrides.code ?? `DEPT-${uniqueId}`,
@@ -135,7 +139,7 @@ export async function createAuthTestContext(
 	}
 
 	const primaryRole = await Role.create({
-		_id: `role-${uniqueId}`,
+		_id: uuidv4(),
 		tenantId: String(hospital._id),
 		name: roleName,
 		description: `${roleName} role for tests`,
@@ -171,7 +175,7 @@ export async function createAuthTestContext(
 
 	if (createStaff) {
 		const created = await Staff.create({
-			_id: `staff-${uniqueId}`,
+			_id: uuidv4(),
 			tenantId: String(hospital._id),
 			userId: String(user._id),
 			employeeId: `EMP-${uniqueId}`,
@@ -191,9 +195,10 @@ export async function createAuthTestContext(
 
 	const hashedPassword = await bcrypt.hash(password, 10);
 
+	const accountId = uuidv4();
 	await Account.create({
-		_id: `account-${uniqueId}`,
-		accountId: `account-${uniqueId}`,
+		_id: accountId,
+		accountId: accountId,
 		userId: String(user._id),
 		providerId: "credential",
 		password: hashedPassword,

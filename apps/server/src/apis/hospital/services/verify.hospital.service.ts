@@ -6,10 +6,8 @@ import {
 	invalidateHospitalCache,
 } from "../../../lib/cache/hospital.cache";
 import { createServiceLogger, logError } from "../../../lib/logger";
-import {
-	findHospitalById,
-	updateHospitalVerification,
-} from "../repositories/verify.hospital.repository";
+import { findHospitalById } from "../repositories/shared.hospital.repository";
+import { updateHospitalVerification } from "../repositories/verify.hospital.repository";
 import type { VerifyHospitalOutput } from "../validations/verify.hospital.validation";
 import { provisionTenant } from "./provision-tenant.hospital.service";
 
@@ -31,7 +29,7 @@ export async function verifyHospital({
 
 	// Find hospital by ID
 	logger.debug({ hospitalId: id }, "Fetching hospital details");
-	const hospital = await findHospitalById({ id });
+	const hospital = await findHospitalById({ hospitalId: id });
 
 	if (!hospital) {
 		logger.warn({ hospitalId: id }, "Hospital not found");

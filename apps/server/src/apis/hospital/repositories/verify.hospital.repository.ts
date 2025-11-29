@@ -1,19 +1,11 @@
-import { Hospital } from "@hms/db";
+import { Hospital, HospitalStatus } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
 	logError,
 } from "../../../lib/logger";
-import { findHospitalById as findHospitalByIdShared } from "./shared.hospital.repository";
 
 const logger = createRepositoryLogger("verifyHospital");
-
-/**
- * Find hospital by ID (wrapper for backward compatibility with different param name)
- */
-export async function findHospitalById({ id }: { id: string }) {
-	return findHospitalByIdShared({ hospitalId: id });
-}
 
 export async function updateHospitalVerification({ id }: { id: string }) {
 	try {
@@ -22,7 +14,7 @@ export async function updateHospitalVerification({ id }: { id: string }) {
 		const hospital = await Hospital.findByIdAndUpdate(
 			id,
 			{
-				status: "VERIFIED",
+				status: HospitalStatus.VERIFIED,
 				$unset: {
 					verificationToken: "",
 					verificationExpires: "",

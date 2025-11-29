@@ -1,48 +1,29 @@
-import { Hospital } from "@hms/db";
-import mongoose from "mongoose";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "../../../src/index";
+import {
+	type AuthTestContext,
+	createAuthTestContext,
+} from "../../helpers/auth-test-context";
 
 describe("PATCH /api/hospitals/:id/status - Invalid status value", () => {
-	const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(7)}`;
-	let createdHospitalId: string;
+	let authContext: AuthTestContext;
+	let accessToken: string;
 
 	beforeAll(async () => {
-		// Ensure database connection
-		if (mongoose.connection.readyState === 0) {
-			await mongoose.connect(process.env.DATABASE_URL || "");
-		}
+		// Create auth context with TENANT:MANAGE permission
+		authContext = await createAuthTestContext({
+			roleName: "SUPER_ADMIN",
+			rolePermissions: ["TENANT:READ", "TENANT:UPDATE", "TENANT:MANAGE"],
+		});
 
-		// Create a hospital
-		const hospitalData = {
-			name: `Test Hospital ${uniqueId}`,
-			address: {
-				street: "123 Main St",
-				city: "New York",
-				state: "NY",
-				postalCode: "10001",
-				country: "USA",
-			},
-			contactEmail: `contact-${uniqueId}@testhospital.com`,
-			contactPhone: "+1234567890",
-			licenseNumber: `LIC-${uniqueId}`,
-			adminEmail: `admin-${uniqueId}@testhospital.com`,
-			adminPhone: "+1987654321",
-		};
-
-		const response = await request(app)
-			.post("/api/hospitals")
-			.send(hospitalData);
-
-		createdHospitalId = response.body.id;
+		// Get access token
+		const tokens = await authContext.issuePasswordTokens();
+		accessToken = tokens.accessToken;
 	});
 
 	afterAll(async () => {
-		// Clean up created hospital
-		if (createdHospitalId) {
-			await Hospital.deleteOne({ _id: createdHospitalId });
-		}
+		await authContext.cleanup();
 	});
 
 	it("should return 400 when providing an invalid status value", async () => {
@@ -51,7 +32,8 @@ describe("PATCH /api/hospitals/:id/status - Invalid status value", () => {
 		};
 
 		const response = await request(app)
-			.patch(`/api/hospitals/${createdHospitalId}/status`)
+			.patch(`/api/hospitals/${authContext.hospitalId}/status`)
+			.set("Authorization", `Bearer ${accessToken}`)
 			.send(statusUpdate);
 
 		expect(response.status).toBe(400);
