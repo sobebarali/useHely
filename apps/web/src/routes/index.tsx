@@ -1,20 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router";
+import {
+	FAQ,
+	Features,
+	Footer,
+	Header,
+	Hero,
+	HowItWorks,
+	Modules,
+	Pricing,
+	Security,
+	Testimonials,
+} from "@/components/landing";
 
 export const Route = createFileRoute("/")({
-	component: HomeComponent,
+	component: LandingPage,
 });
 
-function HomeComponent() {
+function LandingPage() {
 	return (
-		<div className="container mx-auto max-w-3xl px-4 py-2">
-			<pre className="overflow-x-auto font-mono text-sm">
-				Welcome to the Hospital Management System
-			</pre>
-			<div className="grid gap-6">
-				<section className="rounded-lg border p-4">
-					<h2 className="mb-2 font-medium">API Status</h2>
-				</section>
-			</div>
+		<div className="min-h-screen bg-background">
+			<Header />
+			<main>
+				<Hero />
+				<Features />
+				<HowItWorks />
+				<Modules />
+				<Security />
+				<Pricing />
+				<Testimonials />
+				<FAQ />
+			</main>
+			<Footer />
 		</div>
 	);
 }

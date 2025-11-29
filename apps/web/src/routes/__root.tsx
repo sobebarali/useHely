@@ -2,10 +2,8 @@ import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
-	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import "../index.css";
@@ -35,12 +33,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
-	const routerState = useRouterState();
-	const pathname = routerState.location.pathname;
-
-	// Don't show header on dashboard routes (they have their own sidebar layout)
-	const isDashboardRoute = pathname.startsWith("/dashboard");
-
 	return (
 		<>
 			<HeadContent />
@@ -50,14 +42,7 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				{isDashboardRoute ? (
-					<Outlet />
-				) : (
-					<div className="grid h-svh grid-rows-[auto_1fr]">
-						<Header />
-						<Outlet />
-					</div>
-				)}
+				<Outlet />
 				<Toaster richColors />
 			</ThemeProvider>
 			<TanStackRouterDevtools position="bottom-left" />

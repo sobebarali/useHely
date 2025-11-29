@@ -85,3 +85,37 @@ Each endpoint must have dedicated files across layers:
 - Provide clear, actionable error messages
 - Include field-level validation errors
 - Log detailed errors server-side only
+
+## Media Assets & Resources
+
+### Images
+- Use **Unsplash** (https://unsplash.com) for free stock photography
+- Prefer direct Unsplash URLs with optimization parameters:
+  - Format: `https://images.unsplash.com/photo-{id}?w={width}&h={height}&fit=crop&q=80`
+  - Always specify `w` (width) to optimize load times
+  - Use `q=80` for good quality with smaller file size
+  - Use `fit=crop` for consistent aspect ratios
+- Always include descriptive `alt` text for accessibility
+- Consider lazy loading for below-the-fold images: `loading="lazy"`
+
+### Icons
+- Use **Lucide React** (https://lucide.dev) for static icons - already installed
+- Import only needed icons to minimize bundle size
+- Pattern: `import { IconName } from "lucide-react"`
+- Use consistent sizing: `className="h-5 w-5"` or `size={20}`
+- Apply colors via className: `className="text-primary"`
+
+### Animated Icons & Illustrations
+- Use **Lottie Files** (https://lottiefiles.com) for animated graphics
+  - Install: `npm install lottie-react`
+  - Use for loading states, success animations, onboarding
+- Use **unDraw** (https://undraw.co) for free SVG illustrations
+- Use **Tabler Icons** (https://tabler.io/icons) as alternative icon set
+- Use **Heroicons** (https://heroicons.com) for additional icon options
+
+### Best Practices
+- Optimize all images before use (consider WebP format)
+- Use responsive images with `srcSet` when needed
+- Prefer SVG for icons and simple illustrations
+- Cache static assets appropriately
+- Use CSS animations for simple effects instead of heavy libraries
