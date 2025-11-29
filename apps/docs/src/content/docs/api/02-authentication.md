@@ -147,6 +147,66 @@ For newly created users (including admin users created during hospital verificat
 
 ---
 
+## Get Hospitals for Email
+
+**GET** `/api/auth/hospitals`
+
+Retrieve the list of hospitals associated with a user's email address. Used during login to show a hospital selector when a user belongs to multiple hospitals.
+
+### Authentication
+
+None required.
+
+### Query Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | User's email address |
+
+### Response
+
+**Status: 200 OK**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "hospital-uuid-1",
+      "name": "City General Hospital",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "hospital-uuid-2",
+      "name": "County Medical Center",
+      "status": "VERIFIED"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| success | boolean | Request success status |
+| data | array | List of hospitals |
+| data[].id | string | Hospital ID (tenant ID) |
+| data[].name | string | Hospital name |
+| data[].status | string | Hospital status (ACTIVE, VERIFIED) |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | VALIDATION_ERROR | Invalid or missing email |
+
+### Usage Notes
+
+- Returns an empty array if email is not associated with any hospital
+- Only returns hospitals with ACTIVE or VERIFIED status
+- Used by the login form to populate the hospital dropdown
+
+---
+
 ## Revoke Token
 
 **POST** `/api/auth/revoke`
@@ -200,18 +260,59 @@ Required. Bearer token.
 
 **Status: 200 OK**
 
+```json
+{
+  "success": true,
+  "data": {
+    "id": "user-uuid",
+    "username": "john.doe",
+    "email": "john.doe@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "tenantId": "hospital-uuid",
+    "department": "Cardiology",
+    "staffId": "staff-uuid",
+    "roles": [
+      {
+        "id": "role-uuid",
+        "name": "DOCTOR",
+        "description": "Medical practitioner"
+      }
+    ],
+    "permissions": ["PATIENT:READ", "PRESCRIPTION:CREATE"],
+    "hospital": {
+      "id": "hospital-uuid",
+      "name": "City General Hospital",
+      "status": "ACTIVE"
+    },
+    "attributes": {
+      "department": "Cardiology",
+      "specialization": "Interventional Cardiology",
+      "shift": "morning"
+    }
+  }
+}
+```
+
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | User ID |
-| username | string | Username |
-| email | string | Email address |
-| firstName | string | First name |
-| lastName | string | Last name |
-| tenantId | string | Tenant ID |
-| department | string | Department |
-| roles | array | Array of role objects |
-| permissions | array | Array of permission strings |
-| attributes | object | ABAC attributes |
+| success | boolean | Request success status |
+| data | object | User profile data |
+| data.id | string | User ID |
+| data.username | string | Username |
+| data.email | string | Email address |
+| data.firstName | string | First name |
+| data.lastName | string | Last name |
+| data.tenantId | string | Tenant ID |
+| data.department | string | Department |
+| data.staffId | string | Staff record ID |
+| data.roles | array | Array of role objects |
+| data.permissions | array | Array of permission strings |
+| data.hospital | object | Hospital information |
+| data.hospital.id | string | Hospital ID |
+| data.hospital.name | string | Hospital name |
+| data.hospital.status | string | Hospital status |
+| data.attributes | object | ABAC attributes |
 
 ### Roles Object
 

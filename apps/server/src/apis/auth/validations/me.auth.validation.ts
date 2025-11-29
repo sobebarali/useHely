@@ -15,6 +15,13 @@ export interface UserAttributes {
 	shift?: string;
 }
 
+// Hospital info in response
+export interface HospitalOutput {
+	id: string;
+	name: string;
+	status: string;
+}
+
 // Output type - manually defined for response structure
 export interface MeOutput {
 	id: string;
@@ -24,6 +31,7 @@ export interface MeOutput {
 	lastName: string;
 	tenantId: string;
 	department?: string;
+	hospital?: HospitalOutput;
 	roles: RoleOutput[];
 	permissions: string[];
 	attributes: UserAttributes;

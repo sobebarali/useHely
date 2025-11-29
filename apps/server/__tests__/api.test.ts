@@ -13,9 +13,9 @@ describe("Server Health Check", () => {
 
 describe("API Auth Endpoints", () => {
 	it("should respond to auth endpoints", async () => {
-		const response = await request(app).get("/api/auth/session");
+		const response = await request(app).get("/api/auth/me");
 
-		// The endpoint should respond (better-auth will handle the response)
+		// The endpoint should respond (requires authentication)
 		expect(response.status).toBeGreaterThanOrEqual(200);
 		expect(response.status).toBeLessThan(500);
 	});

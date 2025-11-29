@@ -40,7 +40,10 @@ export async function meController(req: Request, res: Response) {
 			duration,
 		);
 
-		res.status(200).json(result);
+		res.status(200).json({
+			success: true,
+			data: result,
+		});
 	} catch (error: unknown) {
 		const duration = Date.now() - startTime;
 

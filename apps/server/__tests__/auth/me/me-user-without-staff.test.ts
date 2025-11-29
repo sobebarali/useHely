@@ -28,7 +28,8 @@ describe("GET /api/auth/me - User without staff assignment", () => {
 			.set("Authorization", `Bearer ${standaloneToken}`);
 
 		expect(response.status).toBe(200);
-		expect(response.body).toMatchObject({
+		expect(response.body.success).toBe(true);
+		expect(response.body.data).toMatchObject({
 			id: context.userId,
 			email: context.email,
 			tenantId: "",
@@ -36,7 +37,7 @@ describe("GET /api/auth/me - User without staff assignment", () => {
 			permissions: [],
 		});
 
-		expect(response.body).not.toHaveProperty("department");
-		expect(response.body.attributes).toEqual({});
+		expect(response.body.data).not.toHaveProperty("department");
+		expect(response.body.data.attributes).toEqual({});
 	});
 });

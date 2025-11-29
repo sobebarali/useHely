@@ -36,22 +36,33 @@ describe("GET /api/auth/me - Staff profile response", () => {
 
 		expect(response.status).toBe(200);
 
-		expect(response.body).toMatchObject({
+		expect(response.body.success).toBe(true);
+		expect(response.body.data).toMatchObject({
 			id: context.userId,
 			email: context.email,
 			tenantId: context.hospitalId,
 			department: context.departmentName,
 		});
 
-		expect(Array.isArray(response.body.roles)).toBe(true);
-		expect(response.body.roles[0]).toHaveProperty("name", context.roleNames[0]);
+		expect(Array.isArray(response.body.data.roles)).toBe(true);
+		expect(response.body.data.roles[0]).toHaveProperty(
+			"name",
+			context.roleNames[0],
+		);
 
-		expect(response.body.permissions).toEqual(
+		expect(response.body.data.permissions).toEqual(
 			expect.arrayContaining(["PATIENT:READ"]),
 		);
 
-		expect(response.body.attributes).toMatchObject({
+		expect(response.body.data.attributes).toMatchObject({
 			department: context.departmentId,
+		});
+
+		// Verify hospital info is included
+		expect(response.body.data.hospital).toMatchObject({
+			id: context.hospitalId,
+			name: expect.any(String),
+			status: "ACTIVE",
 		});
 	});
 });

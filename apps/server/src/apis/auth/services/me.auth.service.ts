@@ -1,4 +1,5 @@
 import { createServiceLogger } from "../../../lib/logger";
+import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
 	findStaffByUserId,
 	findUserById,
@@ -80,6 +81,18 @@ export async function getCurrentUser({
 		departmentName = department?.name;
 	}
 
+	// Get hospital info
+	const hospital = await findHospitalById({
+		hospitalId: String(staff.tenantId),
+	});
+	const hospitalOutput = hospital
+		? {
+				id: String(hospital._id),
+				name: hospital.name,
+				status: hospital.status,
+			}
+		: undefined;
+
 	logger.debug(
 		{
 			userId,
@@ -102,6 +115,7 @@ export async function getCurrentUser({
 		lastName: staffLastName,
 		tenantId: String(staff.tenantId),
 		department: departmentName,
+		hospital: hospitalOutput,
 		roles: roleOutputs,
 		permissions: uniquePermissions,
 		attributes: {

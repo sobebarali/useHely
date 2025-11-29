@@ -1,7 +1,5 @@
 import "dotenv/config";
-import { createAuth } from "@hms/auth";
 import { connectDB } from "@hms/db";
-import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
 import authRoutes from "./apis/auth/auth.routes";
@@ -17,10 +15,6 @@ import { requestLogger } from "./middlewares/request-logger";
 logger.info("Connecting to database...");
 await connectDB();
 logger.info("Database connected successfully");
-
-// Initialize auth after database connection
-const auth = createAuth();
-logger.info("Auth initialized");
 
 export const app = express();
 
@@ -43,7 +37,6 @@ app.use(express.json());
 
 // API Routes
 app.use("/api/auth", authRoutes);
-app.all("/api/auth{/*path}", toNodeHandler(auth));
 app.use("/api/roles", rolesRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/users", usersRoutes);
