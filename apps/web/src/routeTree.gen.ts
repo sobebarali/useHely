@@ -11,10 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyHospitalRouteImport } from './routes/verify-hospital'
 import { Route as SuccessRouteImport } from './routes/success'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterHospitalRouteImport } from './routes/register-hospital'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardStaffIndexRouteImport } from './routes/dashboard/staff/index'
+import { Route as DashboardStaffAddRouteImport } from './routes/dashboard/staff/add'
+import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
 
 const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
   id: '/verify-hospital',
@@ -24,6 +29,11 @@ const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
 const SuccessRoute = SuccessRouteImport.update({
   id: '/success',
   path: '/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterHospitalRoute = RegisterHospitalRouteImport.update({
@@ -36,6 +46,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -46,64 +61,111 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardStaffIndexRoute = DashboardStaffIndexRouteImport.update({
+  id: '/staff/',
+  path: '/staff/',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStaffAddRoute = DashboardStaffAddRouteImport.update({
+  id: '/staff/add',
+  path: '/staff/add',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
+  id: '/staff/$id',
+  path: '/staff/$id',
+  getParentRoute: () => DashboardRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register-hospital': typeof RegisterHospitalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
+  '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register-hospital': typeof RegisterHospitalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
+  '/dashboard/staff': typeof DashboardStaffIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/register-hospital': typeof RegisterHospitalRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
+  '/dashboard/staff/': typeof DashboardStaffIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
     | '/register-hospital'
+    | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
+    | '/dashboard/staff'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
     | '/register-hospital'
+    | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
+    | '/dashboard/staff'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/login'
     | '/register-hospital'
+    | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
+    | '/dashboard/staff/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   RegisterHospitalRoute: typeof RegisterHospitalRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SuccessRoute: typeof SuccessRoute
   VerifyHospitalRoute: typeof VerifyHospitalRoute
 }
@@ -124,6 +186,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/register-hospital': {
       id: '/register-hospital'
       path: '/register-hospital'
@@ -136,6 +205,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -152,14 +228,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/staff/': {
+      id: '/dashboard/staff/'
+      path: '/staff'
+      fullPath: '/dashboard/staff'
+      preLoaderRoute: typeof DashboardStaffIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/staff/add': {
+      id: '/dashboard/staff/add'
+      path: '/staff/add'
+      fullPath: '/dashboard/staff/add'
+      preLoaderRoute: typeof DashboardStaffAddRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/staff/$id': {
+      id: '/dashboard/staff/$id'
+      path: '/staff/$id'
+      fullPath: '/dashboard/staff/$id'
+      preLoaderRoute: typeof DashboardStaffIdRouteImport
+      parentRoute: typeof DashboardRoute
+    }
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardStaffIdRoute: typeof DashboardStaffIdRoute
+  DashboardStaffAddRoute: typeof DashboardStaffAddRoute
+  DashboardStaffIndexRoute: typeof DashboardStaffIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardStaffIdRoute: DashboardStaffIdRoute,
+  DashboardStaffAddRoute: DashboardStaffAddRoute,
+  DashboardStaffIndexRoute: DashboardStaffIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   RegisterHospitalRoute: RegisterHospitalRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SuccessRoute: SuccessRoute,
   VerifyHospitalRoute: VerifyHospitalRoute,
 }

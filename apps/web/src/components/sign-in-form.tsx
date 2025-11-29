@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -177,7 +177,15 @@ export default function SignInForm({
 						<form.Field name="password">
 							{(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>Password</Label>
+									<div className="flex items-center justify-between">
+										<Label htmlFor={field.name}>Password</Label>
+										<Link
+											to="/forgot-password"
+											className="text-primary text-sm hover:underline"
+										>
+											Forgot password?
+										</Link>
+									</div>
 									<Input
 										id={field.name}
 										name={field.name}
