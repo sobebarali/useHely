@@ -47,9 +47,13 @@ export async function getStaffById({
 		// Get user for email
 		const user = await User.findById(staff.userId).lean();
 
-		// Get roles with permissions
+		// Get roles with permissions (scoped to tenant for security)
 		const roleIds = staff.roles || [];
-		const roles = await Role.find({ _id: { $in: roleIds } }).lean();
+		const roles = await Role.find({
+			_id: { $in: roleIds },
+			tenantId,
+			isActive: true,
+		}).lean();
 
 		logger.info({ staffId, tenantId }, "Staff retrieved");
 

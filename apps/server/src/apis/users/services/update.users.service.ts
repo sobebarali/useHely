@@ -1,4 +1,3 @@
-import { User } from "@hms/db";
 import {
 	BadRequestError,
 	ForbiddenError,
@@ -9,6 +8,7 @@ import { createServiceLogger } from "../../../lib/logger";
 import {
 	findDepartmentById,
 	findStaffById,
+	findUserById,
 	getRolesByIds,
 } from "../repositories/shared.users.repository";
 import { updateStaff } from "../repositories/update.users.repository";
@@ -93,7 +93,7 @@ export async function updateUserService({
 	}
 
 	// Get user email
-	const user = await User.findById(updatedStaff.userId).lean();
+	const user = await findUserById({ userId: String(updatedStaff.userId) });
 
 	// Get roles for response
 	const roleIds = updatedStaff.roles || [];

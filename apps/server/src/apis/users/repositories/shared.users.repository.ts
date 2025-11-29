@@ -1,17 +1,48 @@
-import { Department, Role, Session, Staff, User } from "@hms/db";
+import { Counter, Department, Role, Session, Staff, User } from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
 	logError,
 } from "../../../lib/logger";
 
-// Re-export crypto utilities for backward compatibility
-export {
-	generateTemporaryPassword,
-	hashPassword,
-} from "../../../utils/crypto";
-
 const logger = createRepositoryLogger("sharedUsers");
+
+// Type for Counter model with static method
+interface CounterModel {
+	getNextSequence: (tenantId: string, type: string) => Promise<number>;
+}
+
+/**
+ * Get next employee sequence number using atomic counter
+ * This prevents race conditions when creating employees concurrently
+ */
+export async function getNextEmployeeSequence({
+	tenantId,
+}: {
+	tenantId: string;
+}): Promise<number> {
+	try {
+		logger.debug({ tenantId }, "Getting next employee sequence");
+
+		const seq = await (Counter as unknown as CounterModel).getNextSequence(
+			tenantId,
+			"employee",
+		);
+
+		logDatabaseOperation(
+			logger,
+			"getNextSequence",
+			"counter",
+			{ tenantId, type: "employee" },
+			{ seq },
+		);
+
+		return seq;
+	} catch (error) {
+		logError(logger, error, "Failed to get next employee sequence");
+		throw error;
+	}
+}
 
 /**
  * Find staff by ID within a tenant

@@ -5,10 +5,7 @@ import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
 import { createServiceLogger, logError } from "../../../lib/logger";
 import { sendEmail } from "../../../lib/mailer";
 import { seedSystemRoles } from "../../../lib/seed/system-roles.seed";
-import {
-	generateTemporaryPassword,
-	hashPassword,
-} from "../../users/repositories/shared.users.repository";
+import { generateTemporaryPassword, hashPassword } from "../../../utils/crypto";
 import {
 	checkAdminExists,
 	createAdminUser,

@@ -16,10 +16,12 @@ export async function createUser({
 	tenantId,
 	data,
 	hashedPassword,
+	employeeId,
 }: {
 	tenantId: string;
 	data: CreateUserInput;
 	hashedPassword: string;
+	employeeId: string;
 }) {
 	try {
 		const userId = uuidv4();
@@ -64,10 +66,6 @@ export async function createUser({
 			{ userId },
 			{ _id: account._id },
 		);
-
-		// Generate employee ID
-		const employeeCount = await Staff.countDocuments({ tenantId });
-		const employeeId = `EMP-${String(employeeCount + 1).padStart(5, "0")}`;
 
 		// Create staff record
 		const staff = await Staff.create({

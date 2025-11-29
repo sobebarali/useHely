@@ -6,14 +6,14 @@ import {
 import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
 import { createServiceLogger } from "../../../lib/logger";
 import { sendEmail } from "../../../lib/mailer";
+import { generateTemporaryPassword, hashPassword } from "../../../utils/crypto";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import { createUser } from "../repositories/create.users.repository";
 import {
 	findDepartmentById,
 	findStaffByEmail,
-	generateTemporaryPassword,
+	getNextEmployeeSequence,
 	getRolesByIds,
-	hashPassword,
 } from "../repositories/shared.users.repository";
 import type {
 	CreateUserInput,
@@ -97,11 +97,16 @@ export async function createUserService({
 	const temporaryPassword = generateTemporaryPassword();
 	const hashedPassword = await hashPassword(temporaryPassword);
 
+	// Generate employee ID using atomic counter (prevents race conditions)
+	const seq = await getNextEmployeeSequence({ tenantId });
+	const employeeId = `EMP-${String(seq).padStart(5, "0")}`;
+
 	// Create user, account, and staff records
 	const { staff } = await createUser({
 		tenantId,
 		data,
 		hashedPassword,
+		employeeId,
 	});
 
 	// Send welcome email with temporary credentials
