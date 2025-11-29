@@ -1,16 +1,14 @@
+import {
+	HOSPITAL_CACHE_KEYS,
+	HOSPITAL_CACHE_TTL,
+} from "../../constants/cache.constants";
 import { redis } from "../redis";
 
-// Cache TTL configurations (in seconds)
-const CACHE_TTL = {
-	HOSPITAL_DATA: 3600, // 1 hour for hospital data
-	VERIFICATION_TOKEN: 86400, // 24 hours for verification tokens
-} as const;
-
-// Cache key generators
+// Re-export for backward compatibility with tests
 export const CacheKeys = {
-	hospital: (id: string) => `hospital:${id}`,
+	hospital: (id: string) => `${HOSPITAL_CACHE_KEYS.HOSPITAL}${id}`,
 	verificationToken: (hospitalId: string) =>
-		`hospital:verification:${hospitalId}`,
+		`${HOSPITAL_CACHE_KEYS.VERIFICATION_TOKEN}${hospitalId}`,
 } as const;
 
 /**
@@ -18,7 +16,7 @@ export const CacheKeys = {
  */
 export async function getCachedHospital(id: string): Promise<unknown | null> {
 	try {
-		const key = CacheKeys.hospital(id);
+		const key = `${HOSPITAL_CACHE_KEYS.HOSPITAL}${id}`;
 		const cached = await redis.get(key);
 		return cached;
 	} catch (error) {
@@ -35,8 +33,12 @@ export async function setCachedHospital(
 	data: unknown,
 ): Promise<void> {
 	try {
-		const key = CacheKeys.hospital(id);
-		await redis.setex(key, CACHE_TTL.HOSPITAL_DATA, JSON.stringify(data));
+		const key = `${HOSPITAL_CACHE_KEYS.HOSPITAL}${id}`;
+		await redis.setex(
+			key,
+			HOSPITAL_CACHE_TTL.HOSPITAL_DATA,
+			JSON.stringify(data),
+		);
 	} catch (error) {
 		console.error("Redis set error:", error);
 		// Fail silently, don't block the operation
@@ -48,7 +50,7 @@ export async function setCachedHospital(
  */
 export async function invalidateHospitalCache(id: string): Promise<void> {
 	try {
-		const key = CacheKeys.hospital(id);
+		const key = `${HOSPITAL_CACHE_KEYS.HOSPITAL}${id}`;
 		await redis.del(key);
 	} catch (error) {
 		console.error("Redis delete error:", error);
@@ -65,8 +67,8 @@ export async function setVerificationToken(
 	expiresInSeconds?: number,
 ): Promise<void> {
 	try {
-		const key = CacheKeys.verificationToken(hospitalId);
-		const ttl = expiresInSeconds || CACHE_TTL.VERIFICATION_TOKEN;
+		const key = `${HOSPITAL_CACHE_KEYS.VERIFICATION_TOKEN}${hospitalId}`;
+		const ttl = expiresInSeconds || HOSPITAL_CACHE_TTL.VERIFICATION_TOKEN;
 		await redis.setex(key, ttl, token);
 	} catch (error) {
 		console.error("Redis set verification token error:", error);
@@ -81,7 +83,7 @@ export async function getVerificationToken(
 	hospitalId: string,
 ): Promise<string | null> {
 	try {
-		const key = CacheKeys.verificationToken(hospitalId);
+		const key = `${HOSPITAL_CACHE_KEYS.VERIFICATION_TOKEN}${hospitalId}`;
 		const token = await redis.get(key);
 		return token as string | null;
 	} catch (error) {
@@ -97,7 +99,7 @@ export async function deleteVerificationToken(
 	hospitalId: string,
 ): Promise<void> {
 	try {
-		const key = CacheKeys.verificationToken(hospitalId);
+		const key = `${HOSPITAL_CACHE_KEYS.VERIFICATION_TOKEN}${hospitalId}`;
 		await redis.del(key);
 	} catch (error) {
 		console.error("Redis delete verification token error:", error);

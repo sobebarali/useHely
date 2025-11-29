@@ -13,6 +13,17 @@ export {
 	TOKEN_CONFIG,
 	TOKEN_TYPES,
 } from "./auth.constants";
+// Cache constants
+export {
+	AUTH_CACHE_KEYS,
+	AUTH_CACHE_TTL,
+	type AuthCacheKeyPrefix,
+	HOSPITAL_CACHE_KEYS,
+	HOSPITAL_CACHE_TTL,
+	type HospitalCacheKeyPrefix,
+	SECURITY_THRESHOLDS,
+	tenantCacheKey,
+} from "./cache.constants";
 // HTTP constants
 export {
 	ERROR_CODES,

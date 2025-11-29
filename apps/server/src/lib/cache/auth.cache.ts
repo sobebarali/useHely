@@ -1,27 +1,12 @@
+import {
+	AUTH_CACHE_KEYS,
+	AUTH_CACHE_TTL,
+	SECURITY_THRESHOLDS,
+} from "../../constants/cache.constants";
 import { createServiceLogger } from "../logger";
 import { redis } from "../redis";
 
 const logger = createServiceLogger("authCache");
-
-// Cache key prefixes
-const CACHE_KEYS = {
-	SESSION: "session:",
-	REVOKED_TOKEN: "revoked:",
-	USER_SESSIONS: "user_sessions:",
-	FAILED_LOGINS: "failed_logins:",
-	ACCOUNT_LOCKED: "account_locked:",
-} as const;
-
-// TTL values in seconds
-const TTL = {
-	SESSION: 3600, // 1 hour (access token lifetime)
-	REVOKED_TOKEN: 604800, // 7 days (refresh token lifetime)
-	FAILED_LOGIN_WINDOW: 900, // 15 minutes
-	ACCOUNT_LOCK: 1800, // 30 minutes
-} as const;
-
-// Maximum failed login attempts before locking
-const MAX_FAILED_ATTEMPTS = 5;
 
 /**
  * Store session data in cache
@@ -32,7 +17,7 @@ export async function cacheSession({
 	tenantId,
 	roles,
 	permissions,
-	expiresIn = TTL.SESSION,
+	expiresIn = AUTH_CACHE_TTL.SESSION,
 }: {
 	sessionId: string;
 	userId: string;
@@ -41,7 +26,7 @@ export async function cacheSession({
 	permissions: string[];
 	expiresIn?: number;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.SESSION}${sessionId}`;
+	const key = `${AUTH_CACHE_KEYS.SESSION}${sessionId}`;
 	const data = JSON.stringify({
 		userId,
 		tenantId,
@@ -67,7 +52,7 @@ export async function getCachedSession({
 	roles: string[];
 	permissions: string[];
 } | null> {
-	const key = `${CACHE_KEYS.SESSION}${sessionId}`;
+	const key = `${AUTH_CACHE_KEYS.SESSION}${sessionId}`;
 	const data = await redis.get<string>(key);
 
 	if (!data) {
@@ -90,7 +75,7 @@ export async function invalidateSession({
 }: {
 	sessionId: string;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.SESSION}${sessionId}`;
+	const key = `${AUTH_CACHE_KEYS.SESSION}${sessionId}`;
 	await redis.del(key);
 	logger.debug({ sessionId }, "Session invalidated");
 }
@@ -100,14 +85,14 @@ export async function invalidateSession({
  */
 export async function revokeToken({
 	token,
-	expiresIn = TTL.REVOKED_TOKEN,
+	expiresIn = AUTH_CACHE_TTL.REVOKED_TOKEN,
 }: {
 	token: string;
 	expiresIn?: number;
 }): Promise<void> {
 	// Use a hash of the token as key to avoid storing sensitive data
 	const tokenHash = Buffer.from(token).toString("base64").slice(0, 32);
-	const key = `${CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
+	const key = `${AUTH_CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
 
 	await redis.set(key, "1", { ex: expiresIn });
 	logger.debug("Token revoked and cached");
@@ -122,7 +107,7 @@ export async function isTokenRevoked({
 	token: string;
 }): Promise<boolean> {
 	const tokenHash = Buffer.from(token).toString("base64").slice(0, 32);
-	const key = `${CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
+	const key = `${AUTH_CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
 
 	const result = await redis.get(key);
 	return result !== null;
@@ -138,7 +123,7 @@ export async function addUserSession({
 	userId: string;
 	sessionId: string;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.USER_SESSIONS}${userId}`;
+	const key = `${AUTH_CACHE_KEYS.USER_SESSIONS}${userId}`;
 	await redis.sadd(key, sessionId);
 	logger.debug({ userId, sessionId }, "Session added to user sessions");
 }
@@ -151,7 +136,7 @@ export async function getUserSessions({
 }: {
 	userId: string;
 }): Promise<string[]> {
-	const key = `${CACHE_KEYS.USER_SESSIONS}${userId}`;
+	const key = `${AUTH_CACHE_KEYS.USER_SESSIONS}${userId}`;
 	const sessions = await redis.smembers(key);
 	return sessions || [];
 }
@@ -166,7 +151,7 @@ export async function removeUserSession({
 	userId: string;
 	sessionId: string;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.USER_SESSIONS}${userId}`;
+	const key = `${AUTH_CACHE_KEYS.USER_SESSIONS}${userId}`;
 	await redis.srem(key, sessionId);
 	logger.debug({ userId, sessionId }, "Session removed from user sessions");
 }
@@ -185,7 +170,7 @@ export async function invalidateAllUserSessions({
 		await invalidateSession({ sessionId });
 	}
 
-	const key = `${CACHE_KEYS.USER_SESSIONS}${userId}`;
+	const key = `${AUTH_CACHE_KEYS.USER_SESSIONS}${userId}`;
 	await redis.del(key);
 
 	logger.info(
@@ -203,18 +188,18 @@ export async function recordFailedLogin({
 }: {
 	identifier: string;
 }): Promise<{ attempts: number; isLocked: boolean }> {
-	const key = `${CACHE_KEYS.FAILED_LOGINS}${identifier}`;
+	const key = `${AUTH_CACHE_KEYS.FAILED_LOGINS}${identifier}`;
 
 	// Increment and set TTL
 	const attempts = await redis.incr(key);
 
 	// Set expiry only on first attempt
 	if (attempts === 1) {
-		await redis.expire(key, TTL.FAILED_LOGIN_WINDOW);
+		await redis.expire(key, AUTH_CACHE_TTL.FAILED_LOGIN_WINDOW);
 	}
 
 	// Check if account should be locked
-	if (attempts >= MAX_FAILED_ATTEMPTS) {
+	if (attempts >= SECURITY_THRESHOLDS.MAX_FAILED_ATTEMPTS) {
 		await lockAccount({ identifier });
 		return { attempts, isLocked: true };
 	}
@@ -230,7 +215,7 @@ export async function clearFailedLogins({
 }: {
 	identifier: string;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.FAILED_LOGINS}${identifier}`;
+	const key = `${AUTH_CACHE_KEYS.FAILED_LOGINS}${identifier}`;
 	await redis.del(key);
 	logger.debug(
 		{ identifier: `****${identifier.slice(-4)}` },
@@ -246,8 +231,10 @@ export async function lockAccount({
 }: {
 	identifier: string;
 }): Promise<void> {
-	const key = `${CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
-	await redis.set(key, Date.now().toString(), { ex: TTL.ACCOUNT_LOCK });
+	const key = `${AUTH_CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
+	await redis.set(key, Date.now().toString(), {
+		ex: AUTH_CACHE_TTL.ACCOUNT_LOCK,
+	});
 	logger.warn(
 		{ identifier: `****${identifier.slice(-4)}` },
 		"Account locked due to too many failed login attempts",
@@ -262,7 +249,7 @@ export async function isAccountLocked({
 }: {
 	identifier: string;
 }): Promise<boolean> {
-	const key = `${CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
+	const key = `${AUTH_CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
 	const result = await redis.get(key);
 	return result !== null;
 }
@@ -275,8 +262,8 @@ export async function unlockAccount({
 }: {
 	identifier: string;
 }): Promise<void> {
-	const lockKey = `${CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
-	const failedKey = `${CACHE_KEYS.FAILED_LOGINS}${identifier}`;
+	const lockKey = `${AUTH_CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
+	const failedKey = `${AUTH_CACHE_KEYS.FAILED_LOGINS}${identifier}`;
 
 	await redis.del(lockKey);
 	await redis.del(failedKey);
