@@ -4,7 +4,9 @@ import { connectDB } from "@hms/db";
 import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express from "express";
+import authRoutes from "./apis/auth/auth.routes";
 import hospitalRoutes from "./apis/hospital/hospital.routes";
+import rolesRoutes from "./apis/roles/roles.routes";
 import { logger } from "./lib/logger";
 import { errorHandler } from "./middlewares/error-handler";
 import { requestContext } from "./middlewares/request-context";
@@ -30,17 +32,18 @@ app.use(requestLogger);
 app.use(
 	cors({
 		origin: process.env.CORS_ORIGIN || "",
-		methods: ["GET", "POST", "OPTIONS"],
+		methods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
 	}),
 );
 
-app.all("/api/auth{/*path}", toNodeHandler(auth));
-
 app.use(express.json());
 
 // API Routes
+app.use("/api/auth", authRoutes);
+app.all("/api/auth{/*path}", toNodeHandler(auth));
+app.use("/api/roles", rolesRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 
 app.get("/", (_req, res) => {

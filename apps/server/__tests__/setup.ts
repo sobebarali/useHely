@@ -1,9 +1,11 @@
+import path from "node:path";
 import { connectDB } from "@hms/db";
 import dotenv from "dotenv";
 import { afterAll, beforeAll } from "vitest";
 
 // Load environment variables before anything else
-dotenv.config({ path: "apps/server/.env" });
+// Use __dirname to get absolute path since tests run from apps/server directory
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 beforeAll(async () => {
 	// Connect to database before running tests
