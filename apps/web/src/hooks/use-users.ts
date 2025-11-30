@@ -4,6 +4,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	type ChangePasswordInput,
 	type CreateUserInput,
 	type ListUsersParams,
 	type UpdateUserInput,
@@ -109,6 +110,16 @@ export function useForcePasswordChange() {
 }
 
 /**
+ * Hook for changing own password (authenticated user)
+ */
+export function useChangePassword() {
+	return useMutation({
+		mutationFn: (input: ChangePasswordInput) =>
+			usersClient.changePassword(input),
+	});
+}
+
+/**
  * Hook for forgot password (public - no auth required)
  */
 export function useForgotPassword() {
@@ -137,6 +148,8 @@ export function useResetPassword() {
 
 // Re-export types for convenience
 export type {
+	ChangePasswordInput,
+	ChangePasswordResponse,
 	CreateUserInput,
 	CreateUserResponse,
 	DeactivateUserResponse,

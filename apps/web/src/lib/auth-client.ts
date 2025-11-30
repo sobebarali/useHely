@@ -21,6 +21,39 @@ export interface AuthTokens {
 	refresh_expires_in: number;
 }
 
+// MFA Types
+export interface MfaChallengeResponse {
+	mfa_required: true;
+	challenge_token: string;
+	expires_in: number;
+}
+
+export interface MfaSetupResponse {
+	secret: string;
+	qrCodeDataUrl: string;
+	backupCodes: string[];
+}
+
+export interface MfaVerifyResponse {
+	enabled: boolean;
+	verifiedAt: string;
+}
+
+export interface MfaDisableResponse {
+	disabled: boolean;
+	message: string;
+}
+
+// Union type for signIn response
+export type SignInResponse = AuthTokens | MfaChallengeResponse;
+
+// Type guard to check if response requires MFA
+export function isMfaChallengeResponse(
+	response: SignInResponse,
+): response is MfaChallengeResponse {
+	return "mfa_required" in response && response.mfa_required === true;
+}
+
 export interface AuthUser {
 	id: string;
 	username: string;
@@ -115,6 +148,24 @@ export interface UpdateHospitalInput {
 	};
 	contactEmail?: string;
 	contactPhone?: string;
+}
+
+export type HospitalStatus =
+	| "PENDING"
+	| "VERIFIED"
+	| "ACTIVE"
+	| "SUSPENDED"
+	| "INACTIVE";
+
+export interface UpdateHospitalStatusInput {
+	status: HospitalStatus;
+	reason?: string;
+}
+
+export interface UpdateHospitalStatusResponse {
+	id: string;
+	status: string;
+	updatedAt: string;
 }
 
 export interface AuthError {
@@ -221,14 +272,39 @@ export async function signIn({
 	email: string;
 	password: string;
 	tenantId: string;
-}): Promise<AuthTokens> {
-	const tokens = await apiRequest<AuthTokens>("/api/auth/token", {
+}): Promise<SignInResponse> {
+	const response = await apiRequest<SignInResponse>("/api/auth/token", {
 		method: "POST",
 		body: JSON.stringify({
 			grant_type: "password",
 			username: email,
 			password,
 			tenant_id: tenantId,
+		}),
+	});
+
+	// Only store tokens if not MFA challenge
+	if (!isMfaChallengeResponse(response)) {
+		storeTokens(response);
+	}
+
+	return response;
+}
+
+// Submit MFA code during login
+export async function submitMfaCode({
+	challengeToken,
+	code,
+}: {
+	challengeToken: string;
+	code: string;
+}): Promise<AuthTokens> {
+	const tokens = await apiRequest<AuthTokens>("/api/auth/token", {
+		method: "POST",
+		body: JSON.stringify({
+			grant_type: "mfa",
+			challenge_token: challengeToken,
+			code,
 		}),
 	});
 
@@ -321,6 +397,42 @@ export function getAccessToken(): string | null {
 	return getStoredTokens().accessToken;
 }
 
+// MFA Management Functions
+export async function enableMfa(): Promise<MfaSetupResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: MfaSetupResponse;
+	}>("/api/auth/mfa/enable", {
+		method: "POST",
+	});
+	return response.data;
+}
+
+export async function verifyMfa({
+	code,
+}: {
+	code: string;
+}): Promise<MfaVerifyResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: MfaVerifyResponse;
+	}>("/api/auth/mfa/verify", {
+		method: "POST",
+		body: JSON.stringify({ code }),
+	});
+	return response.data;
+}
+
+export async function disableMfa(): Promise<MfaDisableResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: MfaDisableResponse;
+	}>("/api/auth/mfa/disable", {
+		method: "POST",
+	});
+	return response.data;
+}
+
 // Hospital API functions
 export async function registerHospital(
 	data: RegisterHospitalInput,
@@ -379,6 +491,23 @@ export async function updateHospital({
 	return response.data;
 }
 
+export async function updateHospitalStatus({
+	hospitalId,
+	data,
+}: {
+	hospitalId: string;
+	data: UpdateHospitalStatusInput;
+}): Promise<UpdateHospitalStatusResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: UpdateHospitalStatusResponse;
+	}>(`/api/hospitals/${hospitalId}/status`, {
+		method: "PATCH",
+		body: JSON.stringify(data),
+	});
+	return response.data;
+}
+
 // Auth client object for compatibility
 export const authClient = {
 	signIn,
@@ -389,11 +518,18 @@ export const authClient = {
 	isAuthenticated,
 	getAccessToken,
 	clearTokens,
+	// MFA functions
+	submitMfaCode,
+	enableMfa,
+	verifyMfa,
+	disableMfa,
+	isMfaChallengeResponse,
 	// Hospital functions
 	registerHospital,
 	verifyHospital,
 	getHospital,
 	updateHospital,
+	updateHospitalStatus,
 };
 
 export default authClient;

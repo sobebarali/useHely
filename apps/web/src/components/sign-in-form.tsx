@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { useHospitalsForEmail, useSignIn } from "@/hooks/use-auth";
-import type { AuthError } from "@/lib/auth-client";
+import {
+	type AuthError,
+	isMfaChallengeResponse,
+	type MfaChallengeResponse,
+} from "@/lib/auth-client";
+import MfaChallengeForm from "./mfa-challenge-form";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import { Input } from "./ui/input";
@@ -29,6 +34,9 @@ export default function SignInForm({
 
 	const [email, setEmail] = useState("");
 	const [selectedHospital, setSelectedHospital] = useState("");
+	const [mfaChallenge, setMfaChallenge] = useState<MfaChallengeResponse | null>(
+		null,
+	);
 
 	const { data: hospitals, isLoading: hospitalsLoading } =
 		useHospitalsForEmail(email);
@@ -59,11 +67,19 @@ export default function SignInForm({
 			}
 
 			try {
-				await signInMutation.mutateAsync({
+				const response = await signInMutation.mutateAsync({
 					email: value.email,
 					password: value.password,
 					tenantId: selectedHospital,
 				});
+
+				// Check if MFA is required
+				if (isMfaChallengeResponse(response)) {
+					setMfaChallenge(response);
+					return;
+				}
+
+				// Success - navigate to dashboard
 				toast.success("Sign in successful");
 				navigate({
 					to: "/dashboard",
@@ -80,6 +96,30 @@ export default function SignInForm({
 			}),
 		},
 	});
+
+	const handleMfaSuccess = () => {
+		setMfaChallenge(null);
+		toast.success("Sign in successful");
+		navigate({
+			to: "/dashboard",
+		});
+	};
+
+	const handleMfaCancel = () => {
+		setMfaChallenge(null);
+	};
+
+	// Show MFA challenge form if MFA is required
+	if (mfaChallenge) {
+		return (
+			<MfaChallengeForm
+				challengeToken={mfaChallenge.challenge_token}
+				expiresIn={mfaChallenge.expires_in}
+				onSuccess={handleMfaSuccess}
+				onCancel={handleMfaCancel}
+			/>
+		);
+	}
 
 	const showHospitalSelector =
 		email.includes("@") && hospitals && hospitals.length > 0;

@@ -225,6 +225,10 @@ const navMain = [
 				url: "/dashboard/settings/profile",
 			},
 			{
+				title: "Security",
+				url: "/dashboard/settings/security",
+			},
+			{
 				title: "Notifications",
 				url: "/dashboard/settings/notifications",
 			},

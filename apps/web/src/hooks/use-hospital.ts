@@ -6,9 +6,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	authClient,
 	type HospitalDetails,
+	type HospitalStatus,
 	type RegisterHospitalInput,
 	type RegisterHospitalResponse,
 	type UpdateHospitalInput,
+	type UpdateHospitalStatusInput,
+	type UpdateHospitalStatusResponse,
 	type VerifyHospitalResponse,
 } from "../lib/auth-client";
 
@@ -81,10 +84,36 @@ export function useUpdateHospital() {
 	});
 }
 
+/**
+ * Hook for hospital status update mutation (SUPER_ADMIN only)
+ */
+export function useUpdateHospitalStatus() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({
+			hospitalId,
+			data,
+		}: {
+			hospitalId: string;
+			data: UpdateHospitalStatusInput;
+		}) => authClient.updateHospitalStatus({ hospitalId, data }),
+		onSuccess: (_, variables) => {
+			// Invalidate hospital detail cache to refetch
+			queryClient.invalidateQueries({
+				queryKey: hospitalKeys.detail(variables.hospitalId),
+			});
+		},
+	});
+}
+
 export type {
 	HospitalDetails,
+	HospitalStatus,
 	RegisterHospitalInput,
 	RegisterHospitalResponse,
 	UpdateHospitalInput,
+	UpdateHospitalStatusInput,
+	UpdateHospitalStatusResponse,
 	VerifyHospitalResponse,
 };

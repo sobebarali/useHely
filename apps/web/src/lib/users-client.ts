@@ -128,6 +128,16 @@ export interface ForcePasswordChangeResponse {
 	message: string;
 }
 
+export interface ChangePasswordInput {
+	currentPassword: string;
+	newPassword: string;
+	confirmPassword: string;
+}
+
+export interface ChangePasswordResponse {
+	message: string;
+}
+
 export interface ForgotPasswordInput {
 	email: string;
 	tenant_id: string;
@@ -261,6 +271,24 @@ async function authenticatedRequest<T>(
 			Authorization: `Bearer ${accessToken}`,
 		},
 	});
+}
+
+// ===== Self-Service User Functions (require authentication) =====
+
+/**
+ * Change own password (authenticated user)
+ */
+export async function changePassword(
+	input: ChangePasswordInput,
+): Promise<ChangePasswordResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ChangePasswordResponse;
+	}>("/api/users/change-password", {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
+	return response.data;
 }
 
 // ===== Public User Functions (no authentication required) =====
@@ -410,6 +438,8 @@ export async function forcePasswordChange(
 
 // Users client object for convenience
 export const usersClient = {
+	// Self-service
+	changePassword,
 	// Public
 	forgotPassword,
 	resetPassword,

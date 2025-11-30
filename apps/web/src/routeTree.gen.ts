@@ -18,15 +18,22 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard/admin'
 import { Route as DashboardVitalsIndexRouteImport } from './routes/dashboard/vitals/index'
 import { Route as DashboardStaffIndexRouteImport } from './routes/dashboard/staff/index'
+import { Route as DashboardSettingsIndexRouteImport } from './routes/dashboard/settings/index'
 import { Route as DashboardPrescriptionsIndexRouteImport } from './routes/dashboard/prescriptions/index'
 import { Route as DashboardPatientsIndexRouteImport } from './routes/dashboard/patients/index'
 import { Route as DashboardAppointmentsIndexRouteImport } from './routes/dashboard/appointments/index'
 import { Route as DashboardVitalsRecordRouteImport } from './routes/dashboard/vitals/record'
 import { Route as DashboardVitalsHistoryRouteImport } from './routes/dashboard/vitals/history'
 import { Route as DashboardVitalsIdRouteImport } from './routes/dashboard/vitals/$id'
+import { Route as DashboardStaffRolesRouteImport } from './routes/dashboard/staff/roles'
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
+import { Route as DashboardSettingsSecurityRouteImport } from './routes/dashboard/settings/security'
+import { Route as DashboardSettingsProfileRouteImport } from './routes/dashboard/settings/profile'
+import { Route as DashboardSettingsGeneralRouteImport } from './routes/dashboard/settings/general'
 import { Route as DashboardPrescriptionsCreateRouteImport } from './routes/dashboard/prescriptions/create'
 import { Route as DashboardPrescriptionsIdRouteImport } from './routes/dashboard/prescriptions/$id'
 import { Route as DashboardPatientsRegisterRouteImport } from './routes/dashboard/patients/register'
@@ -34,9 +41,13 @@ import { Route as DashboardPatientsOpdQueueRouteImport } from './routes/dashboar
 import { Route as DashboardPatientsIdRouteImport } from './routes/dashboard/patients/$id'
 import { Route as DashboardAppointmentsScheduleRouteImport } from './routes/dashboard/appointments/schedule'
 import { Route as DashboardAppointmentsIdRouteImport } from './routes/dashboard/appointments/$id'
+import { Route as DashboardAdminSecurityRouteImport } from './routes/dashboard/admin/security'
 import { Route as DashboardPrescriptionsTemplatesIndexRouteImport } from './routes/dashboard/prescriptions/templates/index'
+import { Route as DashboardAdminSecurityIndexRouteImport } from './routes/dashboard/admin/security/index'
 import { Route as DashboardPrescriptionsTemplatesCreateRouteImport } from './routes/dashboard/prescriptions/templates/create'
 import { Route as DashboardPrescriptionsTemplatesIdRouteImport } from './routes/dashboard/prescriptions/templates/$id'
+import { Route as DashboardAdminSecurityKeysRouteImport } from './routes/dashboard/admin/security/keys'
+import { Route as DashboardAdminSecurityEventsRouteImport } from './routes/dashboard/admin/security/events'
 
 const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
   id: '/verify-hospital',
@@ -83,6 +94,16 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardVitalsIndexRoute = DashboardVitalsIndexRouteImport.update({
   id: '/vitals/',
   path: '/vitals/',
@@ -92,6 +113,11 @@ const DashboardStaffIndexRoute = DashboardStaffIndexRouteImport.update({
   id: '/staff/',
   path: '/staff/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSettingsIndexRoute = DashboardSettingsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardSettingsRoute,
 } as any)
 const DashboardPrescriptionsIndexRoute =
   DashboardPrescriptionsIndexRouteImport.update({
@@ -125,11 +151,34 @@ const DashboardVitalsIdRoute = DashboardVitalsIdRouteImport.update({
   path: '/vitals/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardStaffRolesRoute = DashboardStaffRolesRouteImport.update({
+  id: '/staff/roles',
+  path: '/staff/roles',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
   id: '/staff/$id',
   path: '/staff/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardSettingsSecurityRoute =
+  DashboardSettingsSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsProfileRoute =
+  DashboardSettingsProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsGeneralRoute =
+  DashboardSettingsGeneralRouteImport.update({
+    id: '/general',
+    path: '/general',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
 const DashboardPrescriptionsCreateRoute =
   DashboardPrescriptionsCreateRouteImport.update({
     id: '/prescriptions/create',
@@ -170,11 +219,22 @@ const DashboardAppointmentsIdRoute = DashboardAppointmentsIdRouteImport.update({
   path: '/appointments/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardAdminSecurityRoute = DashboardAdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
 const DashboardPrescriptionsTemplatesIndexRoute =
   DashboardPrescriptionsTemplatesIndexRouteImport.update({
     id: '/prescriptions/templates/',
     path: '/prescriptions/templates/',
     getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardAdminSecurityIndexRoute =
+  DashboardAdminSecurityIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => DashboardAdminSecurityRoute,
   } as any)
 const DashboardPrescriptionsTemplatesCreateRoute =
   DashboardPrescriptionsTemplatesCreateRouteImport.update({
@@ -188,6 +248,18 @@ const DashboardPrescriptionsTemplatesIdRoute =
     path: '/prescriptions/templates/$id',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardAdminSecurityKeysRoute =
+  DashboardAdminSecurityKeysRouteImport.update({
+    id: '/keys',
+    path: '/keys',
+    getParentRoute: () => DashboardAdminSecurityRoute,
+  } as any)
+const DashboardAdminSecurityEventsRoute =
+  DashboardAdminSecurityEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => DashboardAdminSecurityRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -198,7 +270,10 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
@@ -206,17 +281,25 @@ export interface FileRoutesByFullPath {
   '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
+  '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
+  '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions': typeof DashboardPrescriptionsIndexRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
   '/dashboard/vitals': typeof DashboardVitalsIndexRoute
+  '/dashboard/admin/security/events': typeof DashboardAdminSecurityEventsRoute
+  '/dashboard/admin/security/keys': typeof DashboardAdminSecurityKeysRoute
   '/dashboard/prescriptions/templates/$id': typeof DashboardPrescriptionsTemplatesIdRoute
   '/dashboard/prescriptions/templates/create': typeof DashboardPrescriptionsTemplatesCreateRoute
+  '/dashboard/admin/security/': typeof DashboardAdminSecurityIndexRoute
   '/dashboard/prescriptions/templates': typeof DashboardPrescriptionsTemplatesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -227,6 +310,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
@@ -235,17 +319,25 @@ export interface FileRoutesByTo {
   '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
+  '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
+  '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions': typeof DashboardPrescriptionsIndexRoute
+  '/dashboard/settings': typeof DashboardSettingsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
   '/dashboard/vitals': typeof DashboardVitalsIndexRoute
+  '/dashboard/admin/security/events': typeof DashboardAdminSecurityEventsRoute
+  '/dashboard/admin/security/keys': typeof DashboardAdminSecurityKeysRoute
   '/dashboard/prescriptions/templates/$id': typeof DashboardPrescriptionsTemplatesIdRoute
   '/dashboard/prescriptions/templates/create': typeof DashboardPrescriptionsTemplatesCreateRoute
+  '/dashboard/admin/security': typeof DashboardAdminSecurityIndexRoute
   '/dashboard/prescriptions/templates': typeof DashboardPrescriptionsTemplatesIndexRoute
 }
 export interface FileRoutesById {
@@ -258,7 +350,10 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
+  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
+  '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
@@ -266,17 +361,25 @@ export interface FileRoutesById {
   '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
+  '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
+  '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
   '/dashboard/appointments/': typeof DashboardAppointmentsIndexRoute
   '/dashboard/patients/': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions/': typeof DashboardPrescriptionsIndexRoute
+  '/dashboard/settings/': typeof DashboardSettingsIndexRoute
   '/dashboard/staff/': typeof DashboardStaffIndexRoute
   '/dashboard/vitals/': typeof DashboardVitalsIndexRoute
+  '/dashboard/admin/security/events': typeof DashboardAdminSecurityEventsRoute
+  '/dashboard/admin/security/keys': typeof DashboardAdminSecurityKeysRoute
   '/dashboard/prescriptions/templates/$id': typeof DashboardPrescriptionsTemplatesIdRoute
   '/dashboard/prescriptions/templates/create': typeof DashboardPrescriptionsTemplatesCreateRoute
+  '/dashboard/admin/security/': typeof DashboardAdminSecurityIndexRoute
   '/dashboard/prescriptions/templates/': typeof DashboardPrescriptionsTemplatesIndexRoute
 }
 export interface FileRouteTypes {
@@ -290,7 +393,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/admin'
+    | '/dashboard/settings'
     | '/dashboard/'
+    | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
     | '/dashboard/patients/$id'
@@ -298,17 +404,25 @@ export interface FileRouteTypes {
     | '/dashboard/patients/register'
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
+    | '/dashboard/settings/general'
+    | '/dashboard/settings/profile'
+    | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
     | '/dashboard/appointments'
     | '/dashboard/patients'
     | '/dashboard/prescriptions'
+    | '/dashboard/settings/'
     | '/dashboard/staff'
     | '/dashboard/vitals'
+    | '/dashboard/admin/security/events'
+    | '/dashboard/admin/security/keys'
     | '/dashboard/prescriptions/templates/$id'
     | '/dashboard/prescriptions/templates/create'
+    | '/dashboard/admin/security/'
     | '/dashboard/prescriptions/templates'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -319,6 +433,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/admin'
     | '/dashboard'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
@@ -327,17 +442,25 @@ export interface FileRouteTypes {
     | '/dashboard/patients/register'
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
+    | '/dashboard/settings/general'
+    | '/dashboard/settings/profile'
+    | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
     | '/dashboard/appointments'
     | '/dashboard/patients'
     | '/dashboard/prescriptions'
+    | '/dashboard/settings'
     | '/dashboard/staff'
     | '/dashboard/vitals'
+    | '/dashboard/admin/security/events'
+    | '/dashboard/admin/security/keys'
     | '/dashboard/prescriptions/templates/$id'
     | '/dashboard/prescriptions/templates/create'
+    | '/dashboard/admin/security'
     | '/dashboard/prescriptions/templates'
   id:
     | '__root__'
@@ -349,7 +472,10 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
+    | '/dashboard/admin'
+    | '/dashboard/settings'
     | '/dashboard/'
+    | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
     | '/dashboard/patients/$id'
@@ -357,17 +483,25 @@ export interface FileRouteTypes {
     | '/dashboard/patients/register'
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
+    | '/dashboard/settings/general'
+    | '/dashboard/settings/profile'
+    | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
     | '/dashboard/appointments/'
     | '/dashboard/patients/'
     | '/dashboard/prescriptions/'
+    | '/dashboard/settings/'
     | '/dashboard/staff/'
     | '/dashboard/vitals/'
+    | '/dashboard/admin/security/events'
+    | '/dashboard/admin/security/keys'
     | '/dashboard/prescriptions/templates/$id'
     | '/dashboard/prescriptions/templates/create'
+    | '/dashboard/admin/security/'
     | '/dashboard/prescriptions/templates/'
   fileRoutesById: FileRoutesById
 }
@@ -447,6 +581,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/vitals/': {
       id: '/dashboard/vitals/'
       path: '/vitals'
@@ -460,6 +608,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/staff'
       preLoaderRoute: typeof DashboardStaffIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings/': {
+      id: '/dashboard/settings/'
+      path: '/'
+      fullPath: '/dashboard/settings/'
+      preLoaderRoute: typeof DashboardSettingsIndexRouteImport
+      parentRoute: typeof DashboardSettingsRoute
     }
     '/dashboard/prescriptions/': {
       id: '/dashboard/prescriptions/'
@@ -503,12 +658,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardVitalsIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/staff/roles': {
+      id: '/dashboard/staff/roles'
+      path: '/staff/roles'
+      fullPath: '/dashboard/staff/roles'
+      preLoaderRoute: typeof DashboardStaffRolesRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/staff/$id': {
       id: '/dashboard/staff/$id'
       path: '/staff/$id'
       fullPath: '/dashboard/staff/$id'
       preLoaderRoute: typeof DashboardStaffIdRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/settings/security': {
+      id: '/dashboard/settings/security'
+      path: '/security'
+      fullPath: '/dashboard/settings/security'
+      preLoaderRoute: typeof DashboardSettingsSecurityRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/settings/profile': {
+      id: '/dashboard/settings/profile'
+      path: '/profile'
+      fullPath: '/dashboard/settings/profile'
+      preLoaderRoute: typeof DashboardSettingsProfileRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/settings/general': {
+      id: '/dashboard/settings/general'
+      path: '/general'
+      fullPath: '/dashboard/settings/general'
+      preLoaderRoute: typeof DashboardSettingsGeneralRouteImport
+      parentRoute: typeof DashboardSettingsRoute
     }
     '/dashboard/prescriptions/create': {
       id: '/dashboard/prescriptions/create'
@@ -559,12 +742,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAppointmentsIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin/security': {
+      id: '/dashboard/admin/security'
+      path: '/security'
+      fullPath: '/dashboard/admin/security'
+      preLoaderRoute: typeof DashboardAdminSecurityRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
     '/dashboard/prescriptions/templates/': {
       id: '/dashboard/prescriptions/templates/'
       path: '/prescriptions/templates'
       fullPath: '/dashboard/prescriptions/templates'
       preLoaderRoute: typeof DashboardPrescriptionsTemplatesIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/security/': {
+      id: '/dashboard/admin/security/'
+      path: '/'
+      fullPath: '/dashboard/admin/security/'
+      preLoaderRoute: typeof DashboardAdminSecurityIndexRouteImport
+      parentRoute: typeof DashboardAdminSecurityRoute
     }
     '/dashboard/prescriptions/templates/create': {
       id: '/dashboard/prescriptions/templates/create'
@@ -580,10 +777,73 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardPrescriptionsTemplatesIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/admin/security/keys': {
+      id: '/dashboard/admin/security/keys'
+      path: '/keys'
+      fullPath: '/dashboard/admin/security/keys'
+      preLoaderRoute: typeof DashboardAdminSecurityKeysRouteImport
+      parentRoute: typeof DashboardAdminSecurityRoute
+    }
+    '/dashboard/admin/security/events': {
+      id: '/dashboard/admin/security/events'
+      path: '/events'
+      fullPath: '/dashboard/admin/security/events'
+      preLoaderRoute: typeof DashboardAdminSecurityEventsRouteImport
+      parentRoute: typeof DashboardAdminSecurityRoute
+    }
   }
 }
 
+interface DashboardAdminSecurityRouteChildren {
+  DashboardAdminSecurityEventsRoute: typeof DashboardAdminSecurityEventsRoute
+  DashboardAdminSecurityKeysRoute: typeof DashboardAdminSecurityKeysRoute
+  DashboardAdminSecurityIndexRoute: typeof DashboardAdminSecurityIndexRoute
+}
+
+const DashboardAdminSecurityRouteChildren: DashboardAdminSecurityRouteChildren =
+  {
+    DashboardAdminSecurityEventsRoute: DashboardAdminSecurityEventsRoute,
+    DashboardAdminSecurityKeysRoute: DashboardAdminSecurityKeysRoute,
+    DashboardAdminSecurityIndexRoute: DashboardAdminSecurityIndexRoute,
+  }
+
+const DashboardAdminSecurityRouteWithChildren =
+  DashboardAdminSecurityRoute._addFileChildren(
+    DashboardAdminSecurityRouteChildren,
+  )
+
+interface DashboardAdminRouteChildren {
+  DashboardAdminSecurityRoute: typeof DashboardAdminSecurityRouteWithChildren
+}
+
+const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
+  DashboardAdminSecurityRoute: DashboardAdminSecurityRouteWithChildren,
+}
+
+const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
+  DashboardAdminRouteChildren,
+)
+
+interface DashboardSettingsRouteChildren {
+  DashboardSettingsGeneralRoute: typeof DashboardSettingsGeneralRoute
+  DashboardSettingsProfileRoute: typeof DashboardSettingsProfileRoute
+  DashboardSettingsSecurityRoute: typeof DashboardSettingsSecurityRoute
+  DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
+}
+
+const DashboardSettingsRouteChildren: DashboardSettingsRouteChildren = {
+  DashboardSettingsGeneralRoute: DashboardSettingsGeneralRoute,
+  DashboardSettingsProfileRoute: DashboardSettingsProfileRoute,
+  DashboardSettingsSecurityRoute: DashboardSettingsSecurityRoute,
+  DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
+}
+
+const DashboardSettingsRouteWithChildren =
+  DashboardSettingsRoute._addFileChildren(DashboardSettingsRouteChildren)
+
 interface DashboardRouteChildren {
+  DashboardAdminRoute: typeof DashboardAdminRouteWithChildren
+  DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAppointmentsIdRoute: typeof DashboardAppointmentsIdRoute
   DashboardAppointmentsScheduleRoute: typeof DashboardAppointmentsScheduleRoute
@@ -593,6 +853,7 @@ interface DashboardRouteChildren {
   DashboardPrescriptionsIdRoute: typeof DashboardPrescriptionsIdRoute
   DashboardPrescriptionsCreateRoute: typeof DashboardPrescriptionsCreateRoute
   DashboardStaffIdRoute: typeof DashboardStaffIdRoute
+  DashboardStaffRolesRoute: typeof DashboardStaffRolesRoute
   DashboardVitalsIdRoute: typeof DashboardVitalsIdRoute
   DashboardVitalsHistoryRoute: typeof DashboardVitalsHistoryRoute
   DashboardVitalsRecordRoute: typeof DashboardVitalsRecordRoute
@@ -607,6 +868,8 @@ interface DashboardRouteChildren {
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardAdminRoute: DashboardAdminRouteWithChildren,
+  DashboardSettingsRoute: DashboardSettingsRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAppointmentsIdRoute: DashboardAppointmentsIdRoute,
   DashboardAppointmentsScheduleRoute: DashboardAppointmentsScheduleRoute,
@@ -616,6 +879,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPrescriptionsIdRoute: DashboardPrescriptionsIdRoute,
   DashboardPrescriptionsCreateRoute: DashboardPrescriptionsCreateRoute,
   DashboardStaffIdRoute: DashboardStaffIdRoute,
+  DashboardStaffRolesRoute: DashboardStaffRolesRoute,
   DashboardVitalsIdRoute: DashboardVitalsIdRoute,
   DashboardVitalsHistoryRoute: DashboardVitalsHistoryRoute,
   DashboardVitalsRecordRoute: DashboardVitalsRecordRoute,
