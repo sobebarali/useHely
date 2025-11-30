@@ -11,6 +11,15 @@ export const TransactionType = {
 	TRANSFER: "TRANSFER",
 } as const;
 
+export const AdjustmentReason = {
+	DAMAGE: "DAMAGE",
+	EXPIRY: "EXPIRY",
+	CORRECTION: "CORRECTION",
+	LOSS: "LOSS",
+	RETURN: "RETURN",
+	OTHER: "OTHER",
+} as const;
+
 // Sub-schemas
 const batchSchema = new Schema(
 	{
@@ -36,8 +45,6 @@ const inventorySchema = new Schema(
 		location: { type: String },
 		batches: [{ type: batchSchema }],
 		lastRestocked: { type: Date },
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "inventory",
@@ -67,7 +74,6 @@ const inventoryTransactionSchema = new Schema(
 		reason: { type: String },
 		performedBy: { type: String, ref: "Staff", required: true },
 		performedAt: { type: Date, required: true },
-		createdAt: { type: Date, required: true },
 	},
 	{
 		collection: "inventory_transaction",

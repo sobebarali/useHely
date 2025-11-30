@@ -73,3 +73,16 @@ export function generateTemporaryPassword(): string {
 
 	return chars.join("");
 }
+
+/**
+ * Escape special regex characters to prevent ReDoS attacks
+ *
+ * Use this function before passing user input to RegExp or $regex queries.
+ * Escapes: . * + ? ^ $ { } ( ) | [ ] \
+ *
+ * @param input - The string to escape
+ * @returns The escaped string safe for use in regular expressions
+ */
+export function escapeRegex(input: string): string {
+	return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

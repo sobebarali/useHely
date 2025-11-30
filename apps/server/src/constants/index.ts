@@ -31,6 +31,16 @@ export {
 	type ErrorCode,
 	HTTP_STATUS,
 } from "./http.constants";
+// Inventory constants
+export {
+	AdjustmentReason,
+	type AdjustmentReasonType,
+	INVENTORY_DEFAULTS,
+	INVENTORY_ERRORS,
+	INVOICE_NUMBER_PATTERN,
+	StockStatus,
+	type StockStatusType,
+} from "./inventory.constants";
 // RBAC constants
 export {
 	Actions,

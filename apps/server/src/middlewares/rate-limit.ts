@@ -99,3 +99,44 @@ export const apiRateLimiter = rateLimit({
 		return process.env.NODE_ENV === "test";
 	},
 });
+
+/**
+ * Rate limiter for inventory stock modification endpoints
+ * Moderate limits to prevent rapid stock manipulation while allowing normal operations
+ * 30 requests per minute per user
+ */
+export const inventoryStockRateLimiter = rateLimit({
+	windowMs: 60 * 1000, // 1 minute window
+	max: 30, // 30 stock modifications per minute
+	standardHeaders: true,
+	legacyHeaders: false,
+	validate: { xForwardedForHeader: false },
+	message: {
+		code: "RATE_LIMIT_EXCEEDED",
+		message: "Too many stock modification requests, please try again later",
+	},
+	keyGenerator: (req: Request): string => {
+		// Use IP + user ID (from JWT) for per-user limiting
+		const ip = normalizeIp(req);
+		const userId = (req as Request & { user?: { id?: string } }).user?.id || "";
+		return `inventory:${ip}:${userId}`;
+	},
+	handler: (req: Request, res: Response) => {
+		logger.warn(
+			{
+				ip: req.ip,
+				path: req.path,
+				userId: (req as Request & { user?: { id?: string } }).user?.id,
+			},
+			"Rate limit exceeded on inventory stock modification",
+		);
+		res.status(429).json({
+			code: "RATE_LIMIT_EXCEEDED",
+			message: "Too many stock modification requests, please try again later",
+		});
+	},
+	skip: (_req: Request): boolean => {
+		// Skip rate limiting in test environment
+		return process.env.NODE_ENV === "test";
+	},
+});
