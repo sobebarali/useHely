@@ -5,12 +5,14 @@
  * Uses bcryptjs for secure password hashing.
  */
 
+import { randomInt } from "node:crypto";
 import bcrypt from "bcryptjs";
 
 /**
  * Default salt rounds for bcrypt hashing
+ * OWASP recommends 12 for bcrypt
  */
-const SALT_ROUNDS = 10;
+const SALT_ROUNDS = 12;
 
 /**
  * Hash a password using bcrypt
@@ -30,8 +32,9 @@ export async function comparePassword(
 }
 
 /**
- * Generate a cryptographically random temporary password
+ * Generate a cryptographically secure temporary password
  *
+ * Uses crypto.randomInt() for cryptographically secure random generation.
  * Ensures at least one of each required character type:
  * - Uppercase letter
  * - Lowercase letter
@@ -47,22 +50,26 @@ export function generateTemporaryPassword(): string {
 	const special = "@$!%*?&";
 	const allChars = uppercase + lowercase + numbers + special;
 
-	let password = "";
+	const chars: string[] = [];
 
-	// Ensure at least one of each required type
-	password += uppercase[Math.floor(Math.random() * uppercase.length)];
-	password += lowercase[Math.floor(Math.random() * lowercase.length)];
-	password += numbers[Math.floor(Math.random() * numbers.length)];
-	password += special[Math.floor(Math.random() * special.length)];
+	// Ensure at least one of each required type using crypto.randomInt
+	chars.push(uppercase.charAt(randomInt(uppercase.length)));
+	chars.push(lowercase.charAt(randomInt(lowercase.length)));
+	chars.push(numbers.charAt(randomInt(numbers.length)));
+	chars.push(special.charAt(randomInt(special.length)));
 
 	// Fill the rest (12 characters total)
 	for (let i = 4; i < 12; i++) {
-		password += allChars[Math.floor(Math.random() * allChars.length)];
+		chars.push(allChars.charAt(randomInt(allChars.length)));
 	}
 
-	// Shuffle the password
-	return password
-		.split("")
-		.sort(() => Math.random() - 0.5)
-		.join("");
+	// Fisher-Yates shuffle with cryptographically secure randomness
+	for (let i = chars.length - 1; i > 0; i--) {
+		const j = randomInt(i + 1);
+		const temp = chars[i];
+		chars[i] = chars[j] as string;
+		chars[j] = temp as string;
+	}
+
+	return chars.join("");
 }

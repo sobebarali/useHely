@@ -21,6 +21,7 @@ export {
 	HOSPITAL_CACHE_KEYS,
 	HOSPITAL_CACHE_TTL,
 	type HospitalCacheKeyPrefix,
+	RATE_LIMIT_CONFIG,
 	SECURITY_THRESHOLDS,
 	tenantCacheKey,
 } from "./cache.constants";

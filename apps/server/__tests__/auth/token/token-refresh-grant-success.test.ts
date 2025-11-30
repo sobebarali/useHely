@@ -133,8 +133,8 @@ describe("POST /api/auth/token - Refresh Grant Success", () => {
 		expect(response.body).toHaveProperty("expires_in", 3600);
 		expect(response.body).toHaveProperty("refresh_expires_in");
 
-		// Should return same refresh token
-		expect(response.body.refresh_token).toBe(initialRefreshToken);
+		// Should return a NEW refresh token (token rotation for security)
+		expect(response.body.refresh_token).not.toBe(initialRefreshToken);
 
 		// Should return a new access token
 		expect(response.body.access_token).not.toBe(initialAccessToken);
@@ -146,75 +146,105 @@ describe("POST /api/auth/token - Refresh Grant Success", () => {
 		expect(newAccessSession).toBeTruthy();
 		expect(newAccessSession?.userId).toBe(userId);
 
-		// Verify refresh token session still exists
-		const refreshSession = await Session.findOne({
+		// Verify NEW refresh token session exists
+		const newRefreshSession = await Session.findOne({
+			token: response.body.refresh_token,
+		});
+		expect(newRefreshSession).toBeTruthy();
+		expect(newRefreshSession?.userId).toBe(userId);
+
+		// Verify old refresh token session is deleted (rotated out)
+		const oldRefreshSession = await Session.findOne({
 			token: initialRefreshToken,
 		});
-		expect(refreshSession).toBeTruthy();
-		expect(refreshSession?.userId).toBe(userId);
+		expect(oldRefreshSession).toBeFalsy();
+
+		// Update initialRefreshToken for subsequent tests
+		initialRefreshToken = response.body.refresh_token;
 	});
 
-	it("should generate different access tokens on multiple refreshes", async () => {
-		// First refresh
+	it("should generate different access and refresh tokens on multiple refreshes (token rotation)", async () => {
+		// First refresh - get a fresh token pair first
 		const firstRefresh = await request(app).post("/api/auth/token").send({
 			grant_type: "refresh_token",
 			refresh_token: initialRefreshToken,
 		});
 
-		// Second refresh
+		expect(firstRefresh.status).toBe(200);
+		const firstNewRefreshToken = firstRefresh.body.refresh_token;
+
+		// Second refresh - must use the NEW refresh token from first refresh
 		const secondRefresh = await request(app).post("/api/auth/token").send({
 			grant_type: "refresh_token",
-			refresh_token: initialRefreshToken,
+			refresh_token: firstNewRefreshToken,
 		});
 
+		expect(secondRefresh.status).toBe(200);
+
+		// Access tokens should be different
 		expect(firstRefresh.body.access_token).not.toBe(
 			secondRefresh.body.access_token,
 		);
-		expect(firstRefresh.body.refresh_token).toBe(
+
+		// Refresh tokens should also be different (rotation)
+		expect(firstRefresh.body.refresh_token).not.toBe(
 			secondRefresh.body.refresh_token,
-		); // Same refresh token
+		);
+
+		// Update for subsequent tests
+		initialRefreshToken = secondRefresh.body.refresh_token;
 	});
 
-	it("should maintain proper session relationships", async () => {
+	it("should maintain proper session relationships with token rotation", async () => {
+		// Get a fresh token first
 		const refreshResponse = await request(app).post("/api/auth/token").send({
 			grant_type: "refresh_token",
 			refresh_token: initialRefreshToken,
 		});
 
-		// Count sessions for user
-		const userSessions = await Session.find({ userId });
-
-		// Should at least include initial access, initial refresh, new access from refresh
-		expect(userSessions.length).toBeGreaterThanOrEqual(3);
-
-		// Verify refresh token session is still valid
-		const refreshSession = await Session.findOne({
-			token: initialRefreshToken,
-		});
-		expect(refreshSession).toBeTruthy();
+		expect(refreshResponse.status).toBe(200);
 
 		// Verify new access token session exists
 		const newAccessSession = await Session.findOne({
 			token: refreshResponse.body.access_token,
 		});
 		expect(newAccessSession).toBeTruthy();
+
+		// Verify new refresh token session exists
+		const newRefreshSession = await Session.findOne({
+			token: refreshResponse.body.refresh_token,
+		});
+		expect(newRefreshSession).toBeTruthy();
+
+		// Update for subsequent tests
+		initialRefreshToken = refreshResponse.body.refresh_token;
 	});
 
 	it("should work even if original access token has expired", async () => {
-		// Manually expire initial access token
-		await Session.updateOne(
-			{ token: initialAccessToken },
-			{ expiresAt: new Date(Date.now() - 1000) },
-		);
-
-		// Refresh should still work
-		const response = await request(app).post("/api/auth/token").send({
+		// Get a fresh refresh token to test with
+		const freshTokens = await request(app).post("/api/auth/token").send({
 			grant_type: "refresh_token",
 			refresh_token: initialRefreshToken,
 		});
 
+		expect(freshTokens.status).toBe(200);
+		const freshAccessToken = freshTokens.body.access_token;
+		const freshRefreshToken = freshTokens.body.refresh_token;
+
+		// Manually expire the access token
+		await Session.updateOne(
+			{ token: freshAccessToken },
+			{ expiresAt: new Date(Date.now() - 1000) },
+		);
+
+		// Refresh should still work with the valid refresh token
+		const response = await request(app).post("/api/auth/token").send({
+			grant_type: "refresh_token",
+			refresh_token: freshRefreshToken,
+		});
+
 		expect(response.status).toBe(200);
 		expect(response.body).toHaveProperty("access_token");
-		expect(response.body.access_token).not.toBe(initialAccessToken);
+		expect(response.body.access_token).not.toBe(freshAccessToken);
 	});
 });

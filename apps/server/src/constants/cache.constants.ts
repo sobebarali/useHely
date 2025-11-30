@@ -42,6 +42,20 @@ export const SECURITY_THRESHOLDS = {
 	MAX_FAILED_ATTEMPTS: 5,
 } as const;
 
+// Rate limiting configuration
+export const RATE_LIMIT_CONFIG = {
+	// Auth endpoints - stricter limits
+	AUTH: {
+		WINDOW_MS: 15 * 60 * 1000, // 15 minutes
+		MAX_REQUESTS: 10, // 10 requests per window for login/token
+	},
+	// General API endpoints
+	API: {
+		WINDOW_MS: 60 * 1000, // 1 minute
+		MAX_REQUESTS: 100, // 100 requests per minute
+	},
+} as const;
+
 // Helper function to generate tenant-scoped cache keys
 export function tenantCacheKey({
 	tenantId,

@@ -13,6 +13,7 @@ import {
 	clearFailedLogins,
 	isAccountLocked,
 	recordFailedLogin,
+	revokeToken,
 } from "../../../lib/cache/auth.cache";
 import { createServiceLogger } from "../../../lib/logger";
 import { comparePassword } from "../../../utils/crypto";
@@ -24,6 +25,7 @@ import {
 } from "../../users/repositories/shared.users.repository";
 import {
 	createSession,
+	deleteSessionByToken,
 	findValidSessionByToken as findSessionByToken,
 } from "../repositories/shared.auth.repository";
 import {
@@ -343,14 +345,33 @@ async function handleRefreshTokenGrant({
 
 	logger.info({ userId, tenantId }, "Refresh token grant successful");
 
-	// Return same refresh token (still valid) with new access token
+	// Rotate refresh token: revoke old token and issue new one
+	const newRefreshToken = randomBytes(32).toString("hex");
+	const refreshExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY * 1000,
+	);
+
+	// Delete old refresh token session from database
+	await deleteSessionByToken({ token: refresh_token });
+
+	// Revoke old refresh token in cache
+	await revokeToken({ token: refresh_token });
+
+	// Create new refresh token session
+	await createSession({
+		userId,
+		token: newRefreshToken,
+		expiresAt: refreshExpiresAt,
+		ipAddress,
+		userAgent,
+	});
+
+	// Return new tokens (refresh token is rotated for security)
 	return {
 		access_token: accessToken,
 		token_type: "Bearer",
 		expires_in: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
-		refresh_token: refresh_token,
-		refresh_expires_in: Math.floor(
-			(new Date(session.expiresAt).getTime() - Date.now()) / 1000,
-		),
+		refresh_token: newRefreshToken,
+		refresh_expires_in: TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY,
 	};
 }

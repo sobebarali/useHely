@@ -65,7 +65,7 @@ async function authenticateAsync(
 	}
 
 	try {
-		// Check if token is revoked (fail open if Redis is unavailable)
+		// Check if token is revoked (fail closed if Redis is unavailable)
 		try {
 			const revoked = await isTokenRevoked({ token });
 			if (revoked) {
@@ -76,10 +76,16 @@ async function authenticateAsync(
 				});
 			}
 		} catch (cacheError) {
-			logger.warn(
+			// Fail closed: For HIPAA-compliant systems, we cannot allow potentially
+			// revoked tokens to be used when we can't verify revocation status
+			logger.error(
 				{ error: cacheError },
-				"Failed to check token revocation, proceeding with session validation",
+				"Failed to check token revocation, denying access for security",
 			);
+			return res.status(503).json({
+				code: "SERVICE_UNAVAILABLE",
+				message: "Authentication service temporarily unavailable",
+			});
 		}
 
 		// Try to get session from cache first

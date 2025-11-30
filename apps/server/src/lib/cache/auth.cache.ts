@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import {
 	AUTH_CACHE_KEYS,
 	AUTH_CACHE_TTL,
@@ -7,6 +8,14 @@ import { createServiceLogger } from "../logger";
 import { redis } from "../redis";
 
 const logger = createServiceLogger("authCache");
+
+/**
+ * Generate a secure hash of a token for cache keys
+ * Uses SHA-256 for cryptographic security
+ */
+function hashToken(token: string): string {
+	return createHash("sha256").update(token).digest("hex");
+}
 
 /**
  * Store session data in cache
@@ -90,8 +99,8 @@ export async function revokeToken({
 	token: string;
 	expiresIn?: number;
 }): Promise<void> {
-	// Use a hash of the token as key to avoid storing sensitive data
-	const tokenHash = Buffer.from(token).toString("base64").slice(0, 32);
+	// Use SHA-256 hash of the token for secure storage
+	const tokenHash = hashToken(token);
 	const key = `${AUTH_CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
 
 	await redis.set(key, "1", { ex: expiresIn });
@@ -106,7 +115,7 @@ export async function isTokenRevoked({
 }: {
 	token: string;
 }): Promise<boolean> {
-	const tokenHash = Buffer.from(token).toString("base64").slice(0, 32);
+	const tokenHash = hashToken(token);
 	const key = `${AUTH_CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
 
 	const result = await redis.get(key);
