@@ -224,3 +224,39 @@ export async function findDepartmentsByIds({
 		throw error;
 	}
 }
+
+/**
+ * Find multiple patients by IDs within a tenant
+ */
+export async function findPatientsByIds({
+	tenantId,
+	patientIds,
+}: {
+	tenantId: string;
+	patientIds: string[];
+}) {
+	try {
+		logger.debug(
+			{ tenantId, count: patientIds.length },
+			"Finding patients by IDs",
+		);
+
+		const patients = await Patient.find({
+			_id: { $in: patientIds },
+			tenantId,
+		}).lean();
+
+		logDatabaseOperation(
+			logger,
+			"find",
+			"patient",
+			{ tenantId, count: patientIds.length },
+			{ found: patients.length },
+		);
+
+		return patients;
+	} catch (error) {
+		logError(logger, error, "Failed to find patients by IDs");
+		throw error;
+	}
+}

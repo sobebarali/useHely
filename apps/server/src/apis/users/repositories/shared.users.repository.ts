@@ -399,3 +399,36 @@ export async function invalidateUserSessions({ userId }: { userId: string }) {
 		throw error;
 	}
 }
+
+/**
+ * Find multiple staff by IDs within a tenant
+ */
+export async function findStaffByIds({
+	tenantId,
+	staffIds,
+}: {
+	tenantId: string;
+	staffIds: string[];
+}) {
+	try {
+		logger.debug({ tenantId, count: staffIds.length }, "Finding staff by IDs");
+
+		const staffList = await Staff.find({
+			_id: { $in: staffIds },
+			tenantId,
+		}).lean();
+
+		logDatabaseOperation(
+			logger,
+			"find",
+			"staff",
+			{ tenantId, count: staffIds.length },
+			{ found: staffList.length },
+		);
+
+		return staffList;
+	} catch (error) {
+		logError(logger, error, "Failed to find staff by IDs");
+		throw error;
+	}
+}

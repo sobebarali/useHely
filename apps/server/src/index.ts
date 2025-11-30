@@ -5,6 +5,7 @@ import express from "express";
 import authRoutes from "./apis/auth/auth.routes";
 import hospitalRoutes from "./apis/hospital/hospital.routes";
 import patientsRoutes from "./apis/patients/patients.routes";
+import prescriptionsRoutes from "./apis/prescriptions/prescriptions.routes";
 import rolesRoutes from "./apis/roles/roles.routes";
 import usersRoutes from "./apis/users/users.routes";
 import { logger } from "./lib/logger";
@@ -42,6 +43,7 @@ app.use("/api/roles", rolesRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/patients", patientsRoutes);
+app.use("/api/prescriptions", prescriptionsRoutes);
 
 app.get("/", (_req, res) => {
 	res.status(200).send("OK");
