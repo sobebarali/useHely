@@ -23,6 +23,7 @@ export {
 export {
 	BadRequestError,
 	ConflictError,
+	GoneError,
 	InternalError,
 	NotFoundError,
 	RateLimitError,

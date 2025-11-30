@@ -12,6 +12,7 @@ import inventoryRoutes from "./apis/inventory/inventory.routes";
 import menuRoutes from "./apis/menu/menu.routes";
 import patientsRoutes from "./apis/patients/patients.routes";
 import prescriptionsRoutes from "./apis/prescriptions/prescriptions.routes";
+import reportsRoutes from "./apis/reports/reports.routes";
 import rolesRoutes from "./apis/roles/roles.routes";
 import usersRoutes from "./apis/users/users.routes";
 import vitalsRoutes from "./apis/vitals/vitals.routes";
@@ -58,6 +59,7 @@ app.use("/api/patients", patientsRoutes);
 app.use("/api/prescriptions", prescriptionsRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/vitals", vitalsRoutes);
+app.use("/api/reports", reportsRoutes);
 
 app.get("/", (_req, res) => {
 	res.status(200).send("OK");

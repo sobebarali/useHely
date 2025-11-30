@@ -46,6 +46,14 @@ export {
 	PrescriptionStatus,
 	PrescriptionTemplate,
 } from "./prescription.model";
+// Report
+export {
+	Report,
+	ReportCategory,
+	ReportFormat,
+	ReportStatus,
+	ReportType,
+} from "./report.model";
 // Role & Permissions
 export { Role } from "./role.model";
 // Staff

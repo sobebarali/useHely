@@ -69,6 +69,27 @@ export class ConflictError extends AppError {
 }
 
 /**
+ * 410 Gone
+ * Used when a resource is no longer available and will not be available again
+ * (e.g., expired reports, deleted resources)
+ */
+export class GoneError extends AppError {
+	constructor(
+		message = "Resource is no longer available",
+		code: string = ERROR_CODES.GONE,
+		details?: Record<string, unknown>,
+	) {
+		super({
+			message,
+			status: HTTP_STATUS.GONE,
+			code,
+			details,
+		});
+		Object.setPrototypeOf(this, GoneError.prototype);
+	}
+}
+
+/**
  * 422 Unprocessable Entity
  * Used for validation errors where the syntax is correct but semantics are wrong
  */

@@ -17,7 +17,7 @@ Retrieves list of available report types.
 
 ### Authentication
 
-Required. Bearer token with `REPORT:VIEW` permission.
+Required. Bearer token with `REPORT:READ` permission.
 
 ### Response
 
@@ -56,7 +56,7 @@ Generates a report with specified parameters.
 
 ### Authentication
 
-Required. Bearer token with `REPORT:VIEW` permission.
+Required. Bearer token with `REPORT:CREATE` permission.
 
 ### Request Body
 
@@ -78,7 +78,7 @@ Required. Bearer token with `REPORT:VIEW` permission.
 
 ### Response
 
-**Status: 200 OK** (for JSON format)
+**Status: 201 Created** (for JSON format)
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -115,7 +115,7 @@ Returns file download with appropriate Content-Type.
 
 ### Patient Registration Report
 
-**Report Type:** `patient-registration`
+**Report Type:** `PATIENT_REGISTRATION`
 
 Statistics on patient registrations.
 
@@ -144,7 +144,7 @@ Statistics on patient registrations.
 
 ### Patient Demographics Report
 
-**Report Type:** `patient-demographics`
+**Report Type:** `PATIENT_DEMOGRAPHICS`
 
 Patient demographic analysis.
 
@@ -171,7 +171,7 @@ Patient demographic analysis.
 
 ### Appointment Summary Report
 
-**Report Type:** `appointment-summary`
+**Report Type:** `APPOINTMENT_SUMMARY`
 
 Appointment statistics and trends.
 
@@ -202,7 +202,7 @@ Appointment statistics and trends.
 
 ### Doctor Performance Report
 
-**Report Type:** `doctor-performance`
+**Report Type:** `DOCTOR_PERFORMANCE`
 
 Individual doctor performance metrics.
 
@@ -241,7 +241,7 @@ Individual doctor performance metrics.
 
 ### Prescription Summary Report
 
-**Report Type:** `prescription-summary`
+**Report Type:** `PRESCRIPTION_SUMMARY`
 
 Prescription statistics.
 
@@ -270,7 +270,7 @@ Prescription statistics.
 
 ### Medicine Usage Report
 
-**Report Type:** `medicine-usage`
+**Report Type:** `MEDICINE_USAGE`
 
 Medicine dispensing statistics.
 
@@ -297,7 +297,7 @@ Medicine dispensing statistics.
 
 ### Department Utilization Report
 
-**Report Type:** `department-utilization`
+**Report Type:** `DEPARTMENT_UTILIZATION`
 
 Department workload and capacity.
 
@@ -331,7 +331,7 @@ Department workload and capacity.
 
 ### Staff Report
 
-**Report Type:** `staff-summary`
+**Report Type:** `STAFF_SUMMARY`
 
 Staff statistics and attendance.
 
@@ -376,7 +376,7 @@ Retrieves previously generated reports.
 
 ### Authentication
 
-Required. Bearer token with `REPORT:VIEW` permission.
+Required. Bearer token with `REPORT:READ` permission.
 
 ### Query Parameters
 
@@ -408,6 +408,7 @@ Required. Bearer token with `REPORT:VIEW` permission.
 | generatedBy | object | User who generated |
 | generatedAt | string | Generation timestamp |
 | expiresAt | string | Expiration timestamp |
+| status | string | Report status (GENERATING, COMPLETED, FAILED) |
 
 ### Errors
 
@@ -426,7 +427,7 @@ Downloads a previously generated report.
 
 ### Authentication
 
-Required. Bearer token with `REPORT:VIEW` permission.
+Required. Bearer token with `REPORT:READ` permission.
 
 ### Path Parameters
 
@@ -436,7 +437,15 @@ Required. Bearer token with `REPORT:VIEW` permission.
 
 ### Response
 
-Returns file download.
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| reportId | string | Report ID |
+| reportType | string | Report type |
+| format | string | Output format |
+| data | object | Report data |
+| generatedAt | string | Generation timestamp |
 
 ### Errors
 
@@ -444,8 +453,8 @@ Returns file download.
 |--------|------|-------------|
 | 401 | UNAUTHORIZED | Missing or invalid token |
 | 403 | FORBIDDEN | Insufficient permissions |
-| 404 | NOT_FOUND | Report not found |
-| 410 | EXPIRED | Report has expired |
+| 404 | REPORT_NOT_FOUND | Report not found |
+| 404 | REPORT_EXPIRED | Report has expired |
 
 ### Business Rules
 
