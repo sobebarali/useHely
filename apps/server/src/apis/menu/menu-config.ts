@@ -207,23 +207,23 @@ export const FULL_MENU_STRUCTURE: MenuItem[] = [
 	// Pharmacy - Pharmacists
 	{
 		id: "pharmacy",
-		label: "Pharmacy",
+		label: "Dispensing",
 		icon: "local_pharmacy",
 		permission: "DISPENSING:READ",
 		order: 8,
 		visible: true,
 		children: [
 			{
-				id: "pharmacy-dispensing",
-				label: "Dispensing",
-				path: "/dashboard/pharmacy/dispensing",
-				permission: "DISPENSING:CREATE",
+				id: "pharmacy-queue",
+				label: "Queue",
+				path: "/dashboard/dispensing",
+				permission: "DISPENSING:READ",
 				order: 1,
 			},
 			{
-				id: "pharmacy-pending",
-				label: "Pending",
-				path: "/dashboard/pharmacy/pending",
+				id: "pharmacy-history",
+				label: "History",
+				path: "/dashboard/dispensing/history",
 				permission: "DISPENSING:READ",
 				order: 2,
 			},
