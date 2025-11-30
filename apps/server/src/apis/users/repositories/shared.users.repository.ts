@@ -432,3 +432,87 @@ export async function findStaffByIds({
 		throw error;
 	}
 }
+
+/**
+ * Check if a staff member has a specific role by role name
+ */
+export async function checkStaffHasRole({
+	tenantId,
+	staffId,
+	roleName,
+}: {
+	tenantId: string;
+	staffId: string;
+	roleName: string;
+}): Promise<boolean> {
+	try {
+		logger.debug({ tenantId, staffId, roleName }, "Checking staff role");
+
+		const staff = await Staff.findOne({
+			_id: staffId,
+			tenantId,
+		}).lean();
+
+		if (!staff || !staff.roles || staff.roles.length === 0) {
+			return false;
+		}
+
+		// Get the roles and check if any match the roleName
+		const roles = await Role.find({
+			_id: { $in: staff.roles },
+			tenantId,
+			isActive: true,
+		}).lean();
+
+		const hasRole = roles.some((role) => role.name === roleName);
+
+		logDatabaseOperation(
+			logger,
+			"checkRole",
+			"staff",
+			{ tenantId, staffId, roleName },
+			{ hasRole },
+		);
+
+		return hasRole;
+	} catch (error) {
+		logError(logger, error, "Failed to check staff role");
+		throw error;
+	}
+}
+
+/**
+ * Find departments by IDs within a tenant
+ */
+export async function findDepartmentsByIds({
+	tenantId,
+	departmentIds,
+}: {
+	tenantId: string;
+	departmentIds: string[];
+}) {
+	try {
+		logger.debug(
+			{ tenantId, count: departmentIds.length },
+			"Finding departments by IDs",
+		);
+
+		const departments = await Department.find({
+			_id: { $in: departmentIds },
+			tenantId,
+		}).lean();
+
+		logDatabaseOperation(
+			logger,
+			"find",
+			"department",
+			{ tenantId, count: departmentIds.length },
+			{ found: departments.length },
+		);
+
+		return departments;
+	} catch (error) {
+		logError(logger, error, "Failed to find departments by IDs");
+		throw error;
+	}
+}

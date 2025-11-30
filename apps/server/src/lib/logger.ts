@@ -21,14 +21,21 @@ const MASK_FIELDS = ["email", "phone", "adminEmail", "contactEmail"];
 
 /**
  * Sanitize an object by redacting sensitive fields
+ * Handles circular references by tracking seen objects
  */
-function sanitizeObject(obj: unknown): unknown {
+function sanitizeObject(obj: unknown, seen = new WeakSet<object>()): unknown {
 	if (!obj || typeof obj !== "object") {
 		return obj;
 	}
 
+	// Handle circular references
+	if (seen.has(obj as object)) {
+		return "[Circular]";
+	}
+	seen.add(obj as object);
+
 	if (Array.isArray(obj)) {
-		return obj.map((item) => sanitizeObject(item));
+		return obj.map((item) => sanitizeObject(item, seen));
 	}
 
 	const sanitized: Record<string, unknown> = {};
@@ -65,7 +72,7 @@ function sanitizeObject(obj: unknown): unknown {
 
 		// Recursively sanitize nested objects
 		if (value && typeof value === "object") {
-			sanitized[key] = sanitizeObject(value);
+			sanitized[key] = sanitizeObject(value, seen);
 		} else {
 			sanitized[key] = value;
 		}

@@ -67,6 +67,8 @@ const appointmentSchema = new Schema(
 		queueNumber: { type: Number },
 		checkedInAt: { type: Date },
 		completedAt: { type: Date },
+		followUpRequired: { type: Boolean },
+		followUpDate: { type: Date },
 		cancelledAt: { type: Date },
 		cancelledBy: { type: String, ref: "Staff" },
 		cancellationReason: { type: String },

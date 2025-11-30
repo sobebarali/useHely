@@ -2,6 +2,7 @@ import "dotenv/config";
 import { connectDB } from "@hms/db";
 import cors from "cors";
 import express from "express";
+import appointmentsRoutes from "./apis/appointments/appointments.routes";
 import authRoutes from "./apis/auth/auth.routes";
 import hospitalRoutes from "./apis/hospital/hospital.routes";
 import menuRoutes from "./apis/menu/menu.routes";
@@ -39,6 +40,7 @@ app.use(express.json());
 app.use(requestLogger);
 
 // API Routes
+app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/hospitals", hospitalRoutes);

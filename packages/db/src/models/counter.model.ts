@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-// Counter types
+// Known counter types (non-exhaustive, dynamic types are also allowed)
 export const CounterType = {
 	PATIENT: "patient",
 	PRESCRIPTION: "prescription",
@@ -12,13 +12,13 @@ export const CounterType = {
 } as const;
 
 // Main schema
+// Note: `type` is a free-form string to support dynamic counters (e.g., queue-{doctorId}-{date})
 const counterSchema = new Schema(
 	{
 		_id: { type: String },
 		tenantId: { type: String, ref: "Hospital", required: true },
 		type: {
 			type: String,
-			enum: Object.values(CounterType),
 			required: true,
 		},
 		seq: { type: Number, default: 0 },
