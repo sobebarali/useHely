@@ -71,13 +71,14 @@ export async function listPatients({
 			}
 		}
 
-		// Search in firstName, lastName, phone, or patientId
+		// Search in firstName, lastName, phone, email, or patientId
 		if (search) {
 			query.$or = [
 				{ firstName: { $regex: search, $options: "i" } },
 				{ lastName: { $regex: search, $options: "i" } },
 				{ phone: { $regex: search, $options: "i" } },
 				{ patientId: { $regex: search, $options: "i" } },
+				{ email: { $regex: search, $options: "i" } },
 			];
 		}
 

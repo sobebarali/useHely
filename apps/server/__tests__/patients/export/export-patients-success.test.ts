@@ -106,4 +106,35 @@ describe("GET /api/patients/export - Export patients success", () => {
 		expect(response.status).toBe(200);
 		expect(response.text).toContain("OPD");
 	});
+
+	it("exports patients to PDF format", async () => {
+		const response = await request(app)
+			.get("/api/patients/export")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.query({ format: "pdf" });
+
+		expect(response.status).toBe(200);
+		expect(response.headers["content-type"]).toContain("application/pdf");
+		expect(response.headers["content-disposition"]).toContain("attachment");
+		expect(response.headers["content-disposition"]).toContain(".pdf");
+
+		// Verify it's a valid PDF (starts with %PDF magic bytes)
+		expect(response.body).toBeInstanceOf(Buffer);
+		const pdfHeader = response.body.slice(0, 4).toString();
+		expect(pdfHeader).toBe("%PDF");
+	});
+
+	it("exports patients to PDF with specific fields", async () => {
+		const response = await request(app)
+			.get("/api/patients/export")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.query({
+				format: "pdf",
+				fields: "patientId,firstName,lastName",
+			});
+
+		expect(response.status).toBe(200);
+		expect(response.headers["content-type"]).toContain("application/pdf");
+		expect(response.body).toBeInstanceOf(Buffer);
+	});
 });
