@@ -48,7 +48,21 @@ Varies by grant type
 | grant_type | string | Yes | `refresh_token` |
 | refresh_token | string | Yes | Valid refresh token |
 
+#### MFA Grant
+
+Used to complete two-factor authentication after receiving an MFA challenge from password grant.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| grant_type | string | Yes | `mfa` |
+| challenge_token | string | Yes | MFA challenge token from password grant |
+| code | string | Yes | 6-digit TOTP code from authenticator app or 8-char backup code |
+
 ### Response
+
+#### Success Response
+
+When authentication is successful (or MFA not enabled), tokens are issued:
 
 **Status: 200 OK**
 
@@ -59,6 +73,42 @@ Varies by grant type
 | expires_in | number | Access token expiry in seconds (3600) |
 | refresh_token | string | Refresh token |
 | refresh_expires_in | number | Refresh token expiry in seconds (604800) |
+
+#### MFA Challenge Response
+
+When user has MFA enabled, password grant returns a challenge instead of tokens:
+
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| mfa_required | boolean | `true` - MFA verification needed |
+| challenge_token | string | Challenge token for MFA grant (5-minute expiry) |
+| expires_in | number | Challenge expiry in seconds (300) |
+
+**Next Step:** Client must prompt user for TOTP code and submit MFA grant with `challenge_token` and `code`.
+
+#### Example Responses
+
+**Standard Login (MFA disabled):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "abc123...",
+  "refresh_expires_in": 604800
+}
+```
+
+**MFA Challenge (MFA enabled):**
+```json
+{
+  "mfa_required": true,
+  "challenge_token": "challenge_abc123...",
+  "expires_in": 300
+}
+```
 
 ### Token Structure
 
@@ -86,6 +136,9 @@ Access token JWT payload contains:
 |--------|------|-------------|
 | 400 | INVALID_GRANT | Invalid grant type |
 | 400 | INVALID_REQUEST | Missing required fields |
+| 400 | INVALID_MFA_CHALLENGE | Invalid or expired MFA challenge token |
+| 400 | INVALID_MFA_CODE | Invalid TOTP or backup code |
+| 400 | MFA_NOT_CONFIGURED | MFA setup not completed |
 | 401 | INVALID_CREDENTIALS | Wrong username/password |
 | 401 | INVALID_TOKEN | Invalid refresh token |
 | 403 | ACCOUNT_LOCKED | User account is locked |
@@ -103,9 +156,18 @@ When a user submits credentials with a `tenant_id`, the system validates:
 2. **Tenant Validation** - Does the hospital exist and is it ACTIVE or VERIFIED?
 3. **User Lookup** - Does the user exist with this email?
 4. **Password Verification** - Is the password correct?
-5. **Staff Record Check** - Does the user have a Staff record in this tenant?
-6. **Staff Status Check** - Is the Staff record ACTIVE?
-7. **Role/Permission Load** - Load tenant-specific roles and permissions
+5. **MFA Check** (if user has MFA enabled)
+   - Generate challenge token
+   - Cache challenge in Redis (5-minute TTL)
+   - Return MFA challenge response
+   - Client prompts for TOTP code
+   - Client submits MFA grant with `challenge_token` and `code`
+   - Verify TOTP or backup code against user's MFA settings
+   - Proceed to step 6 on success
+6. **Staff Record Check** - Does the user have a Staff record in this tenant?
+7. **Staff Status Check** - Is the Staff record ACTIVE?
+8. **Role/Permission Load** - Load tenant-specific roles and permissions
+9. **Token Issuance** - Generate and return access + refresh tokens
 
 #### Multi-Hospital User Scenario
 

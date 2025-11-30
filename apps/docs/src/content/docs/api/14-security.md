@@ -13,51 +13,74 @@ The Security API provides field-level encryption for PHI/PII data, multi-factor 
 
 ### Encrypted Fields
 
-The following sensitive fields are encrypted at rest using AES-256-GCM:
+The following sensitive PHI/PII fields are encrypted at rest using AES-256-GCM:
 
 | Model | Encrypted Fields |
 |-------|------------------|
-| Patient | firstName, lastName, dateOfBirth, phone, email, address, emergencyContact |
+| Patient | firstName, lastName, phone, email, address.street, address.city, address.state, address.postalCode, address.country, emergencyContact.name, emergencyContact.phone, emergencyContact.relationship |
 | Prescription | diagnosis, notes |
-| Vitals | All health metrics |
-| Staff | personalPhone, personalEmail |
+| Vitals | notes, correctionReason |
+| Staff | phone |
 
-### Encryption Architecture
+### Encryption Implementation
+
+Field-level encryption is implemented using a Mongoose plugin that automatically encrypts data before saving and decrypts when reading:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Application Layer                     │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │  Mongoose   │  │  Encryption │  │  Key Management │ │
-│  │  Middleware │──│   Service   │──│     Client      │ │
-│  └─────────────┘  └─────────────┘  └─────────────────┘ │
-└────────────────────────────┬────────────────────────────┘
-                             │
-         ┌───────────────────┼───────────────────┐
-         │                   │                   │
-    ┌────▼────┐        ┌─────▼─────┐       ┌─────▼─────┐
-    │ MongoDB │        │  AWS KMS  │       │ HashiCorp │
-    │ (CSFLE) │        │           │       │   Vault   │
-    └─────────┘        └───────────┘       └───────────┘
+┌─────────────────────────────────────────────────────┐
+│              Application Layer                       │
+│                                                      │
+│  ┌──────────────┐       ┌──────────────────────┐   │
+│  │   Mongoose   │       │  Encryption Plugin   │   │
+│  │    Model     │────▶  │  (Pre/Post Hooks)    │   │
+│  └──────────────┘       └──────────┬───────────┘   │
+│                                    │               │
+└────────────────────────────────────┼───────────────┘
+                                     │
+                      ┌──────────────▼──────────────┐
+                      │       MongoDB               │
+                      │  (Encrypted with "enc:")    │
+                      └─────────────────────────────┘
 ```
+
+**How It Works:**
+
+1. **Pre-Save Hook**: Intercepts document saves and encrypts specified fields with master key
+2. **Encrypted Format**: Adds `"enc:"` prefix to identify encrypted values
+3. **Post-Read Hook**: Automatically decrypts fields when documents are retrieved
+4. **Transparent**: Application code works with plaintext, encryption is automatic
 
 ### Configuration
 
-| Setting | Description | Default |
+| Setting | Description | Example |
 |---------|-------------|---------|
-| ENCRYPTION_ALGORITHM | Encryption algorithm | AES-256-GCM |
-| KEY_ROTATION_DAYS | Key rotation schedule | 90 |
-| KMS_PROVIDER | Key management provider | aws-kms |
+| ENCRYPTION_MASTER_KEY | 256-bit encryption key (64-char hex string) | `openssl rand -hex 32` |
+| Rotation Schedule | Recommended key rotation interval | 90 days |
+
+**Environment Variable:**
+```bash
+# Generate with: openssl rand -hex 32
+ENCRYPTION_MASTER_KEY=a1b2c3d4e5f6...
+```
 
 ---
 
 ## Multi-Factor Authentication (MFA)
 
+MFA is **optional** and can be enabled per user for enhanced security. When enabled, users must provide a TOTP code from their authenticator app in addition to their password.
+
+### MFA Setup Flow
+
+1. **Enable MFA** - Generate TOTP secret and backup codes
+2. **Scan QR Code** - Add to authenticator app (Google Authenticator, Authy, etc.)
+3. **Verify Setup** - Provide first TOTP code to activate
+4. **Store Backup Codes** - Save 10 one-time recovery codes securely
+
 ### Enable MFA
 
-**POST** `/api/security/mfa/enable`
+**POST** `/api/auth/mfa/enable`
 
-Enable TOTP-based MFA for the authenticated user.
+Generate TOTP secret, QR code, and backup codes for MFA setup.
 
 #### Authentication
 
@@ -70,30 +93,52 @@ Required. Bearer token.
 | Field | Type | Description |
 |-------|------|-------------|
 | secret | string | TOTP secret (base32 encoded) |
-| qrCode | string | QR code data URL for authenticator apps |
-| backupCodes | array | One-time backup codes (10) |
+| qrCodeDataUrl | string | QR code as data URL for authenticator apps |
+| backupCodes | array | 10 one-time backup codes (plain text) |
+
+**Important:** Backup codes are shown **only once**. Users must save them securely. Each code can be used only once.
 
 #### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | MFA_ALREADY_ENABLED | MFA is already enabled |
-| 401 | UNAUTHORIZED | Invalid token |
+| 400 | MFA_ALREADY_ENABLED | MFA is already enabled. Disable first to reconfigure. |
+| 401 | UNAUTHORIZED | Invalid or missing token |
+
+#### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "secret": "JBSWY3DPEHPK3PXP",
+    "qrCodeDataUrl": "data:image/png;base64,iVBORw0KGgo...",
+    "backupCodes": [
+      "a1b2c3d4",
+      "e5f6g7h8",
+      ...
+    ]
+  }
+}
+```
 
 ---
 
 ### Verify MFA
 
-**POST** `/api/security/mfa/verify`
+**POST** `/api/auth/mfa/verify`
 
-Verify TOTP code during login or to confirm MFA setup.
+Verify TOTP code from authenticator app to activate MFA.
+
+#### Authentication
+
+Required. Bearer token.
 
 #### Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| code | string | Yes | 6-digit TOTP code |
-| type | string | No | `totp` or `backup` (default: totp) |
+| code | string | Yes | 6-digit TOTP code from authenticator app |
 
 #### Response
 
@@ -101,38 +146,99 @@ Verify TOTP code during login or to confirm MFA setup.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| verified | boolean | `true` if code is valid |
-| mfaEnabled | boolean | MFA status after verification |
+| enabled | boolean | `true` - MFA is now active |
+| verifiedAt | string | ISO 8601 timestamp of verification |
 
 #### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | INVALID_CODE | Invalid or expired TOTP code |
-| 400 | BACKUP_CODE_USED | Backup code already used |
-| 401 | UNAUTHORIZED | Invalid token |
+| 400 | MFA_NOT_CONFIGURED | Must call `/mfa/enable` first |
+| 400 | INVALID_MFA_CODE | Invalid or expired TOTP code |
+| 401 | UNAUTHORIZED | Invalid or missing token |
 
 ---
 
 ### Disable MFA
 
-**POST** `/api/security/mfa/disable`
+**POST** `/api/auth/mfa/disable`
 
-Disable MFA for the authenticated user. Requires current TOTP code.
+Disable MFA for the authenticated user.
 
-#### Request Body
+#### Authentication
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| code | string | Yes | Current 6-digit TOTP code |
+Required. Bearer token.
 
 #### Response
 
 **Status: 200 OK**
 
-| Field | Type | Description |
-|-------|------|-------------|
-| mfaEnabled | boolean | `false` |
+```json
+{
+  "success": true,
+  "message": "MFA disabled successfully"
+}
+```
+
+#### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | UNAUTHORIZED | Invalid or missing token |
+
+---
+
+### MFA Authentication Flow
+
+When MFA is enabled, the login process becomes two-step:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  MFA Authentication Flow                 │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Step 1: Password Authentication                        │
+│  ─────────────────────────────                          │
+│  POST /api/auth/token                                   │
+│  { grant_type: "password", username, password, ... }    │
+│                                                          │
+│  Response (MFA Challenge):                              │
+│  {                                                       │
+│    "mfa_required": true,                                │
+│    "challenge_token": "abc123...",                      │
+│    "expires_in": 300  // 5 minutes                      │
+│  }                                                       │
+│                                                          │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  Step 2: MFA Verification                               │
+│  ───────────────────────                                │
+│  POST /api/auth/token                                   │
+│  {                                                       │
+│    "grant_type": "mfa",                                 │
+│    "challenge_token": "abc123...",                      │
+│    "code": "123456"  // TOTP or backup code             │
+│  }                                                       │
+│                                                          │
+│  Response (Tokens):                                     │
+│  {                                                       │
+│    "access_token": "...",                               │
+│    "refresh_token": "...",                              │
+│    "token_type": "Bearer",                              │
+│    "expires_in": 3600                                   │
+│  }                                                       │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Backup Codes
+
+- **Quantity**: 10 codes generated during MFA setup
+- **Format**: 8-character hex strings
+- **Storage**: Hashed with bcrypt before database storage
+- **Usage**: One-time use only (removed after successful use)
+- **Purpose**: Recovery access if authenticator app unavailable
+- **Regeneration**: Disable and re-enable MFA to get new codes
 
 ---
 
@@ -150,13 +256,43 @@ Required. Bearer token with `SECURITY:MANAGE` permission.
 
 #### Response
 
-**Status: 202 Accepted**
+**Status: 200 OK**
 
 | Field | Type | Description |
 |-------|------|-------------|
-| jobId | string | Background job ID |
-| status | string | `in_progress` |
-| estimatedDuration | number | Estimated seconds to complete |
+| newKeyId | string | New encryption key ID |
+| previousKeyId | string | Previous encryption key ID |
+| rotatedAt | string | Rotation timestamp (ISO 8601) |
+| rotatedBy | string | User ID who initiated rotation |
+| recordsReEncrypted | number | Total records re-encrypted |
+| breakdown | object | Re-encryption breakdown by collection |
+| breakdown.patients | number | Patient records re-encrypted |
+| breakdown.prescriptions | number | Prescription records re-encrypted |
+| breakdown.vitals | number | Vitals records re-encrypted |
+| breakdown.staff | number | Staff records re-encrypted |
+
+**Important:** After key rotation, you must manually update the `ENCRYPTION_MASTER_KEY` environment variable with the new key and restart the server for it to take effect.
+
+#### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "newKeyId": "abc12345",
+    "previousKeyId": "xyz67890",
+    "rotatedAt": "2025-11-30T10:30:00.000Z",
+    "rotatedBy": "user-uuid",
+    "recordsReEncrypted": 1250,
+    "breakdown": {
+      "patients": 500,
+      "prescriptions": 300,
+      "vitals": 400,
+      "staff": 50
+    }
+  }
+}
+```
 
 #### Errors
 
@@ -184,9 +320,32 @@ Required. Bearer token with `SECURITY:READ` permission.
 | Field | Type | Description |
 |-------|------|-------------|
 | currentKeyId | string | Current encryption key ID |
-| keyAge | number | Days since last rotation |
-| nextRotation | string | Scheduled next rotation (ISO 8601) |
-| rotationHistory | array | Last 10 key rotations |
+| lastRotation | object \| null | Last rotation details (null if never rotated) |
+| lastRotation.rotatedAt | string | Rotation timestamp (ISO 8601) |
+| lastRotation.rotatedBy | string | User ID who initiated rotation |
+| lastRotation.recordsReEncrypted | number | Total records re-encrypted |
+| lastRotation.daysSinceRotation | number | Days since this rotation |
+| rotationRecommended | boolean | `true` if rotation recommended (>90 days) |
+| totalRotations | number | Total number of rotations performed |
+
+#### Example Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "currentKeyId": "abc12345",
+    "lastRotation": {
+      "rotatedAt": "2025-09-15T14:20:00.000Z",
+      "rotatedBy": "user-uuid",
+      "recordsReEncrypted": 1250,
+      "daysSinceRotation": 76
+    },
+    "rotationRecommended": false,
+    "totalRotations": 3
+  }
+}
+```
 
 ---
 
@@ -243,6 +402,8 @@ Required. Bearer token with `SECURITY:READ` permission.
 | AUTH_FAILED | Failed login attempt | medium |
 | AUTH_LOCKOUT | Account locked | high |
 | PERMISSION_DENIED | Unauthorized access attempt | medium |
+| MFA_ENABLED | MFA enabled for user | low |
+| MFA_DISABLED | MFA disabled for user | low |
 | MFA_FAILED | Failed MFA verification | high |
 | SUSPICIOUS_ACTIVITY | Unusual access pattern | high |
 | KEY_ROTATION | Encryption key rotated | low |

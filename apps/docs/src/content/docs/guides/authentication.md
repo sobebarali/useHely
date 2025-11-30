@@ -37,7 +37,7 @@ useHely uses OAuth2 with JWT tokens for authentication and implements both Role-
 │  PHASE 2: User Login                                                 │
 │  ───────────────────                                                 │
 │                                                                      │
-│  3. POST /api/auth/token                                             │
+│  3. POST /api/auth/token (password grant)                            │
 │     {                                                                │
 │       "grant_type": "password",                                      │
 │       "username": "admin@hospital.com",                              │
@@ -54,12 +54,27 @@ useHely uses OAuth2 with JWT tokens for authentication and implements both Role-
 │     ├─ Verify Staff status is ACTIVE                                │
 │     └─ Load roles and aggregate permissions                         │
 │                                                                      │
-│     Response:                                                        │
+│     If MFA enabled for user:                                         │
+│     Response (MFA Challenge):                                        │
 │     {                                                                │
-│       "access_token": "...",                                         │
-│       "refresh_token": "...",                                        │
-│       "expires_in": 3600                                             │
+│       "mfa_required": true,                                          │
+│       "challenge_token": "...",                                      │
+│       "expires_in": 300                                              │
 │     }                                                                │
+│                                                                      │
+│  3b. POST /api/auth/token (mfa grant) - If MFA enabled              │
+│      {                                                               │
+│        "grant_type": "mfa",                                          │
+│        "challenge_token": "...",                                     │
+│        "code": "123456"  // TOTP or backup code                      │
+│      }                                                               │
+│                                                                      │
+│      Response (Tokens):                                              │
+│      {                                                               │
+│        "access_token": "...",                                        │
+│        "refresh_token": "...",                                       │
+│        "expires_in": 3600                                            │
+│      }                                                               │
 │                                                                      │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                      │
@@ -124,6 +139,78 @@ To logout:
 1. Call `/api/auth/revoke` with tokens
 2. Tokens invalidated server-side
 3. Client clears stored tokens
+
+## Multi-Factor Authentication (MFA)
+
+### Optional Two-Factor Authentication
+
+MFA is optional and can be enabled per user for enhanced security:
+
+1. **User enables MFA** via `/api/auth/mfa/enable`
+   - Receives TOTP secret and QR code
+   - Scans QR code with authenticator app (Google Authenticator, Authy, etc.)
+   - Receives 10 backup codes for recovery
+
+2. **User verifies setup** via `/api/auth/mfa/verify`
+   - Provides first TOTP code from app
+   - MFA is activated on success
+
+3. **Future logins require two steps:**
+   - Step 1: Password → MFA challenge
+   - Step 2: TOTP code → Access tokens
+
+### Backup Codes
+
+- 10 one-time use codes provided during setup
+- Use if authenticator app unavailable
+- Each code removed after use
+- Generate new codes by disabling and re-enabling MFA
+
+### MFA Best Practices
+
+| User Type | Recommendation |
+|-----------|----------------|
+| Admin accounts | Require MFA |
+| High-privilege users | Strongly recommend MFA |
+| Regular users | Optional MFA |
+| Backup codes | Store securely offline |
+
+## Data Encryption
+
+### Field-Level Encryption
+
+Sensitive PHI/PII data is encrypted at rest using AES-256-GCM:
+
+**Encrypted Fields:**
+- **Patient**: firstName, lastName, phone, email, address, emergency contact
+- **Prescription**: diagnosis, notes
+- **Vitals**: notes, correctionReason
+- **Staff**: phone
+
+**How It Works:**
+1. Mongoose plugin intercepts save/update operations
+2. Encrypts specified fields with master key
+3. Adds "enc:" prefix for identification
+4. Decrypts automatically on read
+
+**Key Management:**
+- Master key stored in `ENCRYPTION_MASTER_KEY` environment variable
+- Keys rotated every 90 days (recommended)
+- Rotation re-encrypts all data with new key
+
+### Encryption Configuration
+
+Generate encryption key:
+```bash
+openssl rand -hex 32
+```
+
+Add to `.env`:
+```bash
+ENCRYPTION_MASTER_KEY=your-generated-key-here
+```
+
+**Important:** Keep encryption keys secure. Loss of encryption key means data cannot be decrypted.
 
 ## Authorization
 
