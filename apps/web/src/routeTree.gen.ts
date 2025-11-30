@@ -21,6 +21,8 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardStaffIndexRouteImport } from './routes/dashboard/staff/index'
 import { Route as DashboardPatientsIndexRouteImport } from './routes/dashboard/patients/index'
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
+import { Route as DashboardPatientsRegisterRouteImport } from './routes/dashboard/patients/register'
+import { Route as DashboardPatientsOpdQueueRouteImport } from './routes/dashboard/patients/opd-queue'
 import { Route as DashboardPatientsIdRouteImport } from './routes/dashboard/patients/$id'
 
 const VerifyHospitalRoute = VerifyHospitalRouteImport.update({
@@ -83,6 +85,18 @@ const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
   path: '/staff/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardPatientsRegisterRoute =
+  DashboardPatientsRegisterRouteImport.update({
+    id: '/patients/register',
+    path: '/patients/register',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardPatientsOpdQueueRoute =
+  DashboardPatientsOpdQueueRouteImport.update({
+    id: '/patients/opd-queue',
+    path: '/patients/opd-queue',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardPatientsIdRoute = DashboardPatientsIdRouteImport.update({
   id: '/patients/$id',
   path: '/patients/$id',
@@ -100,6 +114,8 @@ export interface FileRoutesByFullPath {
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
+  '/dashboard/patients/opd-queue': typeof DashboardPatientsOpdQueueRoute
+  '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
@@ -114,6 +130,8 @@ export interface FileRoutesByTo {
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
+  '/dashboard/patients/opd-queue': typeof DashboardPatientsOpdQueueRoute
+  '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/staff': typeof DashboardStaffIndexRoute
@@ -130,6 +148,8 @@ export interface FileRoutesById {
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/dashboard/patients/$id': typeof DashboardPatientsIdRoute
+  '/dashboard/patients/opd-queue': typeof DashboardPatientsOpdQueueRoute
+  '/dashboard/patients/register': typeof DashboardPatientsRegisterRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
   '/dashboard/patients/': typeof DashboardPatientsIndexRoute
   '/dashboard/staff/': typeof DashboardStaffIndexRoute
@@ -147,6 +167,8 @@ export interface FileRouteTypes {
     | '/verify-hospital'
     | '/dashboard/'
     | '/dashboard/patients/$id'
+    | '/dashboard/patients/opd-queue'
+    | '/dashboard/patients/register'
     | '/dashboard/staff/$id'
     | '/dashboard/patients'
     | '/dashboard/staff'
@@ -161,6 +183,8 @@ export interface FileRouteTypes {
     | '/verify-hospital'
     | '/dashboard'
     | '/dashboard/patients/$id'
+    | '/dashboard/patients/opd-queue'
+    | '/dashboard/patients/register'
     | '/dashboard/staff/$id'
     | '/dashboard/patients'
     | '/dashboard/staff'
@@ -176,6 +200,8 @@ export interface FileRouteTypes {
     | '/verify-hospital'
     | '/dashboard/'
     | '/dashboard/patients/$id'
+    | '/dashboard/patients/opd-queue'
+    | '/dashboard/patients/register'
     | '/dashboard/staff/$id'
     | '/dashboard/patients/'
     | '/dashboard/staff/'
@@ -278,6 +304,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStaffIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/patients/register': {
+      id: '/dashboard/patients/register'
+      path: '/patients/register'
+      fullPath: '/dashboard/patients/register'
+      preLoaderRoute: typeof DashboardPatientsRegisterRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/patients/opd-queue': {
+      id: '/dashboard/patients/opd-queue'
+      path: '/patients/opd-queue'
+      fullPath: '/dashboard/patients/opd-queue'
+      preLoaderRoute: typeof DashboardPatientsOpdQueueRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/patients/$id': {
       id: '/dashboard/patients/$id'
       path: '/patients/$id'
@@ -291,6 +331,8 @@ declare module '@tanstack/react-router' {
 interface DashboardRouteChildren {
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardPatientsIdRoute: typeof DashboardPatientsIdRoute
+  DashboardPatientsOpdQueueRoute: typeof DashboardPatientsOpdQueueRoute
+  DashboardPatientsRegisterRoute: typeof DashboardPatientsRegisterRoute
   DashboardStaffIdRoute: typeof DashboardStaffIdRoute
   DashboardPatientsIndexRoute: typeof DashboardPatientsIndexRoute
   DashboardStaffIndexRoute: typeof DashboardStaffIndexRoute
@@ -299,6 +341,8 @@ interface DashboardRouteChildren {
 const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardPatientsIdRoute: DashboardPatientsIdRoute,
+  DashboardPatientsOpdQueueRoute: DashboardPatientsOpdQueueRoute,
+  DashboardPatientsRegisterRoute: DashboardPatientsRegisterRoute,
   DashboardStaffIdRoute: DashboardStaffIdRoute,
   DashboardPatientsIndexRoute: DashboardPatientsIndexRoute,
   DashboardStaffIndexRoute: DashboardStaffIndexRoute,
