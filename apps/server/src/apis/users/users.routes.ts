@@ -4,6 +4,7 @@ import { authorize } from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
 
 // Controllers
+import { changePasswordController } from "./controllers/change-password.users.controller";
 import { createUserController } from "./controllers/create.users.controller";
 import { deactivateUserController } from "./controllers/deactivate.users.controller";
 import { forcePasswordChangeController } from "./controllers/force-password-change.users.controller";
@@ -14,6 +15,7 @@ import { resetPasswordController } from "./controllers/reset-password.users.cont
 import { updateUserController } from "./controllers/update.users.controller";
 
 // Validations
+import { changePasswordSchema } from "./validations/change-password.users.validation";
 import { createUserSchema } from "./validations/create.users.validation";
 import { deactivateUserSchema } from "./validations/deactivate.users.validation";
 import { forcePasswordChangeSchema } from "./validations/force-password-change.users.validation";
@@ -43,6 +45,13 @@ router.post(
 
 // ===== Protected Routes (require authentication) =====
 router.use(authenticate);
+
+// POST /api/users/change-password - Change own password
+router.post(
+	"/change-password",
+	validate(changePasswordSchema),
+	changePasswordController,
+);
 
 // POST /api/users - Create a new user
 router.post(

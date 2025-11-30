@@ -356,6 +356,51 @@ None required (uses reset token)
 
 ---
 
+## Change Password
+
+**POST** `/api/users/change-password`
+
+Changes the authenticated user's password.
+
+### Authentication
+
+Required. Bearer token.
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| currentPassword | string | Yes | Current password |
+| newPassword | string | Yes | New password |
+| confirmPassword | string | Yes | Password confirmation |
+
+### Response
+
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| message | string | Success confirmation |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | INVALID_REQUEST | Passwords do not match or policy violation |
+| 400 | PASSWORD_REUSE | Cannot reuse recent passwords |
+| 401 | UNAUTHORIZED | Missing or invalid token |
+| 401 | INVALID_CREDENTIALS | Current password is incorrect |
+
+### Business Rules
+
+- User must be authenticated
+- Must provide correct current password
+- Cannot reuse any of last 3 passwords
+- All active sessions invalidated after change
+- Clears `PASSWORD_EXPIRED` status if set
+
+---
+
 ## Force Password Change
 
 **POST** `/api/users/:id/force-password-change`
