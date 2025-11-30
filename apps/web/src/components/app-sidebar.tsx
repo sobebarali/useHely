@@ -4,11 +4,11 @@ import {
 	Calendar,
 	FileText,
 	LayoutDashboard,
+	type LucideIcon,
 	Package,
 	Pill,
 	Settings2,
 	Stethoscope,
-	UserCog,
 	Users,
 } from "lucide-react";
 import type * as React from "react";
@@ -22,219 +22,49 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/components/ui/sidebar";
+import { useMenu } from "@/hooks/use-menu";
 
-// useHely Navigation Data
-const navMain = [
-	{
-		title: "Dashboard",
-		url: "/dashboard",
-		icon: LayoutDashboard,
-		isActive: true,
-		items: [
-			{
-				title: "Overview",
-				url: "/dashboard",
-			},
-			{
-				title: "Analytics",
-				url: "/dashboard/analytics",
-			},
-		],
-	},
-	{
-		title: "Patients",
-		url: "/dashboard/patients",
-		icon: Users,
-		items: [
-			{
-				title: "All Patients",
-				url: "/dashboard/patients",
-			},
-			{
-				title: "Register Patient",
-				url: "/dashboard/patients/register",
-			},
-			{
-				title: "OPD Queue",
-				url: "/dashboard/patients/opd-queue",
-			},
-		],
-	},
-	{
-		title: "Appointments",
-		url: "/dashboard/appointments",
-		icon: Calendar,
-		items: [
-			{
-				title: "All Appointments",
-				url: "/dashboard/appointments",
-			},
-			{
-				title: "Schedule",
-				url: "/dashboard/appointments/schedule",
-			},
-			{
-				title: "Calendar",
-				url: "/dashboard/appointments/calendar",
-			},
-		],
-	},
-	{
-		title: "Doctors",
-		url: "/dashboard/doctors",
-		icon: Stethoscope,
-		items: [
-			{
-				title: "All Doctors",
-				url: "/dashboard/doctors",
-			},
-			{
-				title: "Availability",
-				url: "/dashboard/doctors/availability",
-			},
-		],
-	},
-	{
-		title: "Prescriptions",
-		url: "/dashboard/prescriptions",
-		icon: FileText,
-		items: [
-			{
-				title: "All Prescriptions",
-				url: "/dashboard/prescriptions",
-			},
-			{
-				title: "Create",
-				url: "/dashboard/prescriptions/create",
-			},
-			{
-				title: "Templates",
-				url: "/dashboard/prescriptions/templates",
-			},
-		],
-	},
-	{
-		title: "Vitals",
-		url: "/dashboard/vitals",
-		icon: Activity,
-		items: [
-			{
-				title: "Record Vitals",
-				url: "/dashboard/vitals/record",
-			},
-			{
-				title: "History",
-				url: "/dashboard/vitals/history",
-			},
-		],
-	},
-	{
-		title: "Pharmacy",
-		url: "/dashboard/pharmacy",
-		icon: Pill,
-		items: [
-			{
-				title: "Dispensing",
-				url: "/dashboard/pharmacy/dispensing",
-			},
-			{
-				title: "Pending",
-				url: "/dashboard/pharmacy/pending",
-			},
-		],
-	},
-	{
-		title: "Inventory",
-		url: "/dashboard/inventory",
-		icon: Package,
-		items: [
-			{
-				title: "Stock",
-				url: "/dashboard/inventory/stock",
-			},
-			{
-				title: "Low Stock Alerts",
-				url: "/dashboard/inventory/alerts",
-			},
-		],
-	},
-	{
-		title: "Departments",
-		url: "/dashboard/departments",
-		icon: Building2,
-		items: [
-			{
-				title: "All Departments",
-				url: "/dashboard/departments",
-			},
-			{
-				title: "Manage",
-				url: "/dashboard/departments/manage",
-			},
-		],
-	},
-	{
-		title: "Staff",
-		url: "/dashboard/staff",
-		icon: UserCog,
-		items: [
-			{
-				title: "All Staff",
-				url: "/dashboard/staff",
-			},
-			{
-				title: "Add Staff",
-				url: "/dashboard/staff/add",
-			},
-			{
-				title: "Roles",
-				url: "/dashboard/staff/roles",
-			},
-		],
-	},
-	{
-		title: "Reports",
-		url: "/dashboard/reports",
-		icon: FileText,
-		items: [
-			{
-				title: "Patient Reports",
-				url: "/dashboard/reports/patients",
-			},
-			{
-				title: "Appointment Reports",
-				url: "/dashboard/reports/appointments",
-			},
-			{
-				title: "Revenue Reports",
-				url: "/dashboard/reports/revenue",
-			},
-		],
-	},
-	{
-		title: "Settings",
-		url: "/dashboard/settings",
-		icon: Settings2,
-		items: [
-			{
-				title: "General",
-				url: "/dashboard/settings/general",
-			},
-			{
-				title: "Hospital Profile",
-				url: "/dashboard/settings/profile",
-			},
-			{
-				title: "Security",
-				url: "/dashboard/settings/security",
-			},
-			{
-				title: "Notifications",
-				url: "/dashboard/settings/notifications",
-			},
-		],
-	},
-];
+// Icon mapping from server icon names to Lucide icons
+const iconMap: Record<string, LucideIcon> = {
+	dashboard: LayoutDashboard,
+	people: Users,
+	medical_services: Stethoscope,
+	medication: Pill,
+	schedule: Calendar,
+	vital_signs: Activity,
+	local_pharmacy: Pill,
+	inventory: Package,
+	queue: Users,
+	business: Building2,
+	assignment: FileText,
+	settings: Settings2,
+};
+
+// Convert server menu items to NavMain format
+function convertMenuItems(
+	menuItems: Array<{
+		id: string;
+		label: string;
+		icon: string;
+		path?: string;
+		children?: Array<{
+			id: string;
+			label: string;
+			path: string;
+		}>;
+	}>,
+) {
+	return menuItems.map((item) => ({
+		title: item.label,
+		url: item.path || "",
+		icon: iconMap[item.icon] || LayoutDashboard,
+		isActive: false, // Will be determined by current route
+		items: item.children?.map((child) => ({
+			title: child.label,
+			url: child.path,
+		})),
+	}));
+}
 
 export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 	user: {
@@ -249,13 +79,63 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
+	const { data: menuData, isLoading, error } = useMenu();
+
+	// Show loading state while menu is being fetched
+	if (isLoading) {
+		return (
+			<Sidebar collapsible="icon" {...props}>
+				<SidebarHeader>
+					<HospitalSwitcher hospital={hospital} />
+				</SidebarHeader>
+				<SidebarContent>
+					<div className="p-4">
+						<div className="animate-pulse space-y-2">
+							{Array.from({ length: 5 }).map(() => (
+								<div key={Math.random()} className="h-8 rounded bg-muted" />
+							))}
+						</div>
+					</div>
+				</SidebarContent>
+				<SidebarFooter>
+					<NavUser user={user} />
+				</SidebarFooter>
+				<SidebarRail />
+			</Sidebar>
+		);
+	}
+
+	// Show error state if menu fails to load
+	if (error || !menuData) {
+		return (
+			<Sidebar collapsible="icon" {...props}>
+				<SidebarHeader>
+					<HospitalSwitcher hospital={hospital} />
+				</SidebarHeader>
+				<SidebarContent>
+					<div className="p-4">
+						<p className="text-destructive text-sm">
+							Failed to load menu. Please refresh the page.
+						</p>
+					</div>
+				</SidebarContent>
+				<SidebarFooter>
+					<NavUser user={user} />
+				</SidebarFooter>
+				<SidebarRail />
+			</Sidebar>
+		);
+	}
+
+	const navItems = convertMenuItems(menuData.menu);
+
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
 				<HospitalSwitcher hospital={hospital} />
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={navMain} />
+				<NavMain items={navItems} />
 			</SidebarContent>
 			<SidebarFooter>
 				<NavUser user={user} />

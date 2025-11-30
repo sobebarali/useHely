@@ -393,6 +393,165 @@ Returns full template object with medicines.
 
 ---
 
+## Update Template
+
+**PATCH** `/api/prescriptions/templates/:id`
+
+Updates an existing prescription template.
+
+### Authentication
+
+Required. Bearer token with `PRESCRIPTION:UPDATE` permission.
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | string | Template ID |
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | No | Updated template name |
+| category | string | No | Updated category |
+| condition | string | No | Updated associated condition |
+| medicines | array | No | Updated medicines list |
+
+### Response
+
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Template ID |
+| name | string | Template name |
+| category | string | Category |
+| condition | string | Associated condition |
+| medicines | array | Default medicines |
+| createdBy | object | Creator details |
+| updatedAt | string | Last update timestamp |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | INVALID_REQUEST | Invalid field values |
+| 400 | DUPLICATE_NAME | Template name already exists |
+| 401 | UNAUTHORIZED | Missing or invalid token |
+| 403 | FORBIDDEN | Insufficient permissions or not template owner |
+| 403 | SYSTEM_TEMPLATE | Cannot modify system templates |
+| 404 | NOT_FOUND | Template not found |
+
+### Business Rules
+
+- Only template creator or HOSPITAL_ADMIN can update
+- System templates (`isSystem: true`) cannot be modified
+- At least one field must be provided for update
+
+---
+
+## Delete Template
+
+**DELETE** `/api/prescriptions/templates/:id`
+
+Deletes a prescription template.
+
+### Authentication
+
+Required. Bearer token with `PRESCRIPTION:DELETE` permission.
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | string | Template ID |
+
+### Response
+
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| message | string | Success message |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | UNAUTHORIZED | Missing or invalid token |
+| 403 | FORBIDDEN | Insufficient permissions or not template owner |
+| 403 | SYSTEM_TEMPLATE | Cannot delete system templates |
+| 404 | NOT_FOUND | Template not found |
+
+### Business Rules
+
+- Only template creator or HOSPITAL_ADMIN can delete
+- System templates (`isSystem: true`) cannot be deleted
+- Prescriptions using this template are not affected (templateId preserved as reference)
+
+---
+
+## Cancel Prescription
+
+**PATCH** `/api/prescriptions/:id/cancel`
+
+Cancels an existing prescription.
+
+### Authentication
+
+Required. Bearer token with `PRESCRIPTION:UPDATE` permission.
+
+### Path Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| id | string | Prescription ID |
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| reason | string | No | Cancellation reason |
+
+### Response
+
+**Status: 200 OK**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Prescription ID |
+| prescriptionId | string | Prescription identifier |
+| status | string | `CANCELLED` |
+| cancelledAt | string | Cancellation timestamp |
+| cancelledBy | object | User who cancelled |
+| cancellationReason | string | Reason for cancellation |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | INVALID_STATUS | Cannot cancel prescription with current status |
+| 401 | UNAUTHORIZED | Missing or invalid token |
+| 403 | FORBIDDEN | Insufficient permissions or ownership policy denied |
+| 404 | NOT_FOUND | Prescription not found |
+
+### Ownership Policy
+
+**ABAC Enforcement:** Doctors can only cancel prescriptions they created.
+
+- **Allowed:** Prescription's `doctorId` matches authenticated doctor's ID
+- **Bypass:** SUPER_ADMIN and HOSPITAL_ADMIN roles
+
+### Business Rules
+
+- Only `PENDING` or `DISPENSING` status prescriptions can be cancelled
+- Cannot cancel `DISPENSED` or `COMPLETED` prescriptions
+- Cancellation reason is logged for audit trail
+- Status changes to `CANCELLED` and cannot be reversed
+
+---
+
 ## Prescription Status
 
 | Status | Description |
@@ -408,9 +567,10 @@ Returns full template object with medicines.
 | From | To | Trigger |
 |------|-----|---------|
 | PENDING | DISPENSING | Pharmacist starts processing |
-| PENDING | CANCELLED | Doctor cancels |
+| PENDING | CANCELLED | Doctor cancels via Cancel API |
 | DISPENSING | DISPENSED | Pharmacist completes |
 | DISPENSING | PENDING | Pharmacist returns to queue |
+| DISPENSING | CANCELLED | Doctor cancels via Cancel API |
 | DISPENSED | COMPLETED | Patient collects |
 
 ---

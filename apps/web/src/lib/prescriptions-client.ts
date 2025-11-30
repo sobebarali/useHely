@@ -164,6 +164,23 @@ export interface UpdatePrescriptionResponse {
 	updatedAt: string;
 }
 
+export interface CancelPrescriptionInput {
+	reason?: string;
+}
+
+export interface CancelPrescriptionResponse {
+	id: string;
+	prescriptionId: string;
+	status: PrescriptionStatus;
+	cancelledAt: string;
+	cancelledBy: {
+		id: string;
+		firstName: string;
+		lastName: string;
+	};
+	cancellationReason?: string;
+}
+
 // Template types
 export interface TemplateMedicine {
 	id: string;
@@ -223,6 +240,31 @@ export interface CreateTemplateResponse {
 		lastName: string;
 	};
 	createdAt: string;
+}
+
+export interface UpdateTemplateInput {
+	name?: string;
+	category?: string;
+	condition?: string;
+	medicines?: Omit<TemplateMedicine, "id">[];
+}
+
+export interface UpdateTemplateResponse {
+	id: string;
+	name: string;
+	category?: string;
+	condition?: string;
+	medicines: TemplateMedicine[];
+	createdBy?: {
+		id: string;
+		firstName: string;
+		lastName: string;
+	};
+	updatedAt: string;
+}
+
+export interface DeleteTemplateResponse {
+	message: string;
 }
 
 export interface ApiError {
@@ -425,6 +467,26 @@ export async function updatePrescription({
 	return response.data;
 }
 
+/**
+ * Cancel prescription by ID
+ */
+export async function cancelPrescription({
+	id,
+	data,
+}: {
+	id: string;
+	data: CancelPrescriptionInput;
+}): Promise<CancelPrescriptionResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: CancelPrescriptionResponse;
+	}>(`/api/prescriptions/${id}/cancel`, {
+		method: "PATCH",
+		body: JSON.stringify(data),
+	});
+	return response.data;
+}
+
 // ===== Template API Functions =====
 
 /**
@@ -480,15 +542,53 @@ export async function createTemplate(
 	return response.data;
 }
 
+/**
+ * Update a prescription template
+ */
+export async function updateTemplate({
+	id,
+	data,
+}: {
+	id: string;
+	data: UpdateTemplateInput;
+}): Promise<UpdateTemplateResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: UpdateTemplateResponse;
+	}>(`/api/prescriptions/templates/${id}`, {
+		method: "PATCH",
+		body: JSON.stringify(data),
+	});
+	return response.data;
+}
+
+/**
+ * Delete a prescription template
+ */
+export async function deleteTemplate(
+	id: string,
+): Promise<DeleteTemplateResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: DeleteTemplateResponse;
+	}>(`/api/prescriptions/templates/${id}`, {
+		method: "DELETE",
+	});
+	return response.data;
+}
+
 // Prescriptions client object for convenience
 export const prescriptionsClient = {
 	listPrescriptions,
 	getPrescriptionById,
 	createPrescription,
 	updatePrescription,
+	cancelPrescription,
 	listTemplates,
 	getTemplateById,
 	createTemplate,
+	updateTemplate,
+	deleteTemplate,
 };
 
 export default prescriptionsClient;

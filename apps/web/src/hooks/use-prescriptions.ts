@@ -4,12 +4,14 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+	type CancelPrescriptionInput,
 	type CreatePrescriptionInput,
 	type CreateTemplateInput,
 	type ListPrescriptionsParams,
 	type ListTemplatesParams,
 	prescriptionsClient,
 	type UpdatePrescriptionInput,
+	type UpdateTemplateInput,
 } from "../lib/prescriptions-client";
 
 // Query keys
@@ -90,6 +92,25 @@ export function useUpdatePrescription() {
 }
 
 /**
+ * Hook for cancelling a prescription
+ */
+export function useCancelPrescription() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ id, data }: { id: string; data: CancelPrescriptionInput }) =>
+			prescriptionsClient.cancelPrescription({ id, data }),
+		onSuccess: (_, variables) => {
+			// Invalidate specific prescription and lists
+			queryClient.invalidateQueries({
+				queryKey: prescriptionsKeys.detail(variables.id),
+			});
+			queryClient.invalidateQueries({ queryKey: prescriptionsKeys.lists() });
+		},
+	});
+}
+
+/**
  * Hook to list prescription templates
  */
 export function useTemplates(params: ListTemplatesParams = {}) {
@@ -128,13 +149,50 @@ export function useCreateTemplate() {
 	});
 }
 
+/**
+ * Hook for updating a template
+ */
+export function useUpdateTemplate() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ id, data }: { id: string; data: UpdateTemplateInput }) =>
+			prescriptionsClient.updateTemplate({ id, data }),
+		onSuccess: (_, variables) => {
+			// Invalidate specific template and lists
+			queryClient.invalidateQueries({
+				queryKey: templatesKeys.detail(variables.id),
+			});
+			queryClient.invalidateQueries({ queryKey: templatesKeys.lists() });
+		},
+	});
+}
+
+/**
+ * Hook for deleting a template
+ */
+export function useDeleteTemplate() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (id: string) => prescriptionsClient.deleteTemplate(id),
+		onSuccess: (_, _variables) => {
+			// Invalidate templates list
+			queryClient.invalidateQueries({ queryKey: templatesKeys.lists() });
+		},
+	});
+}
+
 // Re-export types for convenience
 export type {
 	ApiError,
+	CancelPrescriptionInput,
+	CancelPrescriptionResponse,
 	CreatePrescriptionInput,
 	CreatePrescriptionResponse,
 	CreateTemplateInput,
 	CreateTemplateResponse,
+	DeleteTemplateResponse,
 	DoctorInfo,
 	ListPrescriptionsParams,
 	ListPrescriptionsResponse,
@@ -152,4 +210,6 @@ export type {
 	TemplateMedicine,
 	UpdatePrescriptionInput,
 	UpdatePrescriptionResponse,
+	UpdateTemplateInput,
+	UpdateTemplateResponse,
 } from "../lib/prescriptions-client";

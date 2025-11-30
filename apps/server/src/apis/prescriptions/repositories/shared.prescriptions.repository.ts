@@ -57,6 +57,9 @@ export interface PrescriptionLean {
 	status: string;
 	followUpDate?: Date;
 	templateId?: string;
+	cancelledAt?: Date;
+	cancelledBy?: string;
+	cancellationReason?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }

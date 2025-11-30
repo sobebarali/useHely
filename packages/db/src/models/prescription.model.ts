@@ -65,6 +65,10 @@ const prescriptionSchema = new Schema(
 		},
 		followUpDate: { type: Date },
 		templateId: { type: String, ref: "PrescriptionTemplate" },
+		// Cancellation fields
+		cancelledAt: { type: Date },
+		cancelledBy: { type: String, ref: "Staff" },
+		cancellationReason: { type: String },
 		createdAt: { type: Date, required: true },
 		updatedAt: { type: Date, required: true },
 	},

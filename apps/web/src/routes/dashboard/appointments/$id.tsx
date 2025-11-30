@@ -10,6 +10,7 @@ import {
 	Calendar,
 	Check,
 	Clock,
+	Edit,
 	FileText,
 	Loader2,
 	LogIn,
@@ -18,7 +19,7 @@ import {
 	User,
 	X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
 	AlertDialog,
@@ -39,15 +40,37 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import {
+	type AppointmentPriority,
 	type AppointmentStatus,
+	type AppointmentType,
 	useAppointment,
 	useCancelAppointment,
 	useCheckInAppointment,
 	useCompleteAppointment,
+	useDoctorAvailability,
+	useUpdateAppointment,
 } from "@/hooks/use-appointments";
+import { useDepartments } from "@/hooks/use-departments";
+import { useUsers } from "@/hooks/use-users";
 import type { ApiError } from "@/lib/appointments-client";
 import { authClient } from "@/lib/auth-client";
 
@@ -93,6 +116,20 @@ function getPriorityBadgeVariant(
 	}
 }
 
+const TYPE_OPTIONS: { value: AppointmentType; label: string }[] = [
+	{ value: "CONSULTATION", label: "Consultation" },
+	{ value: "FOLLOW_UP", label: "Follow Up" },
+	{ value: "PROCEDURE", label: "Procedure" },
+	{ value: "EMERGENCY", label: "Emergency" },
+	{ value: "ROUTINE_CHECK", label: "Routine Check" },
+];
+
+const PRIORITY_OPTIONS: { value: AppointmentPriority; label: string }[] = [
+	{ value: "NORMAL", label: "Normal" },
+	{ value: "URGENT", label: "Urgent" },
+	{ value: "EMERGENCY", label: "Emergency" },
+];
+
 function AppointmentDetailPage() {
 	const { id } = Route.useParams();
 	const navigate = useNavigate();
@@ -100,13 +137,44 @@ function AppointmentDetailPage() {
 
 	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 	const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [completeNotes, setCompleteNotes] = useState("");
 	const [followUpRequired, setFollowUpRequired] = useState(false);
 	const [followUpDate, setFollowUpDate] = useState("");
 
+	// Edit form state
+	const [editDepartment, setEditDepartment] = useState("");
+	const [editDoctor, setEditDoctor] = useState("");
+	const [editDate, setEditDate] = useState("");
+	const [editTimeSlotStart, setEditTimeSlotStart] = useState("");
+	const [editTimeSlotEnd, setEditTimeSlotEnd] = useState("");
+	const [editType, setEditType] = useState<AppointmentType | "">("");
+	const [editPriority, setEditPriority] =
+		useState<AppointmentPriority>("NORMAL");
+	const [editReason, setEditReason] = useState("");
+	const [editNotes, setEditNotes] = useState("");
+
 	const checkInMutation = useCheckInAppointment();
 	const completeMutation = useCompleteAppointment();
 	const cancelMutation = useCancelAppointment();
+	const updateMutation = useUpdateAppointment();
+
+	// Fetch departments for edit
+	const { data: departmentsData } = useDepartments({});
+
+	// Fetch doctors filtered by department for edit
+	const { data: usersData } = useUsers({
+		role: "DOCTOR",
+		department: editDepartment || undefined,
+		status: "ACTIVE",
+	});
+
+	// Fetch doctor availability for edit
+	const { data: availability, isLoading: loadingAvailability } =
+		useDoctorAvailability(editDoctor, editDate);
+
+	const availableSlots =
+		availability?.slots.filter((slot) => slot.available) ?? [];
 
 	const formatDate = (dateString: string) => {
 		return new Date(dateString).toLocaleDateString("en-US", {
@@ -189,6 +257,89 @@ function AppointmentDetailPage() {
 		}
 	};
 
+	const handleEditClick = () => {
+		if (!appointment) return;
+		// Initialize edit form with current values
+		setEditDepartment(appointment.department.id);
+		setEditDoctor(appointment.doctor.id);
+		setEditDate(appointment.date.split("T")[0]);
+		setEditTimeSlotStart(appointment.timeSlot.start);
+		setEditTimeSlotEnd(appointment.timeSlot.end);
+		setEditType(appointment.type);
+		setEditPriority(appointment.priority);
+		setEditReason(appointment.reason || "");
+		setEditNotes(appointment.notes || "");
+		setEditDialogOpen(true);
+	};
+
+	const handleEditConfirm = async () => {
+		if (!appointment) return;
+		try {
+			await updateMutation.mutateAsync({
+				id: appointment.id,
+				data: {
+					doctorId:
+						editDoctor !== appointment.doctor.id ? editDoctor : undefined,
+					date:
+						editDate !== appointment.date.split("T")[0]
+							? new Date(editDate).toISOString()
+							: undefined,
+					timeSlot:
+						editTimeSlotStart !== appointment.timeSlot.start ||
+						editTimeSlotEnd !== appointment.timeSlot.end
+							? { start: editTimeSlotStart, end: editTimeSlotEnd }
+							: undefined,
+					type:
+						editType !== appointment.type
+							? (editType as AppointmentType)
+							: undefined,
+					priority:
+						editPriority !== appointment.priority ? editPriority : undefined,
+					reason:
+						editReason !== (appointment.reason || "") ? editReason : undefined,
+					notes:
+						editNotes !== (appointment.notes || "") ? editNotes : undefined,
+				},
+			});
+			toast.success("Appointment updated successfully");
+			setEditDialogOpen(false);
+		} catch (error) {
+			const apiError = error as ApiError;
+			toast.error(apiError.message || "Failed to update appointment");
+		}
+	};
+
+	// Reset edit form when department changes
+	useEffect(() => {
+		if (
+			editDialogOpen &&
+			editDepartment &&
+			appointment &&
+			editDepartment !== appointment.department.id
+		) {
+			setEditDoctor("");
+			setEditTimeSlotStart("");
+			setEditTimeSlotEnd("");
+		}
+	}, [editDepartment, editDialogOpen, appointment]);
+
+	// Reset time slot when doctor or date changes
+	useEffect(() => {
+		if (editDialogOpen && appointment) {
+			const doctorChanged = editDoctor !== appointment.doctor.id;
+			const dateChanged = editDate !== appointment.date.split("T")[0];
+			if (doctorChanged || dateChanged) {
+				setEditTimeSlotStart("");
+				setEditTimeSlotEnd("");
+			}
+		}
+	}, [editDoctor, editDate, editDialogOpen, appointment]);
+
+	const getTodayDate = () => {
+		const today = new Date();
+		return today.toISOString().split("T")[0];
+	};
+
 	const canCheckIn = (status: AppointmentStatus) => {
 		return status === "SCHEDULED" || status === "CONFIRMED";
 	};
@@ -203,6 +354,10 @@ function AppointmentDetailPage() {
 			status === "CONFIRMED" ||
 			status === "CHECKED_IN"
 		);
+	};
+
+	const canEdit = (status: AppointmentStatus) => {
+		return status === "SCHEDULED" || status === "CONFIRMED";
 	};
 
 	if (isLoading) {
@@ -263,6 +418,12 @@ function AppointmentDetailPage() {
 						</div>
 					</div>
 					<div className="flex gap-2">
+						{canEdit(appointment.status) && (
+							<Button variant="outline" onClick={handleEditClick}>
+								<Edit className="mr-2 h-4 w-4" />
+								Edit
+							</Button>
+						)}
 						{canCheckIn(appointment.status) && (
 							<Button
 								onClick={handleCheckIn}
@@ -612,6 +773,224 @@ function AppointmentDetailPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{/* Edit Appointment Dialog */}
+			<Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+				<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+					<DialogHeader>
+						<DialogTitle>Edit Appointment</DialogTitle>
+						<DialogDescription>
+							Update appointment details. Changes to doctor or date will require
+							selecting a new time slot.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-6 py-4">
+						{/* Department & Doctor */}
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label>Department</Label>
+								<Select
+									value={editDepartment}
+									onValueChange={setEditDepartment}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select department" />
+									</SelectTrigger>
+									<SelectContent>
+										{departmentsData?.data.map((dept) => (
+											<SelectItem key={dept.id} value={dept.id}>
+												{dept.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label>Doctor</Label>
+								<Select
+									value={editDoctor}
+									onValueChange={setEditDoctor}
+									disabled={!editDepartment}
+								>
+									<SelectTrigger>
+										<SelectValue
+											placeholder={
+												editDepartment
+													? "Select doctor"
+													: "Select department first"
+											}
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										{usersData?.data.map((user) => (
+											<SelectItem key={user.id} value={user.id}>
+												Dr. {user.firstName} {user.lastName}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+						</div>
+
+						{/* Date & Time */}
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label>Date</Label>
+								<Input
+									type="date"
+									value={editDate}
+									onChange={(e) => setEditDate(e.target.value)}
+									min={getTodayDate()}
+									disabled={!editDoctor}
+								/>
+							</div>
+
+							{editDoctor && editDate && (
+								<div className="space-y-2">
+									<Label>Available Time Slots</Label>
+									{loadingAvailability ? (
+										<div className="flex items-center justify-center py-4">
+											<Loader2 className="h-4 w-4 animate-spin" />
+										</div>
+									) : availableSlots.length > 0 ? (
+										<div className="grid grid-cols-3 gap-2">
+											{availableSlots.map((slot) => (
+												<Button
+													key={slot.start}
+													type="button"
+													variant={
+														editTimeSlotStart === slot.start
+															? "default"
+															: "outline"
+													}
+													size="sm"
+													onClick={() => {
+														setEditTimeSlotStart(slot.start);
+														setEditTimeSlotEnd(slot.end);
+													}}
+												>
+													{formatTime(slot.start)}
+												</Button>
+											))}
+										</div>
+									) : (
+										<p className="text-muted-foreground text-sm">
+											No available slots for this date
+										</p>
+									)}
+								</div>
+							)}
+
+							{editTimeSlotStart && (
+								<div className="flex items-center gap-2 text-sm">
+									<Clock className="h-4 w-4 text-muted-foreground" />
+									Selected: {formatTime(editTimeSlotStart)} -{" "}
+									{formatTime(editTimeSlotEnd)}
+								</div>
+							)}
+						</div>
+
+						{/* Appointment Details */}
+						<div className="space-y-4">
+							<div className="space-y-2">
+								<Label>Type</Label>
+								<Select
+									value={editType}
+									onValueChange={(value) =>
+										setEditType(value as AppointmentType)
+									}
+								>
+									<SelectTrigger>
+										<SelectValue placeholder="Select appointment type" />
+									</SelectTrigger>
+									<SelectContent>
+										{TYPE_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												{option.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label>Priority</Label>
+								<Select
+									value={editPriority}
+									onValueChange={(value) =>
+										setEditPriority(value as AppointmentPriority)
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{PRIORITY_OPTIONS.map((option) => (
+											<SelectItem key={option.value} value={option.value}>
+												<div className="flex items-center gap-2">
+													{option.value === "EMERGENCY" && (
+														<AlertTriangle className="h-4 w-4 text-destructive" />
+													)}
+													{option.label}
+												</div>
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
+
+							<div className="space-y-2">
+								<Label>Reason for Visit</Label>
+								<Textarea
+									value={editReason}
+									onChange={(e) => setEditReason(e.target.value)}
+									placeholder="Brief description of the visit reason..."
+									rows={2}
+								/>
+							</div>
+
+							<div className="space-y-2">
+								<Label>Notes</Label>
+								<Textarea
+									value={editNotes}
+									onChange={(e) => setEditNotes(e.target.value)}
+									placeholder="Additional notes..."
+									rows={2}
+								/>
+							</div>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setEditDialogOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							onClick={handleEditConfirm}
+							disabled={
+								updateMutation.isPending ||
+								!editDoctor ||
+								!editDate ||
+								!editTimeSlotStart
+							}
+						>
+							{updateMutation.isPending ? (
+								<>
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+									Saving...
+								</>
+							) : (
+								"Save Changes"
+							)}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</>
 	);
 }
