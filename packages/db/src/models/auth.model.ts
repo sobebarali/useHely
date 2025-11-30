@@ -2,6 +2,17 @@ import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
+// MFA Configuration sub-schema
+const mfaConfigSchema = new Schema(
+	{
+		enabled: { type: Boolean, default: false },
+		secret: { type: String }, // TOTP secret (will be encrypted)
+		backupCodes: [{ type: String }], // Hashed backup codes
+		verifiedAt: { type: Date }, // When MFA was last verified
+	},
+	{ _id: false },
+);
+
 const userSchema = new Schema(
 	{
 		_id: { type: String },
@@ -9,6 +20,7 @@ const userSchema = new Schema(
 		email: { type: String, required: true, unique: true },
 		emailVerified: { type: Boolean, required: true },
 		image: { type: String },
+		mfaConfig: { type: mfaConfigSchema },
 		createdAt: { type: Date, required: true },
 		updatedAt: { type: Date, required: true },
 	},
@@ -59,6 +71,10 @@ const verificationSchema = new Schema(
 	},
 	{ collection: "verification" },
 );
+
+// Encryption/Decryption hooks for MFA secret
+// Note: We'll add these when the encryption utilities are available in the db package
+// For now, encryption will be handled at the application layer
 
 const User = model("User", userSchema);
 const Session = model("Session", sessionSchema);

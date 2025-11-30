@@ -282,3 +282,93 @@ export async function unlockAccount({
 		"Account unlocked",
 	);
 }
+
+/**
+ * Create MFA challenge for two-step authentication flow
+ *
+ * Step 1 of MFA flow:
+ * - User submits password successfully
+ * - Challenge created with temporary token
+ * - User receives token and must provide TOTP code
+ *
+ * @param params - Challenge parameters
+ * @param params.challengeToken - Unique token identifying this challenge
+ * @param params.userId - User ID attempting authentication
+ * @param params.tenantId - Tenant ID for the user
+ * @param params.expiresIn - TTL in seconds (default: 5 minutes)
+ */
+export async function createMfaChallenge({
+	challengeToken,
+	userId,
+	tenantId,
+	expiresIn = AUTH_CACHE_TTL.MFA_CHALLENGE,
+}: {
+	challengeToken: string;
+	userId: string;
+	tenantId: string;
+	expiresIn?: number;
+}): Promise<void> {
+	const key = `${AUTH_CACHE_KEYS.MFA_CHALLENGE}${challengeToken}`;
+	const data = JSON.stringify({
+		userId,
+		tenantId,
+		createdAt: Date.now(),
+	});
+
+	await redis.set(key, data, { ex: expiresIn });
+	logger.debug({ userId }, "MFA challenge created");
+}
+
+/**
+ * Get MFA challenge data
+ *
+ * Used in Step 2 of MFA flow to verify the challenge is valid
+ * and retrieve associated user/tenant information.
+ *
+ * @param params - Retrieval parameters
+ * @param params.challengeToken - Challenge token to look up
+ * @returns Challenge data or null if not found/expired
+ */
+export async function getMfaChallenge({
+	challengeToken,
+}: {
+	challengeToken: string;
+}): Promise<{
+	userId: string;
+	tenantId: string;
+} | null> {
+	const key = `${AUTH_CACHE_KEYS.MFA_CHALLENGE}${challengeToken}`;
+	const data = await redis.get<{
+		userId: string;
+		tenantId: string;
+		createdAt: number;
+	}>(key);
+
+	if (!data) {
+		return null;
+	}
+
+	return {
+		userId: data.userId,
+		tenantId: data.tenantId,
+	};
+}
+
+/**
+ * Delete MFA challenge
+ *
+ * Called after successful MFA verification to prevent reuse.
+ * Also called when challenge expires or is explicitly invalidated.
+ *
+ * @param params - Deletion parameters
+ * @param params.challengeToken - Challenge token to delete
+ */
+export async function deleteMfaChallenge({
+	challengeToken,
+}: {
+	challengeToken: string;
+}): Promise<void> {
+	const key = `${AUTH_CACHE_KEYS.MFA_CHALLENGE}${challengeToken}`;
+	await redis.del(key);
+	logger.debug("MFA challenge deleted");
+}

@@ -1,7 +1,8 @@
 import { randomBytes } from "node:crypto";
-import { TOKEN_CONFIG } from "../../../constants";
+import { AUTH_CACHE_TTL, TOKEN_CONFIG } from "../../../constants";
 import {
 	AccountLockedError,
+	BadRequestError,
 	InvalidCredentialsError,
 	InvalidGrantError,
 	InvalidTokenError,
@@ -11,12 +12,17 @@ import {
 import {
 	cacheSession,
 	clearFailedLogins,
+	createMfaChallenge,
+	deleteMfaChallenge,
+	getMfaChallenge,
 	isAccountLocked,
 	recordFailedLogin,
 	revokeToken,
 } from "../../../lib/cache/auth.cache";
 import { createServiceLogger } from "../../../lib/logger";
 import { comparePassword } from "../../../utils/crypto";
+import { verifyBackupCode, verifyTotp } from "../../../utils/mfa";
+import { emitSecurityEvent } from "../../../utils/security-events";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
 	findStaffByUserAndTenant,
@@ -34,6 +40,8 @@ import {
 } from "../repositories/token.auth.repository";
 import {
 	GrantType,
+	type MfaChallengeOutput,
+	type MfaGrantInput,
 	type PasswordGrantInput,
 	type RefreshTokenGrantInput,
 	type TokenInput,
@@ -44,6 +52,8 @@ const logger = createServiceLogger("tokenAuth");
 
 /**
  * Generate access and refresh tokens for OAuth2 token request
+ *
+ * Returns either tokens or MFA challenge depending on grant type and MFA status
  */
 export async function generateTokens({
 	data,
@@ -53,10 +63,17 @@ export async function generateTokens({
 	data: TokenInput;
 	ipAddress?: string;
 	userAgent?: string;
-}): Promise<TokenOutput> {
+}): Promise<TokenOutput | MfaChallengeOutput> {
 	switch (data.grant_type) {
 		case GrantType.PASSWORD:
 			return handlePasswordGrant({
+				data,
+				ipAddress,
+				userAgent,
+			});
+
+		case GrantType.MFA:
+			return handleMfaGrant({
 				data,
 				ipAddress,
 				userAgent,
@@ -82,6 +99,8 @@ export async function generateTokens({
 
 /**
  * Handle password grant type
+ *
+ * Returns tokens if MFA not enabled, or MFA challenge if MFA is enabled
  */
 async function handlePasswordGrant({
 	data,
@@ -91,7 +110,7 @@ async function handlePasswordGrant({
 	data: PasswordGrantInput;
 	ipAddress?: string;
 	userAgent?: string;
-}): Promise<TokenOutput> {
+}): Promise<TokenOutput | MfaChallengeOutput> {
 	const { username, password, tenant_id } = data;
 
 	logger.info(
@@ -160,6 +179,33 @@ async function handlePasswordGrant({
 			"Invalid password",
 		);
 		throw new InvalidCredentialsError();
+	}
+
+	// Check if MFA is enabled for this user
+	if (user.mfaConfig?.enabled) {
+		logger.info({ userId: user._id }, "MFA enabled - creating challenge");
+
+		// Generate challenge token
+		const challengeToken = randomBytes(32).toString("hex");
+
+		// Create MFA challenge in cache
+		await createMfaChallenge({
+			challengeToken,
+			userId: String(user._id),
+			tenantId: tenant_id,
+		});
+
+		logger.info(
+			{ userId: user._id },
+			"MFA challenge created - awaiting TOTP verification",
+		);
+
+		// Return MFA challenge instead of tokens
+		return {
+			mfa_required: true,
+			challenge_token: challengeToken,
+			expires_in: AUTH_CACHE_TTL.MFA_CHALLENGE,
+		};
 	}
 
 	// Find staff record for this user in the specified tenant
@@ -253,6 +299,223 @@ async function handlePasswordGrant({
 			roles: roleNames,
 		},
 		"Password grant successful",
+	);
+
+	return {
+		access_token: accessToken,
+		token_type: "Bearer",
+		expires_in: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
+		refresh_token: refreshToken,
+		refresh_expires_in: TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY,
+	};
+}
+
+/**
+ * Handle MFA grant type
+ *
+ * Verifies TOTP code and issues tokens if valid
+ */
+async function handleMfaGrant({
+	data,
+	ipAddress,
+	userAgent,
+}: {
+	data: MfaGrantInput;
+	ipAddress?: string;
+	userAgent?: string;
+}): Promise<TokenOutput> {
+	const { challenge_token, code } = data;
+
+	logger.info("MFA grant attempt");
+
+	// Retrieve MFA challenge from cache
+	const challenge = await getMfaChallenge({ challengeToken: challenge_token });
+
+	if (!challenge) {
+		logger.warn("Invalid or expired MFA challenge token");
+		throw new BadRequestError(
+			"INVALID_MFA_CHALLENGE",
+			"Invalid or expired MFA challenge. Please start login again.",
+		);
+	}
+
+	const { userId, tenantId } = challenge;
+
+	// Find user
+	const { User } = await import("@hms/db");
+	const user = await User.findById(userId).lean();
+
+	if (!user) {
+		logger.warn({ userId }, "User not found for MFA challenge");
+		throw new InvalidCredentialsError();
+	}
+
+	// Check if MFA is still enabled
+	if (!user.mfaConfig?.enabled || !user.mfaConfig?.secret) {
+		logger.warn({ userId }, "MFA not enabled for user");
+		await deleteMfaChallenge({ challengeToken: challenge_token });
+		throw new BadRequestError(
+			"MFA_NOT_ENABLED",
+			"Multi-factor authentication is not enabled",
+		);
+	}
+
+	// Verify TOTP code
+	const isValidTotp = verifyTotp({
+		secret: user.mfaConfig.secret,
+		code,
+	});
+
+	// If TOTP fails, try backup codes
+	let isValidBackupCode = false;
+	let usedBackupCodeIndex = -1;
+
+	if (!isValidTotp && user.mfaConfig.backupCodes) {
+		// Check each backup code
+		for (let i = 0; i < user.mfaConfig.backupCodes.length; i++) {
+			const hashedCode = user.mfaConfig.backupCodes[i];
+			if (hashedCode) {
+				const isValid = await verifyBackupCode({
+					code,
+					hashedCode,
+				});
+				if (isValid) {
+					isValidBackupCode = true;
+					usedBackupCodeIndex = i;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!isValidTotp && !isValidBackupCode) {
+		logger.warn({ userId }, "Invalid MFA code");
+
+		// Emit security event
+		emitSecurityEvent({
+			type: "MFA_FAILED",
+			severity: "medium",
+			tenantId,
+			userId,
+			ip: ipAddress,
+			userAgent,
+			details: {
+				reason: "Invalid TOTP or backup code during login",
+			},
+		});
+
+		throw new BadRequestError(
+			"INVALID_MFA_CODE",
+			"Invalid authentication code. Please try again.",
+		);
+	}
+
+	// If backup code was used, remove it from the list
+	if (isValidBackupCode && usedBackupCodeIndex >= 0) {
+		logger.info({ userId }, "Backup code used - removing from list");
+
+		const updatedBackupCodes = [...(user.mfaConfig.backupCodes || [])];
+		updatedBackupCodes.splice(usedBackupCodeIndex, 1);
+
+		await User.findByIdAndUpdate(userId, {
+			$set: {
+				"mfaConfig.backupCodes": updatedBackupCodes,
+			},
+		});
+	}
+
+	// Delete MFA challenge (one-time use)
+	await deleteMfaChallenge({ challengeToken: challenge_token });
+
+	// Find staff record
+	const staff = await findStaffByUserAndTenant({
+		userId,
+		tenantId,
+	});
+
+	if (!staff) {
+		logger.warn({ userId, tenantId }, "User not associated with tenant");
+		throw new TenantInactiveError(
+			"You are not associated with this organization",
+		);
+	}
+
+	if (staff.status !== "ACTIVE") {
+		logger.warn(
+			{ staffId: staff._id, status: staff.status },
+			"Staff not active",
+		);
+
+		if (staff.status === "PASSWORD_EXPIRED") {
+			throw new PasswordExpiredError();
+		}
+
+		throw new AccountLockedError(
+			"Your account is not active. Please contact your administrator.",
+		);
+	}
+
+	// Get roles and permissions
+	const roles = staff.roles
+		? await getRolesByIds({ roleIds: staff.roles as string[] })
+		: [];
+
+	const roleNames = roles.map((r) => r.name);
+	const permissions = roles.flatMap((r) => r.permissions || []);
+	const uniquePermissions = [...new Set(permissions)];
+
+	// Generate tokens
+	const accessToken = randomBytes(32).toString("hex");
+	const refreshToken = randomBytes(32).toString("hex");
+
+	const accessExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY * 1000,
+	);
+	const refreshExpiresAt = new Date(
+		Date.now() + TOKEN_CONFIG.REFRESH_TOKEN_EXPIRY * 1000,
+	);
+
+	// Create sessions
+	await createSession({
+		userId,
+		token: accessToken,
+		expiresAt: accessExpiresAt,
+		ipAddress,
+		userAgent,
+	});
+
+	await createSession({
+		userId,
+		token: refreshToken,
+		expiresAt: refreshExpiresAt,
+		ipAddress,
+		userAgent,
+	});
+
+	// Cache session data
+	await cacheSession({
+		sessionId: accessToken,
+		userId,
+		tenantId,
+		roles: roleNames,
+		permissions: uniquePermissions,
+		expiresIn: TOKEN_CONFIG.ACCESS_TOKEN_EXPIRY,
+	});
+
+	// Clear failed login attempts
+	await clearFailedLogins({ identifier: user.email });
+
+	// Update last login
+	await updateStaffLastLogin({ staffId: String(staff._id) });
+
+	logger.info(
+		{
+			userId,
+			tenantId,
+			roles: roleNames,
+			mfaMethod: isValidBackupCode ? "backup_code" : "totp",
+		},
+		"MFA grant successful",
 	);
 
 	return {

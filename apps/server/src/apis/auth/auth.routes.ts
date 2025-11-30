@@ -2,13 +2,17 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authenticate";
 import { authRateLimiter } from "../../middlewares/rate-limit";
 import { validate } from "../../middlewares/validate";
+import { disableMfaController } from "./controllers/disable-mfa.auth.controller";
+import { enableMfaController } from "./controllers/enable-mfa.auth.controller";
 import { hospitalsController } from "./controllers/hospitals.auth.controller";
 import { meController } from "./controllers/me.auth.controller";
 import { revokeController } from "./controllers/revoke.auth.controller";
 import { tokenController } from "./controllers/token.auth.controller";
+import { verifyMfaController } from "./controllers/verify-mfa.auth.controller";
 import { hospitalsQuerySchema } from "./validations/hospitals.auth.validation";
 import { revokeTokenSchema } from "./validations/revoke.auth.validation";
 import { tokenSchema } from "./validations/token.auth.validation";
+import { verifyMfaSchema } from "./validations/verify-mfa.auth.validation";
 
 const router = Router();
 
@@ -39,5 +43,25 @@ router.post(
 // GET /api/auth/me - Get current authenticated user
 // Authentication required
 router.get("/me", authenticate, meController);
+
+// POST /api/auth/mfa/enable - Enable MFA for current user
+// Authentication required
+// Returns TOTP secret, QR code, and backup codes for setup
+router.post("/mfa/enable", authenticate, enableMfaController);
+
+// POST /api/auth/mfa/verify - Verify MFA setup
+// Authentication required
+// Verifies TOTP code and enables MFA
+router.post(
+	"/mfa/verify",
+	authenticate,
+	validate(verifyMfaSchema),
+	verifyMfaController,
+);
+
+// POST /api/auth/mfa/disable - Disable MFA for current user
+// Authentication required
+// Removes all MFA configuration
+router.post("/mfa/disable", authenticate, disableMfaController);
 
 export default router;

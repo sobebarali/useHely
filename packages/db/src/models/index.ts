@@ -36,6 +36,8 @@ export {
 	InventoryTransaction,
 	TransactionType,
 } from "./inventory.model";
+// Key Rotation
+export { KeyRotation } from "./key-rotation.model";
 // Medicine
 export { Medicine, MedicineCategory, MedicineType } from "./medicine.model";
 // Patient
@@ -56,6 +58,14 @@ export {
 } from "./report.model";
 // Role & Permissions
 export { Role } from "./role.model";
+// Security Event
+export {
+	SecurityEvent,
+	SecurityEventSeverity,
+	type SecurityEventSeverityValue,
+	SecurityEventType,
+	type SecurityEventTypeValue,
+} from "./security-event.model";
 // Staff
 export { Staff, StaffShift, StaffStatus } from "./staff.model";
 // Vitals

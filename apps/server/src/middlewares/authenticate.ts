@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from "express";
 import { updateContext } from "../lib/async-context";
 import { getCachedSession, isTokenRevoked } from "../lib/cache/auth.cache";
 import { createMiddlewareLogger } from "../lib/logger";
+import { emitSecurityEvent } from "../utils/security-events";
 
 const logger = createMiddlewareLogger("authenticate");
 
@@ -70,6 +71,20 @@ async function authenticateAsync(
 			const revoked = await isTokenRevoked({ token });
 			if (revoked) {
 				logger.debug("Token has been revoked");
+
+				// Emit security event for revoked token attempt
+				emitSecurityEvent({
+					type: "AUTH_FAILED",
+					severity: "medium",
+					tenantId: null,
+					ip: req.ip,
+					userAgent: req.get("user-agent"),
+					details: {
+						reason: "Revoked token used",
+						token: token.substring(0, 8),
+					},
+				});
+
 				return res.status(401).json({
 					code: "INVALID_TOKEN",
 					message: "Token has been revoked",
@@ -135,6 +150,20 @@ async function authenticateAsync(
 
 		if (!session) {
 			logger.debug("Session not found or expired");
+
+			// Emit security event for invalid/expired session
+			emitSecurityEvent({
+				type: "AUTH_FAILED",
+				severity: "low",
+				tenantId: null,
+				ip: req.ip,
+				userAgent: req.get("user-agent"),
+				details: {
+					reason: "Session not found or expired",
+					token: token.substring(0, 8),
+				},
+			});
+
 			return res.status(401).json({
 				code: "TOKEN_EXPIRED",
 				message: "Session not found or has expired",
@@ -149,6 +178,18 @@ async function authenticateAsync(
 				{ sessionUserId: session.userId },
 				"User not found for session",
 			);
+
+			// Emit security event for orphaned session (user deleted)
+			emitSecurityEvent({
+				type: "AUTH_FAILED",
+				severity: "medium",
+				tenantId: null,
+				userId: String(session.userId),
+				ip: req.ip,
+				userAgent: req.get("user-agent"),
+				details: { reason: "User not found for valid session" },
+			});
+
 			return res.status(401).json({
 				code: "UNAUTHORIZED",
 				message: "User not found",

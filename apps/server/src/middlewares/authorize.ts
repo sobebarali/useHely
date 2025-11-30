@@ -2,6 +2,7 @@ import { Hospital } from "@hms/db";
 import type { NextFunction, Request, Response } from "express";
 import { hasPermission, type Permission } from "../constants";
 import { createMiddlewareLogger } from "../lib/logger";
+import { emitSecurityEvent } from "../utils/security-events";
 
 const logger = createMiddlewareLogger("authorize");
 
@@ -39,6 +40,23 @@ export function authorize(requiredPermission: Permission) {
 					},
 					"Permission denied - insufficient permissions",
 				);
+
+				// Emit security event for permission denial
+				emitSecurityEvent({
+					type: "PERMISSION_DENIED",
+					severity: "medium",
+					tenantId: tenantId,
+					userId: req.user.id,
+					ip: req.ip,
+					userAgent: req.get("user-agent"),
+					details: {
+						requiredPermission,
+						userPermissions: permissions,
+						roles,
+						path: req.path,
+						method: req.method,
+					},
+				});
 
 				return res.status(403).json({
 					code: "PERMISSION_DENIED",
@@ -127,6 +145,22 @@ export function authorizeAny(requiredPermissions: Permission[]) {
 					"Permission denied - none of required permissions found",
 				);
 
+				// Emit security event for permission denial
+				emitSecurityEvent({
+					type: "PERMISSION_DENIED",
+					severity: "medium",
+					tenantId: tenantId,
+					userId: req.user.id,
+					ip: req.ip,
+					userAgent: req.get("user-agent"),
+					details: {
+						requiredPermissions,
+						userPermissions: permissions,
+						path: req.path,
+						method: req.method,
+					},
+				});
+
 				return res.status(403).json({
 					code: "PERMISSION_DENIED",
 					message: "You do not have permission to perform this action",
@@ -196,6 +230,23 @@ export function authorizeAll(requiredPermissions: Permission[]) {
 					},
 					"Permission denied - missing required permissions",
 				);
+
+				// Emit security event for permission denial
+				emitSecurityEvent({
+					type: "PERMISSION_DENIED",
+					severity: "medium",
+					tenantId: tenantId,
+					userId: req.user.id,
+					ip: req.ip,
+					userAgent: req.get("user-agent"),
+					details: {
+						requiredPermissions,
+						missingPermissions,
+						userPermissions: permissions,
+						path: req.path,
+						method: req.method,
+					},
+				});
 
 				return res.status(403).json({
 					code: "PERMISSION_DENIED",

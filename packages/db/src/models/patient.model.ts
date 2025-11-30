@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { fieldEncryptionPlugin } from "../plugins/field-encryption.plugin";
 
 const { Schema, model } = mongoose;
 
@@ -92,6 +93,25 @@ patientSchema.index({ tenantId: 1, departmentId: 1 });
 patientSchema.index({ tenantId: 1, assignedDoctorId: 1 });
 patientSchema.index({ tenantId: 1, firstName: 1, lastName: 1 });
 patientSchema.index({ tenantId: 1, createdAt: -1 });
+
+// Field-level encryption for PHI/PII data
+patientSchema.plugin(fieldEncryptionPlugin, {
+	fields: [
+		"firstName",
+		"lastName",
+		"phone",
+		"email",
+		"address.street",
+		"address.city",
+		"address.state",
+		"address.postalCode",
+		"address.country",
+		"emergencyContact.name",
+		"emergencyContact.phone",
+		"emergencyContact.relationship",
+	],
+	getMasterKey: () => process.env.ENCRYPTION_MASTER_KEY,
+});
 
 const Patient = model("Patient", patientSchema);
 

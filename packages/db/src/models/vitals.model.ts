@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { fieldEncryptionPlugin } from "../plugins/field-encryption.plugin";
 
 const { Schema, model } = mongoose;
 
@@ -126,6 +127,12 @@ vitalsSchema.index({ tenantId: 1, appointmentId: 1 });
 vitalsSchema.index({ tenantId: 1, admissionId: 1 });
 vitalsSchema.index({ tenantId: 1, recordedAt: -1 });
 vitalsSchema.index({ tenantId: 1, "alerts.severity": 1 });
+
+// Field-level encryption for PHI data
+vitalsSchema.plugin(fieldEncryptionPlugin, {
+	fields: ["notes", "correctionReason"],
+	getMasterKey: () => process.env.ENCRYPTION_MASTER_KEY,
+});
 
 const Vitals = model("Vitals", vitalsSchema);
 

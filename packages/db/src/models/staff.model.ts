@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { fieldEncryptionPlugin } from "../plugins/field-encryption.plugin";
 
 const { Schema, model } = mongoose;
 
@@ -56,6 +57,12 @@ staffSchema.index({ tenantId: 1, employeeId: 1 }, { unique: true });
 staffSchema.index({ tenantId: 1, departmentId: 1 });
 staffSchema.index({ tenantId: 1, status: 1 });
 staffSchema.index({ tenantId: 1, roles: 1 });
+
+// Field-level encryption for PII data
+staffSchema.plugin(fieldEncryptionPlugin, {
+	fields: ["phone"],
+	getMasterKey: () => process.env.ENCRYPTION_MASTER_KEY,
+});
 
 const Staff = model("Staff", staffSchema);
 

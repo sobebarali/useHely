@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { fieldEncryptionPlugin } from "../plugins/field-encryption.plugin";
 
 const { Schema, model } = mongoose;
 
@@ -79,6 +80,12 @@ prescriptionSchema.index({ tenantId: 1, patientId: 1, createdAt: -1 });
 prescriptionSchema.index({ tenantId: 1, doctorId: 1, createdAt: -1 });
 prescriptionSchema.index({ tenantId: 1, status: 1 });
 prescriptionSchema.index({ tenantId: 1, createdAt: -1 });
+
+// Field-level encryption for PHI data
+prescriptionSchema.plugin(fieldEncryptionPlugin, {
+	fields: ["diagnosis", "notes"],
+	getMasterKey: () => process.env.ENCRYPTION_MASTER_KEY,
+});
 
 // Prescription Template schema
 const prescriptionTemplateSchema = new Schema(

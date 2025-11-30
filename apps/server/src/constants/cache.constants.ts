@@ -15,6 +15,7 @@ export const AUTH_CACHE_KEYS = {
 	USER_SESSIONS: "user_sessions:",
 	FAILED_LOGINS: "failed_logins:",
 	ACCOUNT_LOCKED: "account_locked:",
+	MFA_CHALLENGE: "mfa_challenge:",
 } as const;
 
 // Cache key prefixes for hospital/tenant data
@@ -29,6 +30,7 @@ export const AUTH_CACHE_TTL = {
 	REVOKED_TOKEN: 604800, // 7 days (matches refresh token lifetime)
 	FAILED_LOGIN_WINDOW: 900, // 15 minutes
 	ACCOUNT_LOCK: 1800, // 30 minutes
+	MFA_CHALLENGE: 300, // 5 minutes (short-lived for login flow)
 } as const;
 
 // TTL values in seconds for hospital cache

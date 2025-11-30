@@ -148,6 +148,10 @@ export function createMiddlewareLogger(name: string) {
 	return createLogger({ layer: "middleware", name });
 }
 
+export function createUtilLogger(name: string) {
+	return createLogger({ layer: "util", name });
+}
+
 /**
  * Sanitize and log input payload
  */

@@ -27,18 +27,35 @@ export async function tokenController(req: Request, res: Response) {
 
 		const duration = Date.now() - startTime;
 
-		logSuccess(
-			logger,
-			{
-				grant_type: data.grant_type,
-				token_type: result.token_type,
-				expires_in: result.expires_in,
-			},
-			"Token generated successfully",
-			duration,
-		);
+		// Check if result is MFA challenge or tokens
+		if ("mfa_required" in result) {
+			// MFA challenge response
+			logSuccess(
+				logger,
+				{
+					grant_type: data.grant_type,
+					mfa_required: true,
+				},
+				"MFA challenge created",
+				duration,
+			);
 
-		res.status(200).json(result);
+			res.status(200).json(result);
+		} else {
+			// Token response
+			logSuccess(
+				logger,
+				{
+					grant_type: data.grant_type,
+					token_type: result.token_type,
+					expires_in: result.expires_in,
+				},
+				"Token generated successfully",
+				duration,
+			);
+
+			res.status(200).json(result);
+		}
 	} catch (error: unknown) {
 		const duration = Date.now() - startTime;
 
