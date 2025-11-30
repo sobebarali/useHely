@@ -8,21 +8,20 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/appointments/:id/check-in - Check in appointment success", () => {
+describe("GET /api/appointments/:id - Returns 403 without permission", () => {
 	let context: AuthTestContext;
 	let doctorContext: AuthTestContext;
-	let accessToken: string;
+	let unauthorizedContext: AuthTestContext;
+	let unauthorizedToken: string;
 	let patientId: string;
 	let appointmentId: string;
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: ["QUEUE:MANAGE", "APPOINTMENT:READ"],
+			rolePermissions: ["APPOINTMENT:READ", "APPOINTMENT:CREATE"],
 			includeDepartment: true,
 		});
-		const tokens = await context.issuePasswordTokens();
-		accessToken = tokens.accessToken;
 
 		// Create a doctor
 		doctorContext = await createAuthTestContext({
@@ -33,6 +32,15 @@ describe("POST /api/appointments/:id/check-in - Check in appointment success", (
 				departmentId: context.departmentId,
 			},
 		});
+
+		// Create unauthorized context (no APPOINTMENT:READ permission)
+		unauthorizedContext = await createAuthTestContext({
+			roleName: "NURSE",
+			rolePermissions: ["PATIENT:READ"],
+			includeDepartment: true,
+		});
+		const unauthorizedTokens = await unauthorizedContext.issuePasswordTokens();
+		unauthorizedToken = unauthorizedTokens.accessToken;
 
 		// Create a patient
 		const patient = await Patient.create({
@@ -56,9 +64,9 @@ describe("POST /api/appointments/:id/check-in - Check in appointment success", (
 		});
 		patientId = String(patient._id);
 
-		// Create a scheduled appointment for today
-		const today = new Date();
-		today.setHours(14, 0, 0, 0); // 2 PM today
+		// Create an appointment
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
 
 		const appointment = await Appointment.create({
 			_id: uuidv4(),
@@ -67,10 +75,10 @@ describe("POST /api/appointments/:id/check-in - Check in appointment success", (
 			patientId,
 			doctorId: doctorContext.staffId,
 			departmentId: context.departmentId,
-			date: today,
+			date: tomorrow,
 			timeSlot: {
-				start: "14:00",
-				end: "14:30",
+				start: "10:00",
+				end: "10:30",
 			},
 			type: "CONSULTATION",
 			priority: "NORMAL",
@@ -88,30 +96,16 @@ describe("POST /api/appointments/:id/check-in - Check in appointment success", (
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
 		}
+		await unauthorizedContext.cleanup();
 		await doctorContext.cleanup();
 		await context.cleanup();
 	});
 
-	it("checks in a patient for their appointment", async () => {
+	it("returns 403 when user lacks APPOINTMENT:READ permission", async () => {
 		const response = await request(app)
-			.post(`/api/appointments/${appointmentId}/check-in`)
-			.set("Authorization", `Bearer ${accessToken}`);
+			.get(`/api/appointments/${appointmentId}`)
+			.set("Authorization", `Bearer ${unauthorizedToken}`);
 
-		expect(response.status).toBe(200);
-		expect(response.body.id).toBe(appointmentId);
-		expect(response.body.status).toBe("CHECKED_IN");
-		expect(response.body).toHaveProperty("queueNumber");
-		expect(response.body).toHaveProperty("checkedInAt");
-		expect(response.body).toHaveProperty("estimatedWait");
-		expect(typeof response.body.queueNumber).toBe("number");
-	});
-
-	it("returns 400 when patient is already checked in", async () => {
-		// Try to check in again
-		const response = await request(app)
-			.post(`/api/appointments/${appointmentId}/check-in`)
-			.set("Authorization", `Bearer ${accessToken}`);
-
-		expect(response.status).toBe(400);
+		expect(response.status).toBe(403);
 	});
 });

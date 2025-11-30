@@ -8,14 +8,14 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("PATCH /api/appointments/:id - Update appointment success", () => {
+describe("POST /api/appointments - Creates appointment successfully", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
 	let doctorRoleId: string;
-	let appointmentId: string;
+	let createdAppointmentId: string;
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
@@ -23,14 +23,14 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 			rolePermissions: [
 				"APPOINTMENT:CREATE",
 				"APPOINTMENT:READ",
-				"APPOINTMENT:UPDATE",
+				"PATIENT:CREATE",
+				"PATIENT:READ",
 			],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create a doctor role
 		const doctorRole = await Role.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -44,7 +44,6 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 		});
 		doctorRoleId = String(doctorRole._id);
 
-		// Create a doctor user
 		const doctorUser = await User.create({
 			_id: uuidv4(),
 			name: "Test Doctor",
@@ -55,7 +54,6 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 		});
 		doctorUserId = String(doctorUser._id);
 
-		// Create doctor staff
 		const doctorStaff = await Staff.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -74,7 +72,6 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 		});
 		doctorStaffId = String(doctorStaff._id);
 
-		// Create a patient
 		const patient = await Patient.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -84,6 +81,7 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 			dateOfBirth: new Date("1990-01-15"),
 			gender: "MALE",
 			phone: `+1-${context.uniqueId}`,
+			email: `patient-${context.uniqueId}@test.com`,
 			patientType: "OPD",
 			status: "ACTIVE",
 			emergencyContact: {
@@ -95,37 +93,11 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 			updatedAt: new Date(),
 		});
 		patientId = String(patient._id);
-
-		// Create an appointment for tomorrow
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		tomorrow.setHours(10, 0, 0, 0);
-
-		const appointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: {
-				start: "10:00",
-				end: "10:30",
-			},
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "SCHEDULED",
-			reason: "Initial checkup",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		appointmentId = String(appointment._id);
 	}, 30000);
 
 	afterAll(async () => {
-		if (appointmentId) {
-			await Appointment.deleteOne({ _id: appointmentId });
+		if (createdAppointmentId) {
+			await Appointment.deleteOne({ _id: createdAppointmentId });
 		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
@@ -142,74 +114,39 @@ describe("PATCH /api/appointments/:id - Update appointment success", () => {
 		await context.cleanup();
 	});
 
-	it("updates appointment reason and notes", async () => {
+	it("creates a new appointment successfully", async () => {
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		tomorrow.setHours(10, 0, 0, 0);
+
 		const payload = {
-			reason: "Updated reason for visit",
-			notes: "Patient requested afternoon slot",
-		};
-
-		const response = await request(app)
-			.patch(`/api/appointments/${appointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send(payload);
-
-		expect(response.status).toBe(200);
-		expect(response.body.id).toBe(appointmentId);
-		expect(response.body.reason).toBe("Updated reason for visit");
-		expect(response.body.notes).toBe("Patient requested afternoon slot");
-	});
-
-	it("reschedules appointment to a different time slot", async () => {
-		const payload = {
+			patientId,
+			doctorId: doctorStaffId,
+			departmentId: context.departmentId,
+			date: tomorrow.toISOString(),
 			timeSlot: {
-				start: "14:00",
-				end: "14:30",
+				start: "10:00",
+				end: "10:30",
 			},
+			type: "CONSULTATION",
+			priority: "NORMAL",
+			reason: "Regular checkup",
 		};
 
 		const response = await request(app)
-			.patch(`/api/appointments/${appointmentId}`)
+			.post("/api/appointments")
 			.set("Authorization", `Bearer ${accessToken}`)
 			.send(payload);
 
-		expect(response.status).toBe(200);
-		expect(response.body.timeSlot.start).toBe("14:00");
-		expect(response.body.timeSlot.end).toBe("14:30");
-	});
+		expect(response.status).toBe(201);
+		expect(response.body).toHaveProperty("id");
+		expect(response.body).toHaveProperty("appointmentNumber");
+		expect(response.body.patient.id).toBe(patientId);
+		expect(response.body.doctor.id).toBe(doctorStaffId);
+		expect(response.body.type).toBe("CONSULTATION");
+		expect(response.body.priority).toBe("NORMAL");
+		expect(response.body.status).toBe("SCHEDULED");
 
-	it("updates appointment priority", async () => {
-		const payload = {
-			priority: "URGENT",
-		};
-
-		const response = await request(app)
-			.patch(`/api/appointments/${appointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send(payload);
-
-		expect(response.status).toBe(200);
-		expect(response.body.priority).toBe("URGENT");
-	});
-
-	it("reschedules appointment to a different date", async () => {
-		const dayAfterTomorrow = new Date();
-		dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
-
-		const payload = {
-			date: dayAfterTomorrow.toISOString(),
-			timeSlot: {
-				start: "11:00",
-				end: "11:30",
-			},
-		};
-
-		const response = await request(app)
-			.patch(`/api/appointments/${appointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send(payload);
-
-		expect(response.status).toBe(200);
-		expect(response.body.timeSlot.start).toBe("11:00");
-		expect(response.body.timeSlot.end).toBe("11:30");
+		createdAppointmentId = response.body.id;
 	});
 });

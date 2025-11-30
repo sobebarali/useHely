@@ -8,18 +8,15 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("PATCH /api/appointments/:id - Update appointment errors", () => {
+describe("PATCH /api/appointments/:id - Returns 403 without permission", () => {
 	let context: AuthTestContext;
 	let unauthorizedContext: AuthTestContext;
-	let accessToken: string;
 	let unauthorizedToken: string;
 	let patientId: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
 	let doctorRoleId: string;
-	let scheduledAppointmentId: string;
-	let cancelledAppointmentId: string;
-	let completedAppointmentId: string;
+	let appointmentId: string;
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
@@ -27,8 +24,6 @@ describe("PATCH /api/appointments/:id - Update appointment errors", () => {
 			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
-		const tokens = await context.issuePasswordTokens();
-		accessToken = tokens.accessToken;
 
 		// Create unauthorized context
 		unauthorizedContext = await createAuthTestContext({
@@ -109,10 +104,10 @@ describe("PATCH /api/appointments/:id - Update appointment errors", () => {
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
 		// Create a scheduled appointment
-		const scheduledAppointment = await Appointment.create({
+		const appointment = await Appointment.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-1`,
+			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}`,
 			patientId,
 			doctorId: doctorStaffId,
 			departmentId: context.departmentId,
@@ -124,55 +119,13 @@ describe("PATCH /api/appointments/:id - Update appointment errors", () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
-		scheduledAppointmentId = String(scheduledAppointment._id);
-
-		// Create a cancelled appointment
-		const cancelledAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-2`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: { start: "11:00", end: "11:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "CANCELLED",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		cancelledAppointmentId = String(cancelledAppointment._id);
-
-		// Create a completed appointment
-		const completedAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-3`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: { start: "12:00", end: "12:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "COMPLETED",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		completedAppointmentId = String(completedAppointment._id);
+		appointmentId = String(appointment._id);
 	}, 30000);
 
 	afterAll(async () => {
-		await Appointment.deleteMany({
-			_id: {
-				$in: [
-					scheduledAppointmentId,
-					cancelledAppointmentId,
-					completedAppointmentId,
-				],
-			},
-		});
+		if (appointmentId) {
+			await Appointment.deleteOne({ _id: appointmentId });
+		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
 		}
@@ -189,64 +142,9 @@ describe("PATCH /api/appointments/:id - Update appointment errors", () => {
 		await context.cleanup();
 	});
 
-	it("returns 404 for non-existent appointment", async () => {
-		const fakeId = uuidv4();
-		const response = await request(app)
-			.patch(`/api/appointments/${fakeId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ reason: "Updated" });
-
-		expect(response.status).toBe(404);
-		expect(response.body.code).toBe("NOT_FOUND");
-	});
-
-	it("returns 400 when updating cancelled appointment", async () => {
-		const response = await request(app)
-			.patch(`/api/appointments/${cancelledAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ reason: "Updated" });
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("CANNOT_RESCHEDULE");
-	});
-
-	it("returns 400 when updating completed appointment", async () => {
-		const response = await request(app)
-			.patch(`/api/appointments/${completedAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ reason: "Updated" });
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("CANNOT_RESCHEDULE");
-	});
-
-	it("returns 400 when rescheduling to past date", async () => {
-		const yesterday = new Date();
-		yesterday.setDate(yesterday.getDate() - 1);
-
-		const response = await request(app)
-			.patch(`/api/appointments/${scheduledAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ date: yesterday.toISOString() });
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("INVALID_DATE");
-	});
-
-	it("returns 404 when updating with invalid doctorId", async () => {
-		const fakeDoctor = uuidv4();
-		const response = await request(app)
-			.patch(`/api/appointments/${scheduledAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ doctorId: fakeDoctor });
-
-		expect(response.status).toBe(404);
-		expect(response.body.code).toBe("INVALID_DOCTOR");
-	});
-
 	it("returns 403 when user lacks APPOINTMENT:UPDATE permission", async () => {
 		const response = await request(app)
-			.patch(`/api/appointments/${scheduledAppointmentId}`)
+			.patch(`/api/appointments/${appointmentId}`)
 			.set("Authorization", `Bearer ${unauthorizedToken}`)
 			.send({ reason: "Updated" });
 

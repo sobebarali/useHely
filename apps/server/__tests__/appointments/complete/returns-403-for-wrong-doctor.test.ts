@@ -9,15 +9,11 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/appointments/:id/complete - Complete appointment errors", () => {
+describe("POST /api/appointments/:id/complete - Returns 403 when wrong doctor tries to complete", () => {
 	let doctorContext: AuthTestContext;
-	let unauthorizedContext: AuthTestContext;
-	let doctorAccessToken: string;
 	let anotherDoctorToken: string;
-	let unauthorizedToken: string;
 	let patientId: string;
-	let checkedInAppointmentId: string;
-	let scheduledAppointmentId: string;
+	let appointmentId: string;
 
 	// For another doctor within the same tenant
 	let anotherDoctorUserId: string;
@@ -32,8 +28,6 @@ describe("POST /api/appointments/:id/complete - Complete appointment errors", ()
 			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
-		const tokens = await doctorContext.issuePasswordTokens();
-		doctorAccessToken = tokens.accessToken;
 
 		// Create another doctor in the SAME hospital (same tenant)
 		const anotherDoctorRole = await Role.create({
@@ -107,15 +101,6 @@ describe("POST /api/appointments/:id/complete - Complete appointment errors", ()
 		}
 		anotherDoctorToken = anotherDoctorResponse.body.access_token;
 
-		// Create unauthorized context (different tenant)
-		unauthorizedContext = await createAuthTestContext({
-			roleName: "NURSE",
-			rolePermissions: ["PATIENT:READ"],
-			includeDepartment: true,
-		});
-		const unauthorizedTokens = await unauthorizedContext.issuePasswordTokens();
-		unauthorizedToken = unauthorizedTokens.accessToken;
-
 		// Create a patient
 		const patient = await Patient.create({
 			_id: uuidv4(),
@@ -142,10 +127,10 @@ describe("POST /api/appointments/:id/complete - Complete appointment errors", ()
 		today.setHours(10, 0, 0, 0);
 
 		// Create a checked-in appointment assigned to the first doctor
-		const checkedInAppointment = await Appointment.create({
+		const appointment = await Appointment.create({
 			_id: uuidv4(),
 			tenantId: doctorContext.hospitalId,
-			appointmentNumber: `${doctorContext.hospitalId}-APT-${Date.now()}-1`,
+			appointmentNumber: `${doctorContext.hospitalId}-APT-${Date.now()}`,
 			patientId,
 			doctorId: doctorContext.staffId,
 			departmentId: doctorContext.departmentId,
@@ -159,31 +144,13 @@ describe("POST /api/appointments/:id/complete - Complete appointment errors", ()
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
-		checkedInAppointmentId = String(checkedInAppointment._id);
-
-		// Create a scheduled (not checked-in) appointment
-		const scheduledAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: doctorContext.hospitalId,
-			appointmentNumber: `${doctorContext.hospitalId}-APT-${Date.now()}-2`,
-			patientId,
-			doctorId: doctorContext.staffId,
-			departmentId: doctorContext.departmentId,
-			date: today,
-			timeSlot: { start: "11:00", end: "11:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "SCHEDULED", // Not checked in
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		scheduledAppointmentId = String(scheduledAppointment._id);
+		appointmentId = String(appointment._id);
 	}, 30000);
 
 	afterAll(async () => {
-		await Appointment.deleteMany({
-			_id: { $in: [checkedInAppointmentId, scheduledAppointmentId] },
-		});
+		if (appointmentId) {
+			await Appointment.deleteOne({ _id: appointmentId });
+		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
 		}
@@ -200,43 +167,15 @@ describe("POST /api/appointments/:id/complete - Complete appointment errors", ()
 		if (anotherDoctorRoleId) {
 			await Role.deleteOne({ _id: anotherDoctorRoleId });
 		}
-		await unauthorizedContext.cleanup();
 		await doctorContext.cleanup();
-	});
-
-	it("returns 404 for non-existent appointment", async () => {
-		const fakeId = uuidv4();
-		const response = await request(app)
-			.post(`/api/appointments/${fakeId}/complete`)
-			.set("Authorization", `Bearer ${doctorAccessToken}`);
-
-		expect(response.status).toBe(404);
-		expect(response.body.code).toBe("NOT_FOUND");
 	});
 
 	it("returns 403 when wrong doctor tries to complete", async () => {
 		const response = await request(app)
-			.post(`/api/appointments/${checkedInAppointmentId}/complete`)
+			.post(`/api/appointments/${appointmentId}/complete`)
 			.set("Authorization", `Bearer ${anotherDoctorToken}`);
 
 		expect(response.status).toBe(403);
 		expect(response.body.code).toBe("FORBIDDEN");
-	});
-
-	it("returns 400 when appointment is not checked in", async () => {
-		const response = await request(app)
-			.post(`/api/appointments/${scheduledAppointmentId}/complete`)
-			.set("Authorization", `Bearer ${doctorAccessToken}`);
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("NOT_CHECKED_IN");
-	});
-
-	it("returns 403 when user lacks APPOINTMENT:UPDATE permission", async () => {
-		const response = await request(app)
-			.post(`/api/appointments/${checkedInAppointmentId}/complete`)
-			.set("Authorization", `Bearer ${unauthorizedToken}`);
-
-		expect(response.status).toBe(403);
 	});
 });

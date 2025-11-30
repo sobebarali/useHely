@@ -8,10 +8,9 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("GET /api/appointments/availability/:doctorId - Get availability errors", () => {
+describe("GET /api/appointments/availability/:doctorId - Returns 403 without permission", () => {
 	let context: AuthTestContext;
 	let unauthorizedContext: AuthTestContext;
-	let accessToken: string;
 	let unauthorizedToken: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
@@ -23,8 +22,6 @@ describe("GET /api/appointments/availability/:doctorId - Get availability errors
 			rolePermissions: ["DOCTOR:READ", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
-		const tokens = await context.issuePasswordTokens();
-		accessToken = tokens.accessToken;
 
 		// Create unauthorized context
 		unauthorizedContext = await createAuthTestContext({
@@ -92,35 +89,6 @@ describe("GET /api/appointments/availability/:doctorId - Get availability errors
 		}
 		await unauthorizedContext.cleanup();
 		await context.cleanup();
-	});
-
-	it("returns 404 for non-existent doctor", async () => {
-		const fakeId = uuidv4();
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const dateStr = tomorrow.toISOString().split("T")[0];
-
-		const response = await request(app)
-			.get(`/api/appointments/availability/${fakeId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ date: dateStr });
-
-		expect(response.status).toBe(404);
-		expect(response.body.code).toBe("DOCTOR_NOT_FOUND");
-	});
-
-	it("returns 400 for past date", async () => {
-		const yesterday = new Date();
-		yesterday.setDate(yesterday.getDate() - 1);
-		const dateStr = yesterday.toISOString().split("T")[0];
-
-		const response = await request(app)
-			.get(`/api/appointments/availability/${doctorStaffId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ date: dateStr });
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("INVALID_DATE");
 	});
 
 	it("returns 403 when user lacks DOCTOR:READ permission", async () => {

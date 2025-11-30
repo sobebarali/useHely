@@ -8,12 +8,12 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("GET /api/appointments/:id - Get appointment by ID success", () => {
+describe("GET /api/appointments - Filters appointments by patient ID", () => {
 	let context: AuthTestContext;
 	let doctorContext: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
-	let appointmentId: string;
+	const createdAppointmentIds: string[] = [];
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
@@ -24,7 +24,6 @@ describe("GET /api/appointments/:id - Get appointment by ID success", () => {
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create a doctor
 		doctorContext = await createAuthTestContext({
 			roleName: "DOCTOR",
 			rolePermissions: ["APPOINTMENT:READ"],
@@ -34,7 +33,6 @@ describe("GET /api/appointments/:id - Get appointment by ID success", () => {
 			},
 		});
 
-		// Create a patient
 		const patient = await Patient.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -56,35 +54,35 @@ describe("GET /api/appointments/:id - Get appointment by ID success", () => {
 		});
 		patientId = String(patient._id);
 
-		// Create an appointment
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
-		const appointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-A-${Date.now()}`,
-			patientId,
-			doctorId: doctorContext.staffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: {
-				start: "10:00",
-				end: "10:30",
-			},
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "SCHEDULED",
-			reason: "Regular checkup",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		appointmentId = String(appointment._id);
+		for (let i = 0; i < 3; i++) {
+			const appointment = await Appointment.create({
+				_id: uuidv4(),
+				tenantId: context.hospitalId,
+				appointmentNumber: `${context.hospitalId}-A-${Date.now()}-${i}`,
+				patientId,
+				doctorId: doctorContext.staffId,
+				departmentId: context.departmentId,
+				date: tomorrow,
+				timeSlot: {
+					start: `${10 + i}:00`,
+					end: `${10 + i}:30`,
+				},
+				type: "CONSULTATION",
+				priority: "NORMAL",
+				status: "SCHEDULED",
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+			createdAppointmentIds.push(String(appointment._id));
+		}
 	}, 30000);
 
 	afterAll(async () => {
-		if (appointmentId) {
-			await Appointment.deleteOne({ _id: appointmentId });
+		for (const id of createdAppointmentIds) {
+			await Appointment.deleteOne({ _id: id });
 		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
@@ -93,26 +91,16 @@ describe("GET /api/appointments/:id - Get appointment by ID success", () => {
 		await context.cleanup();
 	});
 
-	it("retrieves an appointment by ID successfully", async () => {
+	it("filters appointments by patientId", async () => {
 		const response = await request(app)
-			.get(`/api/appointments/${appointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
+			.get("/api/appointments")
+			.set("Authorization", `Bearer ${accessToken}`)
+			.query({ patientId });
 
 		expect(response.status).toBe(200);
-		expect(response.body.id).toBe(appointmentId);
-		expect(response.body.patient.id).toBe(patientId);
-		expect(response.body.doctor.id).toBe(doctorContext.staffId);
-		expect(response.body.type).toBe("CONSULTATION");
-		expect(response.body.status).toBe("SCHEDULED");
-		expect(response.body.reason).toBe("Regular checkup");
-	});
-
-	it("returns 404 for non-existent appointment", async () => {
-		const fakeId = uuidv4();
-		const response = await request(app)
-			.get(`/api/appointments/${fakeId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
-
-		expect(response.status).toBe(404);
+		expect(response.body.data.length).toBeGreaterThanOrEqual(3);
+		for (const appointment of response.body.data) {
+			expect(appointment.patient.id).toBe(patientId);
+		}
 	});
 });

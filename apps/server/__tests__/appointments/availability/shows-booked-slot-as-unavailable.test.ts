@@ -8,7 +8,7 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("GET /api/appointments/availability/:doctorId - Get availability success", () => {
+describe("GET /api/appointments/availability/:doctorId - Shows booked slot as unavailable", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
@@ -134,23 +134,6 @@ describe("GET /api/appointments/availability/:doctorId - Get availability succes
 		await context.cleanup();
 	});
 
-	it("gets doctor availability for a specific date", async () => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const dateStr = tomorrow.toISOString().split("T")[0];
-
-		const response = await request(app)
-			.get(`/api/appointments/availability/${doctorStaffId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ date: dateStr });
-
-		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("doctorId", doctorStaffId);
-		expect(response.body).toHaveProperty("date");
-		expect(response.body).toHaveProperty("slots");
-		expect(Array.isArray(response.body.slots)).toBe(true);
-	});
-
 	it("shows booked slot as unavailable", async () => {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
@@ -170,27 +153,6 @@ describe("GET /api/appointments/availability/:doctorId - Get availability succes
 
 		if (bookedSlot) {
 			expect(bookedSlot.available).toBe(false);
-		}
-	});
-
-	it("returns slots with correct structure", async () => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const dateStr = tomorrow.toISOString().split("T")[0];
-
-		const response = await request(app)
-			.get(`/api/appointments/availability/${doctorStaffId}`)
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ date: dateStr });
-
-		expect(response.status).toBe(200);
-
-		if (response.body.slots.length > 0) {
-			const slot = response.body.slots[0];
-			expect(slot).toHaveProperty("id");
-			expect(slot).toHaveProperty("startTime");
-			expect(slot).toHaveProperty("endTime");
-			expect(slot).toHaveProperty("available");
 		}
 	});
 });

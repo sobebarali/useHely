@@ -8,37 +8,31 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/appointments - Create appointment success", () => {
+describe("PATCH /api/appointments/:id - Returns 400 for past date", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
 	let doctorRoleId: string;
-	let createdAppointmentId: string;
+	let appointmentId: string;
 
 	beforeAll(async () => {
-		// Create receptionist context with appointment permissions
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: [
-				"APPOINTMENT:CREATE",
-				"APPOINTMENT:READ",
-				"PATIENT:CREATE",
-				"PATIENT:READ",
-			],
+			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create a doctor role in the same hospital
+		// Create a doctor role
 		const doctorRole = await Role.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
 			name: "DOCTOR",
 			description: "Doctor role for tests",
-			permissions: ["APPOINTMENT:READ", "APPOINTMENT:UPDATE"],
+			permissions: ["APPOINTMENT:READ"],
 			isSystem: true,
 			isActive: true,
 			createdAt: new Date(),
@@ -57,7 +51,7 @@ describe("POST /api/appointments - Create appointment success", () => {
 		});
 		doctorUserId = String(doctorUser._id);
 
-		// Create doctor staff in the same hospital as the receptionist
+		// Create doctor staff
 		const doctorStaff = await Staff.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -86,7 +80,6 @@ describe("POST /api/appointments - Create appointment success", () => {
 			dateOfBirth: new Date("1990-01-15"),
 			gender: "MALE",
 			phone: `+1-${context.uniqueId}`,
-			email: `patient-${context.uniqueId}@test.com`,
 			patientType: "OPD",
 			status: "ACTIVE",
 			emergencyContact: {
@@ -97,14 +90,33 @@ describe("POST /api/appointments - Create appointment success", () => {
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
-
 		patientId = String(patient._id);
+
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
+
+		// Create a scheduled appointment
+		const appointment = await Appointment.create({
+			_id: uuidv4(),
+			tenantId: context.hospitalId,
+			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}`,
+			patientId,
+			doctorId: doctorStaffId,
+			departmentId: context.departmentId,
+			date: tomorrow,
+			timeSlot: { start: "10:00", end: "10:30" },
+			type: "CONSULTATION",
+			priority: "NORMAL",
+			status: "SCHEDULED",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
+		appointmentId = String(appointment._id);
 	}, 30000);
 
 	afterAll(async () => {
-		// Clean up created entities
-		if (createdAppointmentId) {
-			await Appointment.deleteOne({ _id: createdAppointmentId });
+		if (appointmentId) {
+			await Appointment.deleteOne({ _id: appointmentId });
 		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
@@ -121,52 +133,16 @@ describe("POST /api/appointments - Create appointment success", () => {
 		await context.cleanup();
 	});
 
-	it("creates a new appointment successfully", async () => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		tomorrow.setHours(10, 0, 0, 0);
-
-		const payload = {
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow.toISOString(),
-			timeSlot: {
-				start: "10:00",
-				end: "10:30",
-			},
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			reason: "Regular checkup",
-		};
-
-		// Debug: log the payload
-		console.log("Test payload:", JSON.stringify(payload, null, 2));
-		console.log("Context hospitalId:", context.hospitalId);
-		console.log("Doctor staffId:", doctorStaffId);
-		console.log("Patient Id:", patientId);
-		console.log("Department Id:", context.departmentId);
+	it("returns 400 when rescheduling to past date", async () => {
+		const yesterday = new Date();
+		yesterday.setDate(yesterday.getDate() - 1);
 
 		const response = await request(app)
-			.post("/api/appointments")
+			.patch(`/api/appointments/${appointmentId}`)
 			.set("Authorization", `Bearer ${accessToken}`)
-			.send(payload);
+			.send({ date: yesterday.toISOString() });
 
-		// Debug output for failures
-		if (response.status !== 201) {
-			console.log("Response status:", response.status);
-			console.log("Response body:", JSON.stringify(response.body, null, 2));
-		}
-
-		expect(response.status).toBe(201);
-		expect(response.body).toHaveProperty("id");
-		expect(response.body).toHaveProperty("appointmentNumber");
-		expect(response.body.patient.id).toBe(patientId);
-		expect(response.body.doctor.id).toBe(doctorStaffId);
-		expect(response.body.type).toBe("CONSULTATION");
-		expect(response.body.priority).toBe("NORMAL");
-		expect(response.body.status).toBe("SCHEDULED");
-
-		createdAppointmentId = response.body.id;
+		expect(response.status).toBe(400);
+		expect(response.body.code).toBe("INVALID_DATE");
 	});
 });

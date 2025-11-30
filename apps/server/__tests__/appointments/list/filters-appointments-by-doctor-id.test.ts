@@ -8,7 +8,7 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("GET /api/appointments - List appointments success", () => {
+describe("GET /api/appointments - Filters appointments by doctor ID", () => {
 	let context: AuthTestContext;
 	let doctorContext: AuthTestContext;
 	let accessToken: string;
@@ -19,13 +19,12 @@ describe("GET /api/appointments - List appointments success", () => {
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: ["APPOINTMENT:CREATE", "APPOINTMENT:READ"],
+			rolePermissions: ["APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create a doctor
 		doctorContext = await createAuthTestContext({
 			roleName: "DOCTOR",
 			rolePermissions: ["APPOINTMENT:READ"],
@@ -36,7 +35,6 @@ describe("GET /api/appointments - List appointments success", () => {
 		});
 		doctorStaffId = doctorContext.staffId ?? "";
 
-		// Create a patient
 		const patient = await Patient.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -58,7 +56,6 @@ describe("GET /api/appointments - List appointments success", () => {
 		});
 		patientId = String(patient._id);
 
-		// Create test appointments
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -86,7 +83,6 @@ describe("GET /api/appointments - List appointments success", () => {
 	}, 30000);
 
 	afterAll(async () => {
-		// Clean up
 		for (const id of createdAppointmentIds) {
 			await Appointment.deleteOne({ _id: id });
 		}
@@ -95,22 +91,6 @@ describe("GET /api/appointments - List appointments success", () => {
 		}
 		await doctorContext.cleanup();
 		await context.cleanup();
-	});
-
-	it("lists appointments with pagination", async () => {
-		const response = await request(app)
-			.get("/api/appointments")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ page: 1, limit: 10 });
-
-		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("data");
-		expect(response.body).toHaveProperty("pagination");
-		expect(Array.isArray(response.body.data)).toBe(true);
-		expect(response.body.data.length).toBeGreaterThanOrEqual(3);
-		expect(response.body.pagination).toHaveProperty("page");
-		expect(response.body.pagination).toHaveProperty("limit");
-		expect(response.body.pagination).toHaveProperty("total");
 	});
 
 	it("filters appointments by doctorId", async () => {
@@ -123,19 +103,6 @@ describe("GET /api/appointments - List appointments success", () => {
 		expect(response.body.data.length).toBeGreaterThanOrEqual(3);
 		for (const appointment of response.body.data) {
 			expect(appointment.doctor.id).toBe(doctorStaffId);
-		}
-	});
-
-	it("filters appointments by patientId", async () => {
-		const response = await request(app)
-			.get("/api/appointments")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ patientId });
-
-		expect(response.status).toBe(200);
-		expect(response.body.data.length).toBeGreaterThanOrEqual(3);
-		for (const appointment of response.body.data) {
-			expect(appointment.patient.id).toBe(patientId);
 		}
 	});
 });

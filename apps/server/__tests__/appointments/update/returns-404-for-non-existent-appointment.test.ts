@@ -1,4 +1,5 @@
 import request from "supertest";
+import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "../../../src/index";
 import {
@@ -6,15 +7,14 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/appointments - Create appointment unauthorized", () => {
+describe("PATCH /api/appointments/:id - Returns 404 for non-existent appointment", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 
 	beforeAll(async () => {
-		// Create context without APPOINTMENT:CREATE permission
 		context = await createAuthTestContext({
-			roleName: "NURSE",
-			rolePermissions: ["PATIENT:READ"],
+			roleName: "RECEPTIONIST",
+			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
@@ -25,24 +25,14 @@ describe("POST /api/appointments - Create appointment unauthorized", () => {
 		await context.cleanup();
 	});
 
-	it("returns 403 when user lacks APPOINTMENT:CREATE permission", async () => {
-		const payload = {
-			patientId: "some-patient-id",
-			doctorId: "some-doctor-id",
-			departmentId: context.departmentId,
-			date: new Date().toISOString(),
-			timeSlot: {
-				start: "10:00",
-				end: "10:30",
-			},
-			type: "CONSULTATION",
-		};
-
+	it("returns 404 for non-existent appointment", async () => {
+		const fakeId = uuidv4();
 		const response = await request(app)
-			.post("/api/appointments")
+			.patch(`/api/appointments/${fakeId}`)
 			.set("Authorization", `Bearer ${accessToken}`)
-			.send(payload);
+			.send({ reason: "Updated" });
 
-		expect(response.status).toBe(403);
+		expect(response.status).toBe(404);
+		expect(response.body.code).toBe("NOT_FOUND");
 	});
 });

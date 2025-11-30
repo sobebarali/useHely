@@ -8,36 +8,23 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("DELETE /api/appointments/:id - Cancel appointment errors", () => {
+describe("PATCH /api/appointments/:id - Returns 400 for completed appointment", () => {
 	let context: AuthTestContext;
-	let unauthorizedContext: AuthTestContext;
 	let accessToken: string;
-	let unauthorizedToken: string;
 	let patientId: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
 	let doctorRoleId: string;
-	let cancelledAppointmentId: string;
 	let completedAppointmentId: string;
-	let scheduledAppointmentId: string;
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: ["APPOINTMENT:DELETE", "APPOINTMENT:READ"],
+			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
-
-		// Create unauthorized context
-		unauthorizedContext = await createAuthTestContext({
-			roleName: "NURSE",
-			rolePermissions: ["PATIENT:READ"],
-			includeDepartment: true,
-		});
-		const unauthorizedTokens = await unauthorizedContext.issuePasswordTokens();
-		unauthorizedToken = unauthorizedTokens.accessToken;
 
 		// Create a doctor role
 		const doctorRole = await Role.create({
@@ -108,47 +95,11 @@ describe("DELETE /api/appointments/:id - Cancel appointment errors", () => {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
-		// Create a scheduled appointment
-		const scheduledAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-1`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: { start: "10:00", end: "10:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "SCHEDULED",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		scheduledAppointmentId = String(scheduledAppointment._id);
-
-		// Create a cancelled appointment
-		const cancelledAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-2`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: { start: "11:00", end: "11:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "CANCELLED",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		cancelledAppointmentId = String(cancelledAppointment._id);
-
 		// Create a completed appointment
 		const completedAppointment = await Appointment.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-3`,
+			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}`,
 			patientId,
 			doctorId: doctorStaffId,
 			departmentId: context.departmentId,
@@ -164,15 +115,9 @@ describe("DELETE /api/appointments/:id - Cancel appointment errors", () => {
 	}, 30000);
 
 	afterAll(async () => {
-		await Appointment.deleteMany({
-			_id: {
-				$in: [
-					scheduledAppointmentId,
-					cancelledAppointmentId,
-					completedAppointmentId,
-				],
-			},
-		});
+		if (completedAppointmentId) {
+			await Appointment.deleteOne({ _id: completedAppointmentId });
+		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
 		}
@@ -185,43 +130,16 @@ describe("DELETE /api/appointments/:id - Cancel appointment errors", () => {
 		if (doctorRoleId) {
 			await Role.deleteOne({ _id: doctorRoleId });
 		}
-		await unauthorizedContext.cleanup();
 		await context.cleanup();
 	});
 
-	it("returns 404 for non-existent appointment", async () => {
-		const fakeId = uuidv4();
+	it("returns 400 when updating completed appointment", async () => {
 		const response = await request(app)
-			.delete(`/api/appointments/${fakeId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
-
-		expect(response.status).toBe(404);
-		expect(response.body.code).toBe("NOT_FOUND");
-	});
-
-	it("returns 400 when cancelling already cancelled appointment", async () => {
-		const response = await request(app)
-			.delete(`/api/appointments/${cancelledAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
+			.patch(`/api/appointments/${completedAppointmentId}`)
+			.set("Authorization", `Bearer ${accessToken}`)
+			.send({ reason: "Updated" });
 
 		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("ALREADY_CANCELLED");
-	});
-
-	it("returns 400 when cancelling completed appointment", async () => {
-		const response = await request(app)
-			.delete(`/api/appointments/${completedAppointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
-
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("ALREADY_COMPLETED");
-	});
-
-	it("returns 403 when user lacks APPOINTMENT:DELETE permission", async () => {
-		const response = await request(app)
-			.delete(`/api/appointments/${scheduledAppointmentId}`)
-			.set("Authorization", `Bearer ${unauthorizedToken}`);
-
-		expect(response.status).toBe(403);
+		expect(response.body.code).toBe("CANNOT_RESCHEDULE");
 	});
 });

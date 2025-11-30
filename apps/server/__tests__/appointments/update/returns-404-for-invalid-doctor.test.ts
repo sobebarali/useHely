@@ -8,7 +8,7 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("DELETE /api/appointments/:id - Cancel appointment success", () => {
+describe("PATCH /api/appointments/:id - Returns 404 for invalid doctor", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
@@ -20,7 +20,7 @@ describe("DELETE /api/appointments/:id - Cancel appointment success", () => {
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: ["APPOINTMENT:DELETE", "APPOINTMENT:READ"],
+			rolePermissions: ["APPOINTMENT:UPDATE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
@@ -92,10 +92,10 @@ describe("DELETE /api/appointments/:id - Cancel appointment success", () => {
 		});
 		patientId = String(patient._id);
 
-		// Create an appointment for tomorrow
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
 
+		// Create a scheduled appointment
 		const appointment = await Appointment.create({
 			_id: uuidv4(),
 			tenantId: context.hospitalId,
@@ -133,52 +133,14 @@ describe("DELETE /api/appointments/:id - Cancel appointment success", () => {
 		await context.cleanup();
 	});
 
-	it("cancels a scheduled appointment", async () => {
+	it("returns 404 when updating with invalid doctorId", async () => {
+		const fakeDoctor = uuidv4();
 		const response = await request(app)
-			.delete(`/api/appointments/${appointmentId}`)
-			.set("Authorization", `Bearer ${accessToken}`);
-
-		expect(response.status).toBe(200);
-		expect(response.body.id).toBe(appointmentId);
-		expect(response.body.status).toBe("CANCELLED");
-		expect(response.body).toHaveProperty("cancelledAt");
-		expect(response.body).toHaveProperty("cancelledBy");
-	});
-
-	it("cancels appointment with reason", async () => {
-		// Create another appointment
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-
-		const newAppointment = await Appointment.create({
-			_id: uuidv4(),
-			tenantId: context.hospitalId,
-			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-2`,
-			patientId,
-			doctorId: doctorStaffId,
-			departmentId: context.departmentId,
-			date: tomorrow,
-			timeSlot: { start: "11:00", end: "11:30" },
-			type: "CONSULTATION",
-			priority: "NORMAL",
-			status: "SCHEDULED",
-			createdAt: new Date(),
-			updatedAt: new Date(),
-		});
-		const newAppointmentId = String(newAppointment._id);
-
-		const response = await request(app)
-			.delete(`/api/appointments/${newAppointmentId}`)
+			.patch(`/api/appointments/${appointmentId}`)
 			.set("Authorization", `Bearer ${accessToken}`)
-			.send({ reason: "Patient requested cancellation" });
+			.send({ doctorId: fakeDoctor });
 
-		expect(response.status).toBe(200);
-		expect(response.body.status).toBe("CANCELLED");
-		expect(response.body.cancellationReason).toBe(
-			"Patient requested cancellation",
-		);
-
-		// Cleanup
-		await Appointment.deleteOne({ _id: newAppointmentId });
+		expect(response.status).toBe(404);
+		expect(response.body.code).toBe("INVALID_DOCTOR");
 	});
 });

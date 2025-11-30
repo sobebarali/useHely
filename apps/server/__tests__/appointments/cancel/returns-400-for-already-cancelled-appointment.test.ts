@@ -8,19 +8,19 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("GET /api/appointments/queue - Get queue success", () => {
+describe("DELETE /api/appointments/:id - Returns 400 for already cancelled appointment", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	let patientId: string;
 	let doctorStaffId: string;
 	let doctorUserId: string;
 	let doctorRoleId: string;
-	const createdAppointmentIds: string[] = [];
+	let cancelledAppointmentId: string;
 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			roleName: "RECEPTIONIST",
-			rolePermissions: ["QUEUE:READ", "APPOINTMENT:READ"],
+			rolePermissions: ["APPOINTMENT:DELETE", "APPOINTMENT:READ"],
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
@@ -92,38 +92,31 @@ describe("GET /api/appointments/queue - Get queue success", () => {
 		});
 		patientId = String(patient._id);
 
-		// Create checked-in appointments for today
-		const today = new Date();
-		today.setHours(10, 0, 0, 0);
+		const tomorrow = new Date();
+		tomorrow.setDate(tomorrow.getDate() + 1);
 
-		for (let i = 0; i < 3; i++) {
-			const appointment = await Appointment.create({
-				_id: uuidv4(),
-				tenantId: context.hospitalId,
-				appointmentNumber: `${context.hospitalId}-APT-${Date.now()}-${i}`,
-				patientId,
-				doctorId: doctorStaffId,
-				departmentId: context.departmentId,
-				date: today,
-				timeSlot: {
-					start: `${10 + i}:00`,
-					end: `${10 + i}:30`,
-				},
-				type: "CONSULTATION",
-				priority: "NORMAL",
-				status: "CHECKED_IN",
-				queueNumber: i + 1,
-				checkedInAt: new Date(Date.now() - (3 - i) * 60000), // Stagger check-in times
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			});
-			createdAppointmentIds.push(String(appointment._id));
-		}
+		// Create a cancelled appointment
+		const cancelledAppointment = await Appointment.create({
+			_id: uuidv4(),
+			tenantId: context.hospitalId,
+			appointmentNumber: `${context.hospitalId}-APT-${Date.now()}`,
+			patientId,
+			doctorId: doctorStaffId,
+			departmentId: context.departmentId,
+			date: tomorrow,
+			timeSlot: { start: "11:00", end: "11:30" },
+			type: "CONSULTATION",
+			priority: "NORMAL",
+			status: "CANCELLED",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+		});
+		cancelledAppointmentId = String(cancelledAppointment._id);
 	}, 30000);
 
 	afterAll(async () => {
-		for (const id of createdAppointmentIds) {
-			await Appointment.deleteOne({ _id: id });
+		if (cancelledAppointmentId) {
+			await Appointment.deleteOne({ _id: cancelledAppointmentId });
 		}
 		if (patientId) {
 			await Patient.deleteOne({ _id: patientId });
@@ -140,54 +133,12 @@ describe("GET /api/appointments/queue - Get queue success", () => {
 		await context.cleanup();
 	});
 
-	it("gets the OPD queue for today", async () => {
+	it("returns 400 when cancelling already cancelled appointment", async () => {
 		const response = await request(app)
-			.get("/api/appointments/queue")
+			.delete(`/api/appointments/${cancelledAppointmentId}`)
 			.set("Authorization", `Bearer ${accessToken}`);
 
-		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("queue");
-		expect(response.body).toHaveProperty("currentNumber");
-		expect(response.body).toHaveProperty("totalWaiting");
-		expect(Array.isArray(response.body.queue)).toBe(true);
-	});
-
-	it("filters queue by doctorId", async () => {
-		const response = await request(app)
-			.get("/api/appointments/queue")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ doctorId: doctorStaffId });
-
-		expect(response.status).toBe(200);
-		expect(response.body.queue.length).toBeGreaterThanOrEqual(3);
-	});
-
-	it("filters queue by departmentId", async () => {
-		const response = await request(app)
-			.get("/api/appointments/queue")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ departmentId: context.departmentId });
-
-		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("queue");
-	});
-
-	it("returns queue items with correct structure", async () => {
-		const response = await request(app)
-			.get("/api/appointments/queue")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.query({ doctorId: doctorStaffId });
-
-		expect(response.status).toBe(200);
-
-		if (response.body.queue.length > 0) {
-			const queueItem = response.body.queue[0];
-			expect(queueItem).toHaveProperty("queueNumber");
-			expect(queueItem).toHaveProperty("appointment");
-			expect(queueItem).toHaveProperty("patient");
-			expect(queueItem).toHaveProperty("checkedInAt");
-			expect(queueItem).toHaveProperty("estimatedTime");
-			expect(queueItem).toHaveProperty("status");
-		}
+		expect(response.status).toBe(400);
+		expect(response.body.code).toBe("ALREADY_CANCELLED");
 	});
 });
