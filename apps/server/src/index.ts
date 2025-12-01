@@ -3,6 +3,7 @@ import { connectDB } from "@hms/db";
 import cors from "cors";
 import express from "express";
 import appointmentsRoutes from "./apis/appointments/appointments.routes";
+import auditRoutes from "./apis/audit/audit.routes";
 import authRoutes from "./apis/auth/auth.routes";
 import dashboardRoutes from "./apis/dashboard/dashboard.routes";
 import departmentsRoutes from "./apis/departments/departments.routes";
@@ -63,6 +64,7 @@ app.use(requestLogger);
 
 // API Routes
 app.use("/api/appointments", appointmentsRoutes);
+app.use("/api/audit", auditRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/departments", departmentsRoutes);

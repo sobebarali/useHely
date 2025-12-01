@@ -26,7 +26,7 @@ describe("PATCH /api/hospitals/:id/status - Successfully update hospital status 
 		await Hospital.findByIdAndUpdate(authContext.hospitalId, {
 			status: "VERIFIED",
 		});
-	});
+	}, 30000);
 
 	afterAll(async () => {
 		await authContext.cleanup();

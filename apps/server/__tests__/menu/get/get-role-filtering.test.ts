@@ -215,8 +215,9 @@ describe("GET /api/menu - Role-based filtering", () => {
 			expect(response.status).toBe(200);
 
 			const { menu } = response.body.data;
+			// Menu config uses "pharmacy" as the id for dispensing menu
 			const dispensing = menu.find(
-				(item: { id: string }) => item.id === "dispensing",
+				(item: { id: string }) => item.id === "pharmacy",
 			);
 
 			expect(dispensing).toBeDefined();
@@ -296,7 +297,7 @@ describe("GET /api/menu - Role-based filtering", () => {
 			const queue = menu.find((item: { id: string }) => item.id === "queue");
 
 			expect(queue).toBeDefined();
-			expect(queue.path).toBe("/queue");
+			expect(queue.path).toBe("/dashboard/patients/opd-queue");
 		});
 
 		it("returns appointments menu with schedule option", async () => {
@@ -428,20 +429,21 @@ describe("GET /api/menu - Role-based filtering", () => {
 				(item: { id: string }) => item.id === "prescriptions",
 			);
 
-			// Should see prescriptions because PRESCRIPTION:READ allows viewing history
+			// Should see prescriptions because PRESCRIPTION:READ allows viewing list
 			expect(prescriptions).toBeDefined();
 
-			// Should only see history, not create
+			// Should only see list, not create
 			if (prescriptions.children) {
 				const createOption = prescriptions.children.find(
 					(child: { id: string }) => child.id === "prescriptions-create",
 				);
 				expect(createOption).toBeUndefined();
 
-				const historyOption = prescriptions.children.find(
-					(child: { id: string }) => child.id === "prescriptions-history",
+				// Menu config uses "prescriptions-list" not "prescriptions-history"
+				const listOption = prescriptions.children.find(
+					(child: { id: string }) => child.id === "prescriptions-list",
 				);
-				expect(historyOption).toBeDefined();
+				expect(listOption).toBeDefined();
 			}
 		});
 	});

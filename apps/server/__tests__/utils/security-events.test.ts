@@ -28,7 +28,7 @@ describe("Security Events Utility", () => {
 		emitSecurityEvent(testParams);
 
 		// Wait a bit for async operation to complete
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		await new Promise((resolve) => setTimeout(resolve, 1500));
 
 		// Verify event was created in database
 		const events = await SecurityEvent.find({

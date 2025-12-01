@@ -13,6 +13,24 @@ export {
 	AppointmentStatus,
 	AppointmentType,
 } from "./appointment.model";
+// Audit Export
+export {
+	AuditExport,
+	AuditExportFormat,
+	type AuditExportFormatValue,
+	AuditExportStatus,
+	type AuditExportStatusValue,
+} from "./audit-export.model";
+// Audit Log
+export {
+	AuditAction,
+	type AuditActionValue,
+	AuditEventCategory,
+	type AuditEventCategoryValue,
+	AuditEventType,
+	type AuditEventTypeValue,
+	AuditLog,
+} from "./audit-log.model";
 export { Account, Session, User, Verification } from "./auth.model";
 // Counter
 export { Counter, CounterType } from "./counter.model";
