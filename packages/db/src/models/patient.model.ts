@@ -75,8 +75,6 @@ const patientSchema = new Schema(
 			enum: Object.values(PatientStatus),
 			default: PatientStatus.ACTIVE,
 		},
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "patient",

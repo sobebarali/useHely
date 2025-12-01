@@ -28,7 +28,7 @@ export async function getEvent({
 
 	if (!event) {
 		logger.warn({ id }, "Security event not found");
-		throw new NotFoundError("EVENT_NOT_FOUND", "Security event not found");
+		throw new NotFoundError("Security event not found", "EVENT_NOT_FOUND");
 	}
 
 	const duration = Date.now() - startTime;

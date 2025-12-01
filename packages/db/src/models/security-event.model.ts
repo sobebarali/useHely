@@ -49,8 +49,6 @@ const securityEventSchema = new Schema(
 		userAgent: { type: String },
 		details: { type: Schema.Types.Mixed },
 		timestamp: { type: Date, required: true, default: Date.now },
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "security_event",

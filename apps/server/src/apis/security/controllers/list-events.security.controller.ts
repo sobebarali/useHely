@@ -35,8 +35,10 @@ export async function listEventsController(req: Request, res: Response) {
 
 		res.status(200).json({
 			success: true,
-			data: result.events,
-			pagination: result.pagination,
+			data: {
+				events: result.events,
+				pagination: result.pagination,
+			},
 		});
 	} catch (error: unknown) {
 		const duration = Date.now() - startTime;

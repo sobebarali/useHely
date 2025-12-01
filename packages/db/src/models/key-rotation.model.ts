@@ -10,8 +10,6 @@ const keyRotationSchema = new Schema(
 		rotatedAt: { type: Date, required: true, default: Date.now },
 		rotatedBy: { type: String, ref: "User", required: true },
 		recordsReEncrypted: { type: Number, default: 0 },
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "key_rotation",

@@ -69,8 +69,6 @@ const prescriptionSchema = new Schema(
 		cancelledAt: { type: Date },
 		cancelledBy: { type: String, ref: "Staff" },
 		cancellationReason: { type: String },
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "prescription",
@@ -102,8 +100,6 @@ const prescriptionTemplateSchema = new Schema(
 		medicines: [{ type: templateMedicineSchema }],
 		isSystem: { type: Boolean, default: false },
 		createdBy: { type: String, ref: "Staff" },
-		createdAt: { type: Date, required: true },
-		updatedAt: { type: Date, required: true },
 	},
 	{
 		collection: "prescription_template",

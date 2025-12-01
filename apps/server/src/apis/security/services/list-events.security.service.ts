@@ -17,25 +17,52 @@ import type { ListEventsOutput } from "../validations/list-events.security.valid
  * by timestamp (most recent first).
  */
 export async function listEvents({
-	page,
-	limit,
+	page: pageParam = 1,
+	limit: limitParam = 20,
 	severity,
 	type,
 	userId,
 	tenantId,
-	startDate,
-	endDate,
+	startDate: startDateParam,
+	endDate: endDateParam,
 }: {
-	page: number;
-	limit: number;
+	page?: number | string;
+	limit?: number | string;
 	severity?: (typeof SecurityEventSeverity)[keyof typeof SecurityEventSeverity];
 	type?: (typeof SecurityEventType)[keyof typeof SecurityEventType];
 	userId?: string;
 	tenantId?: string;
-	startDate?: Date;
-	endDate?: Date;
+	startDate?: Date | string;
+	endDate?: Date | string;
 }): Promise<ListEventsOutput> {
 	const startTime = Date.now();
+
+	// Ensure page and limit are numbers with bounds
+	const page = Math.max(
+		1,
+		typeof pageParam === "string" ? Number.parseInt(pageParam, 10) : pageParam,
+	);
+	const limit = Math.min(
+		100,
+		Math.max(
+			1,
+			typeof limitParam === "string"
+				? Number.parseInt(limitParam, 10)
+				: limitParam,
+		),
+	);
+
+	// Convert string dates to Date objects
+	const startDate = startDateParam
+		? typeof startDateParam === "string"
+			? new Date(startDateParam)
+			: startDateParam
+		: undefined;
+	const endDate = endDateParam
+		? typeof endDateParam === "string"
+			? new Date(endDateParam)
+			: endDateParam
+		: undefined;
 
 	// Query security events
 	const { events, total } = await findSecurityEvents({

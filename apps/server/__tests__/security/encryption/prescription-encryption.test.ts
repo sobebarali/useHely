@@ -58,8 +58,6 @@ describe("Prescription Model - Field Encryption", () => {
 			},
 			patientType: "OPD",
 			status: "ACTIVE",
-			createdAt: new Date(),
-			updatedAt: new Date(),
 		});
 	});
 
@@ -102,8 +100,6 @@ describe("Prescription Model - Field Encryption", () => {
 				},
 			],
 			status: "PENDING",
-			createdAt: new Date(),
-			updatedAt: new Date(),
 		};
 
 		await Prescription.create(prescriptionData);
@@ -256,8 +252,6 @@ describe("Prescription Model - Field Encryption", () => {
 			diagnosis: "General checkup",
 			medicines: [],
 			status: "PENDING",
-			createdAt: new Date(),
-			updatedAt: new Date(),
 		});
 
 		// Re-fetch to get decrypted values
