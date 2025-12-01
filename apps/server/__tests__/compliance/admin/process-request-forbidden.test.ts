@@ -1,4 +1,8 @@
-import { DataSubjectRequest, DataSubjectRequestStatus } from "@hms/db";
+import {
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	DataSubjectRequestType,
+} from "@hms/db";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -28,7 +32,7 @@ describe("PUT /api/compliance/requests/:requestId/process - Forbidden", () => {
 			tenantId: context.hospitalId,
 			userId: context.userId,
 			userEmail: context.email,
-			type: "export",
+			type: DataSubjectRequestType.EXPORT,
 			status: DataSubjectRequestStatus.PENDING,
 			createdAt: new Date(),
 			updatedAt: new Date(),
@@ -49,6 +53,6 @@ describe("PUT /api/compliance/requests/:requestId/process - Forbidden", () => {
 			});
 
 		expect(response.status).toBe(403);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBe("PERMISSION_DENIED");
 	});
 });

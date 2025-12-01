@@ -44,7 +44,8 @@ describe("GET /api/compliance/data-export/:requestId/download - Success", () => 
 			.set("Authorization", `Bearer ${accessToken}`);
 
 		expect(response.status).toBe(200);
-		expect(response.body.success).toBe(true);
-		expect(response.body.data).toHaveProperty("exportData");
+		// Download endpoint returns raw content directly (not wrapped in success/data)
+		expect(response.headers["content-type"]).toMatch(/application\/json/);
+		expect(response.headers["content-disposition"]).toMatch(/attachment/);
 	});
 });

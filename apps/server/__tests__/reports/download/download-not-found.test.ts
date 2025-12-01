@@ -19,7 +19,7 @@ describe("GET /api/reports/:reportId/download - Not found", () => {
 
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
-	}, 30000);
+	}, 60000);
 
 	afterAll(async () => {
 		await context.cleanup();

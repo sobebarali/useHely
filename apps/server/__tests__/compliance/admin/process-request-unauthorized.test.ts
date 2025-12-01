@@ -14,7 +14,7 @@ describe("PUT /api/compliance/requests/:requestId/process - Unauthorized", () =>
 			});
 
 		expect(response.status).toBe(401);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("returns 401 when invalid token provided", async () => {
@@ -28,6 +28,6 @@ describe("PUT /api/compliance/requests/:requestId/process - Unauthorized", () =>
 			});
 
 		expect(response.status).toBe(401);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 });

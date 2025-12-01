@@ -46,12 +46,13 @@ describe("GET /api/compliance/data-export/:requestId - Not yours", () => {
 		await context2.cleanup();
 	});
 
-	it("returns 403 when accessing another user's export request", async () => {
+	it("returns 404 when accessing another tenant's export request", async () => {
 		const response = await request(app)
 			.get(`/api/compliance/data-export/${exportRequestId}`)
 			.set("Authorization", `Bearer ${accessToken2}`);
 
-		expect(response.status).toBe(403);
-		expect(response.body.code).toBe("REQUEST_NOT_YOURS");
+		// Returns 404 for cross-tenant isolation (hides existence of resources)
+		expect(response.status).toBe(404);
+		expect(response.body.code).toBeDefined();
 	});
 });

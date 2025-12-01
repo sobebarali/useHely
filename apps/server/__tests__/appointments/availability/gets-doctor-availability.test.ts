@@ -135,9 +135,10 @@ describe("GET /api/appointments/availability/:doctorId - Gets doctor availabilit
 	});
 
 	it("gets doctor availability for a specific date", async () => {
-		const tomorrow = new Date();
-		tomorrow.setDate(tomorrow.getDate() + 1);
-		const dateStr = tomorrow.toISOString().split("T")[0];
+		// Use a date 2 days in the future to avoid timezone edge cases
+		const futureDate = new Date();
+		futureDate.setDate(futureDate.getDate() + 2);
+		const dateStr = futureDate.toISOString().split("T")[0];
 
 		const response = await request(app)
 			.get(`/api/appointments/availability/${doctorStaffId}`)

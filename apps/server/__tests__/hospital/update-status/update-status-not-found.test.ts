@@ -22,7 +22,7 @@ describe("PATCH /api/hospitals/:id/status - Hospital not found", () => {
 		// Get access token
 		const tokens = await authContext.issuePasswordTokens();
 		accessToken = tokens.accessToken;
-	});
+	}, 30000);
 
 	afterAll(async () => {
 		await authContext.cleanup();

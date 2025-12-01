@@ -31,7 +31,7 @@ describe("PUT /api/compliance/requests/:requestId/process - Validation", () => {
 			});
 
 		expect(response.status).toBe(400);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("returns 400 for missing action", async () => {
@@ -43,7 +43,7 @@ describe("PUT /api/compliance/requests/:requestId/process - Validation", () => {
 			.send({});
 
 		expect(response.status).toBe(400);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("returns 400 for invalid action value", async () => {
@@ -57,6 +57,6 @@ describe("PUT /api/compliance/requests/:requestId/process - Validation", () => {
 			});
 
 		expect(response.status).toBe(400);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 });

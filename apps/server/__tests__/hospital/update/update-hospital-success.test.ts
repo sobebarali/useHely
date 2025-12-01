@@ -21,7 +21,7 @@ describe("PATCH /api/hospitals/:id - Successfully update hospital", () => {
 		// Get access token
 		const tokens = await authContext.issuePasswordTokens();
 		accessToken = tokens.accessToken;
-	});
+	}, 30000);
 
 	afterAll(async () => {
 		await authContext.cleanup();

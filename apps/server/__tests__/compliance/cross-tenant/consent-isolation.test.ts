@@ -73,7 +73,7 @@ describe("Cross-Tenant Security - Consent", () => {
 
 		// Should return 404 (not found) as it's isolated by tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("tenant B cannot access tenant A's consent history", async () => {
@@ -84,7 +84,8 @@ describe("Cross-Tenant Security - Consent", () => {
 		expect(response.status).toBe(200);
 		expect(response.body.success).toBe(true);
 
-		// Should return empty array - no history for tenant B
-		expect(response.body.data.length).toBe(0);
+		// Should return empty history array - no history for tenant B
+		expect(response.body.data.history).toBeInstanceOf(Array);
+		expect(response.body.data.history.length).toBe(0);
 	});
 });

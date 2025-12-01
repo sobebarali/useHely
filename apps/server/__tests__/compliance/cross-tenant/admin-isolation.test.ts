@@ -1,4 +1,8 @@
-import { DataSubjectRequest, DataSubjectRequestStatus } from "@hms/db";
+import {
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	DataSubjectRequestType,
+} from "@hms/db";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -36,7 +40,7 @@ describe("Cross-Tenant Security - Admin Operations", () => {
 			tenantId: tenantA.hospitalId,
 			userId: tenantA.userId,
 			userEmail: tenantA.email,
-			type: "export",
+			type: DataSubjectRequestType.EXPORT,
 			status: DataSubjectRequestStatus.PENDING,
 			createdAt: new Date(),
 			updatedAt: new Date(),
@@ -75,7 +79,7 @@ describe("Cross-Tenant Security - Admin Operations", () => {
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("tenant A admin can see their own requests", async () => {

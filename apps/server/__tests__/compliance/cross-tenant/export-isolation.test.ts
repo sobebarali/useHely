@@ -1,4 +1,8 @@
-import { DataSubjectRequest, DataSubjectRequestStatus } from "@hms/db";
+import {
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	DataSubjectRequestType,
+} from "@hms/db";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -34,7 +38,7 @@ describe("Cross-Tenant Security - Data Export", () => {
 			tenantId: tenantA.hospitalId,
 			userId: tenantA.userId,
 			userEmail: tenantA.email,
-			type: "export",
+			type: DataSubjectRequestType.EXPORT,
 			status: DataSubjectRequestStatus.COMPLETED,
 			exportData: { test: "data" },
 			completedAt: new Date(),
@@ -56,7 +60,7 @@ describe("Cross-Tenant Security - Data Export", () => {
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("tenant B cannot download tenant A's export", async () => {
@@ -66,6 +70,6 @@ describe("Cross-Tenant Security - Data Export", () => {
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 });

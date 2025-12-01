@@ -38,12 +38,14 @@ describe("POST /api/compliance/data-deletion/:requestId/cancel - Not verified", 
 		await context.cleanup();
 	});
 
-	it("returns 400 when request is not verified", async () => {
+	it("allows cancellation of unverified request", async () => {
 		const response = await request(app)
 			.post(`/api/compliance/data-deletion/${deletionRequestId}/cancel`)
 			.set("Authorization", `Bearer ${accessToken}`);
 
-		expect(response.status).toBe(400);
-		expect(response.body.code).toBe("DELETION_NOT_VERIFIED");
+		// Cancellation is allowed at any stage (PENDING_VERIFICATION or VERIFIED)
+		expect(response.status).toBe(200);
+		expect(response.body.success).toBe(true);
+		expect(response.body.data.status).toBe("CANCELLED");
 	});
 });

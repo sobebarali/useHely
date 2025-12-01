@@ -2,7 +2,6 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	ArrowLeft,
-	Building2,
 	CheckCircle2,
 	Lock,
 	ShieldCheck,
@@ -11,6 +10,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
+import { UseHelyLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -163,7 +163,7 @@ function RegisterHospitalPage() {
 
 						<div className="mb-8 flex items-center gap-3">
 							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 backdrop-blur-sm">
-								<Building2 className="h-6 w-6 text-primary" />
+								<UseHelyLogo className="h-6 w-6 text-primary" />
 							</div>
 							<span className="font-bold text-xl">useHely</span>
 						</div>
@@ -226,7 +226,7 @@ function RegisterHospitalPage() {
 						</Button>
 						<div className="flex items-center gap-3">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-								<Building2 className="h-5 w-5 text-primary" />
+								<UseHelyLogo className="h-5 w-5 text-primary" />
 							</div>
 							<div>
 								<h1 className="font-bold text-xl">Register Your Hospital</h1>

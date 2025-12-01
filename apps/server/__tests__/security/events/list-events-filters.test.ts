@@ -64,9 +64,8 @@ describe("GET /api/security/events - Filters", () => {
 			},
 		];
 
-		for (let i = 0; i < testEvents.length; i++) {
+		for (const [i, eventData] of testEvents.entries()) {
 			const eventId = uuidv4();
-			const eventData = testEvents[i]!;
 			await SecurityEvent.create({
 				_id: eventId,
 				tenantId: context.hospitalId,

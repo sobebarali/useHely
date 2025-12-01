@@ -32,7 +32,7 @@ describe("ABAC Policy - Department Scoping", () => {
 		adminAccessToken = adminTokens.accessToken;
 
 		// The first department is created by createAuthTestContext
-		department1Id = adminContext.departmentId!;
+		department1Id = adminContext.departmentId ?? "";
 
 		// Create second department in same tenant
 		department2Id = uuidv4();

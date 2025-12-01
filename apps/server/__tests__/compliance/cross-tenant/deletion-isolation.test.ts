@@ -1,4 +1,8 @@
-import { DataSubjectRequest, DataSubjectRequestStatus } from "@hms/db";
+import {
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	DataSubjectRequestType,
+} from "@hms/db";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -35,10 +39,10 @@ describe("Cross-Tenant Security - Data Deletion", () => {
 			tenantId: tenantA.hospitalId,
 			userId: tenantA.userId,
 			userEmail: tenantA.email,
-			type: "deletion",
+			type: DataSubjectRequestType.DELETION,
 			status: DataSubjectRequestStatus.PENDING_VERIFICATION,
 			verificationToken: verificationToken,
-			verificationExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+			verificationTokenExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000),
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
@@ -57,7 +61,7 @@ describe("Cross-Tenant Security - Data Deletion", () => {
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("tenant B cannot verify tenant A's deletion request", async () => {
@@ -65,12 +69,12 @@ describe("Cross-Tenant Security - Data Deletion", () => {
 			.post(`/api/compliance/data-deletion/${deletionRequestIdA}/verify`)
 			.set("Authorization", `Bearer ${tokenB}`)
 			.send({
-				verificationToken: verificationToken,
+				token: verificationToken,
 			});
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("tenant B cannot cancel tenant A's deletion request", async () => {
@@ -83,6 +87,6 @@ describe("Cross-Tenant Security - Data Deletion", () => {
 
 		// Should return 404 - not found for different tenant
 		expect(response.status).toBe(404);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 });

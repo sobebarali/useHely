@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	Activity,
-	Building2,
 	Calendar,
 	FileText,
 	Lock,
@@ -9,6 +8,7 @@ import {
 	Users,
 } from "lucide-react";
 import { useState } from "react";
+import { UseHelyLogo } from "@/components/icons";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
@@ -46,7 +46,7 @@ function LoginPage() {
 					<div className="relative flex h-full flex-col justify-center p-12">
 						<Link to="/" className="mb-8 flex items-center gap-3">
 							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 backdrop-blur-sm">
-								<Building2 className="h-6 w-6 text-primary" />
+								<UseHelyLogo className="h-6 w-6 text-primary" />
 							</div>
 							<span className="font-bold text-xl">useHely</span>
 						</Link>
@@ -97,7 +97,7 @@ function LoginPage() {
 					<div className="mb-8 lg:hidden">
 						<Link to="/" className="flex items-center gap-2">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-								<Building2 className="h-5 w-5 text-primary" />
+								<UseHelyLogo className="h-5 w-5 text-primary" />
 							</div>
 							<span className="font-bold text-lg">useHely</span>
 						</Link>

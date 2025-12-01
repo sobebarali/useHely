@@ -7,7 +7,7 @@ describe("GET /api/compliance/requests - List requests unauthorized", () => {
 		const response = await request(app).get("/api/compliance/requests");
 
 		expect(response.status).toBe(401);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 
 	it("returns 401 when invalid token provided", async () => {
@@ -16,6 +16,6 @@ describe("GET /api/compliance/requests - List requests unauthorized", () => {
 			.set("Authorization", "Bearer invalid-token-here");
 
 		expect(response.status).toBe(401);
-		expect(response.body.success).toBe(false);
+		expect(response.body.code).toBeDefined();
 	});
 });

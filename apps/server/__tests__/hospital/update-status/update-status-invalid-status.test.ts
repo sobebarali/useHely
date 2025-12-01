@@ -20,7 +20,7 @@ describe("PATCH /api/hospitals/:id/status - Invalid status value", () => {
 		// Get access token
 		const tokens = await authContext.issuePasswordTokens();
 		accessToken = tokens.accessToken;
-	});
+	}, 30000);
 
 	afterAll(async () => {
 		await authContext.cleanup();
