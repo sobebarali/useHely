@@ -340,8 +340,8 @@ async function handleMfaGrant({
 	if (!challenge) {
 		logger.warn("Invalid or expired MFA challenge token");
 		throw new BadRequestError(
-			"INVALID_MFA_CHALLENGE",
 			"Invalid or expired MFA challenge. Please start login again.",
+			"INVALID_MFA_CHALLENGE",
 		);
 	}
 
@@ -360,8 +360,8 @@ async function handleMfaGrant({
 		logger.warn({ userId }, "MFA not enabled for user");
 		await deleteMfaChallenge({ challengeToken: challenge_token });
 		throw new BadRequestError(
-			"MFA_NOT_ENABLED",
 			"Multi-factor authentication is not enabled",
+			"MFA_NOT_ENABLED",
 		);
 	}
 
@@ -425,8 +425,8 @@ async function handleMfaGrant({
 		});
 
 		throw new BadRequestError(
-			"INVALID_MFA_CODE",
 			"Invalid authentication code. Please try again.",
+			"INVALID_MFA_CODE",
 		);
 	}
 

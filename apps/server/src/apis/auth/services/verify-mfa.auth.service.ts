@@ -34,15 +34,15 @@ export async function verifyMfa({
 
 	if (!user) {
 		logger.warn({ userId }, "User not found");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	// Check if MFA is already enabled
 	if (user.mfaConfig?.enabled) {
 		logger.warn({ userId }, "MFA already enabled for user");
 		throw new BadRequestError(
-			"MFA_ALREADY_ENABLED",
 			"Multi-factor authentication is already enabled",
+			"MFA_ALREADY_ENABLED",
 		);
 	}
 
@@ -50,8 +50,8 @@ export async function verifyMfa({
 	if (!user.mfaConfig?.secret) {
 		logger.warn({ userId }, "MFA setup not initiated");
 		throw new BadRequestError(
-			"MFA_NOT_CONFIGURED",
 			"MFA setup not initiated. Call /mfa/enable first.",
+			"MFA_NOT_CONFIGURED",
 		);
 	}
 
@@ -91,8 +91,8 @@ export async function verifyMfa({
 		});
 
 		throw new BadRequestError(
-			"INVALID_MFA_CODE",
 			"Invalid verification code. Please try again.",
+			"INVALID_MFA_CODE",
 		);
 	}
 
@@ -101,7 +101,7 @@ export async function verifyMfa({
 
 	if (!updatedUser || !updatedUser.mfaConfig?.verifiedAt) {
 		logger.error({ userId }, "Failed to enable MFA");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	logger.info({ userId }, "MFA enabled successfully");

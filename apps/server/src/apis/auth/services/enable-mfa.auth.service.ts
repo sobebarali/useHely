@@ -36,15 +36,15 @@ export async function enableMfa({
 
 	if (!user) {
 		logger.warn({ userId }, "User not found");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	// Check if MFA is already enabled
 	if (user.mfaConfig?.enabled) {
 		logger.warn({ userId }, "MFA already enabled for user");
 		throw new ConflictError(
-			"MFA_ALREADY_ENABLED",
 			"Multi-factor authentication is already enabled. Disable it first to reconfigure.",
+			"MFA_ALREADY_ENABLED",
 		);
 	}
 
@@ -83,7 +83,7 @@ export async function enableMfa({
 
 	if (!updatedUser) {
 		logger.error({ userId }, "Failed to update user MFA configuration");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	logger.info({ userId }, "MFA configuration created (not yet enabled)");

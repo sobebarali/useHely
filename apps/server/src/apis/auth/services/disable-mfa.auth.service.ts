@@ -29,15 +29,15 @@ export async function disableMfa({
 
 	if (!user) {
 		logger.warn({ userId }, "User not found");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	// Check if MFA is enabled
 	if (!user.mfaConfig?.enabled) {
 		logger.warn({ userId }, "MFA not enabled for user");
 		throw new BadRequestError(
-			"MFA_NOT_ENABLED",
 			"Multi-factor authentication is not enabled",
+			"MFA_NOT_ENABLED",
 		);
 	}
 
@@ -46,7 +46,7 @@ export async function disableMfa({
 
 	if (!updatedUser) {
 		logger.error({ userId }, "Failed to disable MFA");
-		throw new NotFoundError("USER_NOT_FOUND", "User not found");
+		throw new NotFoundError("User not found", "USER_NOT_FOUND");
 	}
 
 	logger.info({ userId }, "MFA disabled successfully");

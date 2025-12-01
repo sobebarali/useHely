@@ -138,6 +138,9 @@ export async function hashBackupCode(code: string): Promise<string> {
 /**
  * Verify a backup code against its hash
  *
+ * Backup codes are case-insensitive - both uppercase and lowercase
+ * versions of the code will be accepted.
+ *
  * @param params - Verification parameters
  * @param params.code - Plain text backup code from user
  * @param params.hashedCode - Bcrypt hash stored in database
@@ -151,7 +154,10 @@ export async function verifyBackupCode({
 	hashedCode: string;
 }): Promise<boolean> {
 	try {
-		const isValid = await bcryptCompare(code, hashedCode);
+		// Normalize to uppercase for case-insensitive comparison
+		// (backup codes are stored as uppercase hashes)
+		const normalizedCode = code.toUpperCase();
+		const isValid = await bcryptCompare(normalizedCode, hashedCode);
 		return isValid;
 	} catch (_error) {
 		return false;

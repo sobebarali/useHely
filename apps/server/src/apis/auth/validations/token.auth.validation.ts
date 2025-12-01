@@ -31,13 +31,20 @@ const refreshTokenGrantSchema = z.object({
 });
 
 // MFA grant schema (for second step of MFA authentication)
+// Accepts either:
+// - 6-digit TOTP code from authenticator app
+// - 8-character backup code (hex format, case-insensitive)
 const mfaGrantSchema = z.object({
 	grant_type: z.literal(GrantType.MFA),
 	challenge_token: z.string().min(1, "Challenge token is required"),
 	code: z
 		.string()
-		.length(6, "TOTP code must be exactly 6 digits")
-		.regex(/^\d{6}$/, "TOTP code must contain only digits"),
+		.min(6, "Code must be at least 6 characters")
+		.max(8, "Code must be at most 8 characters")
+		.regex(
+			/^(\d{6}|[a-fA-F0-9]{8})$/,
+			"Code must be a 6-digit TOTP code or 8-character backup code",
+		),
 });
 
 // Combined token request schema using discriminated union
