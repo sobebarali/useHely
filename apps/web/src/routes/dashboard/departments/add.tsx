@@ -90,8 +90,12 @@ function AddDepartmentPage() {
 					code: value.code,
 					type: value.type as DepartmentType,
 					description: value.description || undefined,
-					parentId: value.parentId || undefined,
-					headId: value.headId || undefined,
+					parentId:
+						value.parentId && value.parentId !== "none"
+							? value.parentId
+							: undefined,
+					headId:
+						value.headId && value.headId !== "none" ? value.headId : undefined,
 					location: value.location || undefined,
 					contactPhone: value.contactPhone || undefined,
 					contactEmail: value.contactEmail || undefined,
@@ -287,7 +291,7 @@ function AddDepartmentPage() {
 												<SelectValue placeholder="None (top-level)" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">None (top-level)</SelectItem>
+												<SelectItem value="none">None (top-level)</SelectItem>
 												{departmentsData?.data.map((dept) => (
 													<SelectItem key={dept.id} value={dept.id}>
 														{dept.name} ({dept.code})
@@ -315,7 +319,7 @@ function AddDepartmentPage() {
 												<SelectValue placeholder="Select department head" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">No head assigned</SelectItem>
+												<SelectItem value="none">No head assigned</SelectItem>
 												{staffData?.data.map((staff) => (
 													<SelectItem key={staff.id} value={staff.id}>
 														{staff.firstName} {staff.lastName}

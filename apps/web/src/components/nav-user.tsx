@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import {
 	BadgeCheck,
 	Bell,
@@ -43,10 +44,15 @@ export function NavUser({
 	};
 }) {
 	const { isMobile } = useSidebar();
+	const navigate = useNavigate();
 
 	const handleLogout = async () => {
 		await authClient.signOut();
 		window.location.href = "/login";
+	};
+
+	const handleNavigate = (path: string) => {
+		navigate({ to: path });
 	};
 
 	return (
@@ -66,7 +72,9 @@ export function NavUser({
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
 								<span className="truncate font-medium">{user.name}</span>
-								<span className="truncate text-xs">{user.email}</span>
+								<span className="truncate text-muted-foreground text-xs">
+									{user.email}
+								</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
 						</SidebarMenuButton>
@@ -87,21 +95,29 @@ export function NavUser({
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
 									<span className="truncate font-medium">{user.name}</span>
-									<span className="truncate text-xs">{user.email}</span>
+									<span className="truncate text-muted-foreground text-xs">
+										{user.email}
+									</span>
 								</div>
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => handleNavigate("/dashboard/account")}
+							>
 								<BadgeCheck />
 								Account
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => handleNavigate("/dashboard/settings")}
+							>
 								<Settings />
 								Settings
 							</DropdownMenuItem>
-							<DropdownMenuItem>
+							<DropdownMenuItem
+								onClick={() => handleNavigate("/dashboard/notifications")}
+							>
 								<Bell />
 								Notifications
 							</DropdownMenuItem>

@@ -93,7 +93,6 @@ function getStatusBadgeVariant(
 			return "secondary";
 		case "FAILED":
 			return "destructive";
-		case "PENDING":
 		default:
 			return "outline";
 	}

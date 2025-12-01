@@ -60,13 +60,21 @@ function convertMenuItems(
 		title: item.label,
 		url: item.path || "",
 		icon: iconMap[item.icon] || LayoutDashboard,
-		isActive: false, // Will be determined by current route
 		items: item.children?.map((child) => ({
 			title: child.label,
 			url: child.path,
 		})),
 	}));
 }
+
+// Stable keys for skeleton loading items
+const SKELETON_KEYS = [
+	"skeleton-1",
+	"skeleton-2",
+	"skeleton-3",
+	"skeleton-4",
+	"skeleton-5",
+];
 
 export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 	user: {
@@ -93,8 +101,8 @@ export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
 				<SidebarContent>
 					<div className="p-4">
 						<div className="animate-pulse space-y-2">
-							{Array.from({ length: 5 }).map(() => (
-								<div key={Math.random()} className="h-8 rounded bg-muted" />
+							{SKELETON_KEYS.map((key) => (
+								<div key={key} className="h-8 rounded bg-muted" />
 							))}
 						</div>
 					</div>
