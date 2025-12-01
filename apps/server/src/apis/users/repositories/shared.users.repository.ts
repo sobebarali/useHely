@@ -254,6 +254,12 @@ export async function findDepartmentById({
 
 /**
  * Get department by ID (without tenant scope)
+ *
+ * @deprecated SECURITY WARNING: This function does NOT enforce tenant isolation.
+ * Only use this in contexts where tenant validation has already been performed
+ * (e.g., during authentication flows before tenant context is established).
+ *
+ * For tenant-scoped queries, use `findDepartmentById({ tenantId, departmentId })` instead.
  */
 export async function getDepartmentById({
 	departmentId,
@@ -316,6 +322,12 @@ export async function getRolesByIds({
 
 /**
  * Get roles by IDs (without tenant scope, for auth)
+ *
+ * @deprecated SECURITY WARNING: This function does NOT enforce tenant isolation.
+ * Only use this during authentication flows where tenant context is not yet
+ * established (e.g., token generation before full auth context is available).
+ *
+ * For tenant-scoped queries, use `getRolesByIds({ tenantId, roleIds })` instead.
  */
 export async function getRolesByIdsWithoutTenant({
 	roleIds,
@@ -346,6 +358,12 @@ export async function getRolesByIdsWithoutTenant({
 
 /**
  * Get active roles by IDs (without tenant scope)
+ *
+ * @deprecated SECURITY WARNING: This function does NOT enforce tenant isolation.
+ * Only use this during authentication flows where tenant context is not yet
+ * established (e.g., token refresh where roles need to be resolved).
+ *
+ * For tenant-scoped queries, use `getRolesByIds({ tenantId, roleIds })` instead.
  */
 export async function getActiveRolesByIds({ roleIds }: { roleIds: string[] }) {
 	try {

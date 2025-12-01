@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { Staff, User } from "@hms/db";
 import { AUTH_CACHE_TTL, TOKEN_CONFIG } from "../../../constants";
 import {
 	AccountLockedError,
@@ -347,7 +348,6 @@ async function handleMfaGrant({
 	const { userId, tenantId } = challenge;
 
 	// Find user
-	const { User } = await import("@hms/db");
 	const user = await User.findById(userId).lean();
 
 	if (!user) {
@@ -577,7 +577,6 @@ async function handleRefreshTokenGrant({
 	const userId = String(session.userId);
 
 	// Find user's staff records to get tenant and roles
-	const { Staff } = await import("@hms/db");
 	const staff = await Staff.findOne({ userId }).lean();
 
 	if (!staff) {

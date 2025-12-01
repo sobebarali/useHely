@@ -14,18 +14,18 @@ import type {
 
 const logger = createServiceLogger("listAuditLogs");
 
-interface ListLogsParams extends ListLogsInput {
+export async function listAuditLogs({
+	tenantId,
+	...params
+}: {
 	tenantId: string;
-}
-
-export async function listAuditLogs(
-	params: ListLogsParams,
-): Promise<ListLogsOutput> {
+} & ListLogsInput): Promise<ListLogsOutput> {
 	// Ensure page and limit are numbers (query params may be strings)
 	const page = Number(params.page) || AUDIT_DEFAULT_PAGE;
 	const limit = Number(params.limit) || AUDIT_DEFAULT_LIMIT;
 
 	const { logs, total } = await findAuditLogs({
+		tenantId,
 		...params,
 		page,
 		limit,

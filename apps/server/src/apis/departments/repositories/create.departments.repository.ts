@@ -9,18 +9,16 @@ import type { CreateDepartmentInput } from "../validations/create.departments.va
 
 const logger = createRepositoryLogger("createDepartment");
 
-interface CreateDepartmentData {
-	tenantId: string;
-	data: CreateDepartmentInput;
-}
-
 /**
  * Create a new department in the database
  */
 export async function createDepartment({
 	tenantId,
 	data,
-}: CreateDepartmentData) {
+}: {
+	tenantId: string;
+	data: CreateDepartmentInput;
+}) {
 	try {
 		const departmentId = uuidv4();
 

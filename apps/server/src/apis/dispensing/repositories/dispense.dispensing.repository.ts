@@ -9,77 +9,83 @@ import type { DispensingLean } from "./shared.dispensing.repository";
 
 const logger = createRepositoryLogger("dispenseDispensing");
 
-interface UpdateMedicineParams {
-	tenantId: string;
-	prescriptionId: string;
-	medicines: MedicineDispensingDetail[];
-}
-
-// Interface for medicine subdocument
-interface MedicineSubdoc {
-	medicineId: string;
-	dispensedQuantity: number;
-	batchNumber?: string;
-	expiryDate?: Date;
-	substituted: boolean;
-	substituteNote?: string;
-	status: string;
-}
-
 /**
- * Update dispensing record with dispensed medicine details
+ * Update dispensing record with dispensed medicine details.
+ * Uses atomic findOneAndUpdate operations to prevent lost updates
+ * under concurrent access.
  */
 export async function updateDispensedMedicines({
 	tenantId,
 	prescriptionId,
 	medicines,
-}: UpdateMedicineParams): Promise<DispensingLean | null> {
+}: {
+	tenantId: string;
+	prescriptionId: string;
+	medicines: MedicineDispensingDetail[];
+}): Promise<DispensingLean | null> {
 	try {
 		logger.debug(
 			{ tenantId, prescriptionId, medicineCount: medicines.length },
-			"Updating dispensed medicines",
+			"Updating dispensed medicines atomically",
 		);
 
-		// Get current dispensing record
-		const dispensing = await Dispensing.findOne({
-			tenantId,
-			prescriptionId,
+		const now = new Date();
+
+		// Build atomic update operations for each medicine using arrayFilters
+		const updateOperations: Record<string, unknown> = {};
+		const arrayFilters: Array<Record<string, unknown>> = [];
+
+		medicines.forEach((med, index) => {
+			const filterKey = `med${index}`;
+
+			// Set the dispensed quantity and status for matching medicine
+			updateOperations[`medicines.$[${filterKey}].dispensedQuantity`] =
+				med.dispensedQuantity;
+			updateOperations[`medicines.$[${filterKey}].status`] =
+				MedicineDispensingStatus.DISPENSED;
+
+			// Set optional fields if provided
+			if (med.batchNumber) {
+				updateOperations[`medicines.$[${filterKey}].batchNumber`] =
+					med.batchNumber;
+			}
+			if (med.expiryDate) {
+				updateOperations[`medicines.$[${filterKey}].expiryDate`] = new Date(
+					med.expiryDate,
+				);
+			}
+			if (med.substituted !== undefined) {
+				updateOperations[`medicines.$[${filterKey}].substituted`] =
+					med.substituted;
+			}
+			if (med.substituteNote) {
+				updateOperations[`medicines.$[${filterKey}].substituteNote`] =
+					med.substituteNote;
+			}
+
+			// Add array filter to match the specific medicine by ID
+			arrayFilters.push({ [`${filterKey}.medicineId`]: med.medicineId });
 		});
 
-		if (!dispensing) {
+		// Add updatedAt timestamp
+		updateOperations.updatedAt = now;
+
+		// Perform atomic update with arrayFilters
+		const updatedDispensing = await Dispensing.findOneAndUpdate(
+			{
+				tenantId,
+				prescriptionId,
+			},
+			{ $set: updateOperations },
+			{
+				new: true,
+				arrayFilters,
+			},
+		).lean();
+
+		if (!updatedDispensing) {
 			return null;
 		}
-
-		// Update each medicine in the dispensing record
-		const medicineArray = dispensing.medicines as unknown as MedicineSubdoc[];
-		for (const med of medicines) {
-			const medicineIndex = medicineArray.findIndex(
-				(m) => m.medicineId === med.medicineId,
-			);
-
-			if (medicineIndex !== -1) {
-				const medicine = medicineArray[medicineIndex];
-				if (medicine) {
-					medicine.dispensedQuantity = med.dispensedQuantity;
-					medicine.status = MedicineDispensingStatus.DISPENSED;
-
-					if (med.batchNumber) {
-						medicine.batchNumber = med.batchNumber;
-					}
-					if (med.expiryDate) {
-						medicine.expiryDate = new Date(med.expiryDate);
-					}
-					if (med.substituted !== undefined) {
-						medicine.substituted = med.substituted;
-					}
-					if (med.substituteNote) {
-						medicine.substituteNote = med.substituteNote;
-					}
-				}
-			}
-		}
-
-		await dispensing.save();
 
 		logDatabaseOperation(
 			logger,
@@ -89,7 +95,7 @@ export async function updateDispensedMedicines({
 			{ updated: true, medicineCount: medicines.length },
 		);
 
-		return dispensing.toObject() as unknown as DispensingLean;
+		return updatedDispensing as unknown as DispensingLean;
 	} catch (error) {
 		logError(logger, error, "Failed to update dispensed medicines");
 		throw error;

@@ -10,19 +10,6 @@ import type { InventoryLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("addStockInventory");
 
-interface AddStockParams {
-	tenantId: string;
-	inventoryId: string;
-	quantity: number;
-	batchNumber: string;
-	expiryDate: Date;
-	purchasePrice?: number;
-	supplier?: string;
-	performedBy: string;
-	transactionId: string;
-	reference?: string;
-}
-
 interface AddStockResult {
 	inventory: InventoryLean;
 	previousStock: number;
@@ -44,7 +31,18 @@ export async function addStock({
 	performedBy,
 	transactionId,
 	reference,
-}: AddStockParams): Promise<AddStockResult> {
+}: {
+	tenantId: string;
+	inventoryId: string;
+	quantity: number;
+	batchNumber: string;
+	expiryDate: Date;
+	purchasePrice?: number;
+	supplier?: string;
+	performedBy: string;
+	transactionId: string;
+	reference?: string;
+}): Promise<AddStockResult> {
 	try {
 		logger.debug(
 			{ tenantId, inventoryId, quantity, batchNumber },
