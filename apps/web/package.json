@@ -7,7 +7,7 @@
 		"dev": "vite --port=3001",
 		"build": "vite build",
 		"serve": "vite preview",
-		"start": "vite",
+		"start": "serve dist -l $PORT",
 		"check-types": "tsc --noEmit",
 		"deploy": "alchemy deploy",
 		"destroy": "alchemy destroy"
@@ -46,6 +46,7 @@
 		"react": "19.1.0",
 		"react-dom": "19.1.0",
 		"recharts": "^2.15.4",
+		"serve": "^14.2.5",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.3.1",
 		"tw-animate-css": "^1.2.5",
