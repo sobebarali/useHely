@@ -2,6 +2,7 @@ import {
 	Activity,
 	Building2,
 	Calendar,
+	FileBarChart,
 	FileText,
 	LayoutDashboard,
 	type LucideIcon,
@@ -38,6 +39,7 @@ const iconMap: Record<string, LucideIcon> = {
 	business: Building2,
 	assignment: FileText,
 	settings: Settings2,
+	reports: FileBarChart,
 };
 
 // Convert server menu items to NavMain format

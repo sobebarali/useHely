@@ -15,7 +15,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "useHely - Hospital Management System",
+				title: "useHely",
 			},
 			{
 				name: "description",

@@ -8,6 +8,11 @@ import {
 	PharmacistDashboard,
 	ReceptionistDashboard,
 } from "@/components/dashboard-role-specific";
+import {
+	BedOccupancyWidget,
+	DepartmentLoadWidget,
+	StaffAttendanceWidget,
+} from "@/components/dashboard-widgets";
 import { SectionCards } from "@/components/section-cards";
 import { Button } from "@/components/ui/button";
 import { useDashboardType, useRefreshDashboard } from "@/hooks/use-dashboard";
@@ -74,6 +79,14 @@ function DashboardHomePage() {
 					<SectionCards />
 					<div className="px-4 lg:px-6">
 						<ChartAreaInteractive />
+					</div>
+					{/* Additional Widgets */}
+					<div className="grid gap-4 px-4 md:grid-cols-2 lg:px-6">
+						<DepartmentLoadWidget />
+						<BedOccupancyWidget />
+					</div>
+					<div className="px-4 lg:px-6">
+						<StaffAttendanceWidget />
 					</div>
 				</>
 			)}

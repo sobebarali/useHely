@@ -108,7 +108,6 @@ export function useDashboardType() {
 // Hook for getting dashboard stats for SectionCards
 export function useDashboardStats() {
 	const { data: dashboardData, isLoading, error } = useDashboard();
-	const { data: quickStats } = useQuickStats();
 
 	if (isLoading || error || !dashboardData) {
 		return {
@@ -183,15 +182,8 @@ export function useDashboardStats() {
 			};
 		}
 
-		// Fallback to quick stats if available
-		if (quickStats) {
-			return {
-				totalPatients: quickStats.totalPatients || 0,
-				appointmentsToday: quickStats.appointmentsToday || 0,
-				opdQueue: quickStats.opdQueue || 0,
-				activeStaff: quickStats.staffOnDuty || 0,
-			};
-		}
+		// Fallback - quick stats don't contain these values anymore
+		// They only contain notifications, pendingTasks, and alerts
 
 		// Default fallback
 		return {

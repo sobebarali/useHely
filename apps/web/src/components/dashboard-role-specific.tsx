@@ -4,6 +4,7 @@
  * Components for different user roles based on dashboard API responses
  */
 
+import { Link } from "@tanstack/react-router";
 import {
 	Activity,
 	AlertTriangle,
@@ -168,6 +169,60 @@ export function DoctorDashboard() {
 				</CardContent>
 			</Card>
 
+			{/* Today's Schedule */}
+			{data.appointments.todaySchedule.length > 0 && (
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Calendar className="h-5 w-5" />
+							Today's Schedule
+						</CardTitle>
+						<CardDescription>
+							{data.appointments.todaySchedule.length} appointments scheduled
+							for today
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-3">
+							{data.appointments.todaySchedule.map((appointment) => (
+								<div
+									key={appointment.id}
+									className="flex items-center justify-between rounded border p-3"
+								>
+									<div className="flex items-center gap-3">
+										<div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+											<Clock className="h-4 w-4" />
+										</div>
+										<div>
+											<p className="font-medium">{appointment.patientName}</p>
+											<p className="text-muted-foreground text-sm">
+												{new Date(appointment.time).toLocaleTimeString([], {
+													hour: "2-digit",
+													minute: "2-digit",
+												})}
+											</p>
+										</div>
+									</div>
+									<Badge
+										variant={
+											appointment.status === "COMPLETED"
+												? "default"
+												: appointment.status === "IN_PROGRESS"
+													? "secondary"
+													: appointment.status === "CANCELLED"
+														? "destructive"
+														: "outline"
+										}
+									>
+										{appointment.status}
+									</Badge>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
 			{/* Recent Patients */}
 			<Card>
 				<CardHeader>
@@ -188,8 +243,13 @@ export function DoctorDashboard() {
 										{new Date(patient.lastVisit).toLocaleDateString()}
 									</p>
 								</div>
-								<Button variant="outline" size="sm">
-									View Details
+								<Button variant="outline" size="sm" asChild>
+									<Link
+										to="/dashboard/patients/$id"
+										params={{ id: patient.id }}
+									>
+										View Details
+									</Link>
 								</Button>
 							</div>
 						))}
@@ -296,8 +356,13 @@ export function NurseDashboard() {
 											{patient.reason}
 										</p>
 									</div>
-									<Button size="sm" variant="destructive">
-										Attend Now
+									<Button size="sm" variant="destructive" asChild>
+										<Link
+											to="/dashboard/patients/$id"
+											params={{ id: patient.patientId }}
+										>
+											Attend Now
+										</Link>
 									</Button>
 								</div>
 							))}
@@ -326,6 +391,54 @@ export function NurseDashboard() {
 										</p>
 									</div>
 									<Badge variant="destructive">{vital.severity}</Badge>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
+			{/* Patient Alerts */}
+			{data.alerts.length > 0 && (
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<AlertTriangle className="h-5 w-5 text-orange-500" />
+							Patient Alerts
+						</CardTitle>
+						<CardDescription>
+							{data.alerts.length} active alerts requiring attention
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-3">
+							{data.alerts.map((alert, index) => (
+								<div
+									key={`alert-${alert.patientId}-${index}`}
+									className={`flex items-center justify-between rounded border p-3 ${
+										alert.severity === "CRITICAL"
+											? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950"
+											: alert.severity === "HIGH"
+												? "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950"
+												: "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
+									}`}
+								>
+									<div>
+										<p className="font-medium">{alert.patientName}</p>
+										<p className="text-muted-foreground text-sm">
+											{alert.type}: {alert.message}
+										</p>
+										<p className="text-muted-foreground text-xs">
+											{new Date(alert.createdAt).toLocaleString()}
+										</p>
+									</div>
+									<Badge
+										variant={
+											alert.severity === "CRITICAL" ? "destructive" : "default"
+										}
+									>
+										{alert.severity}
+									</Badge>
 								</div>
 							))}
 						</div>
@@ -426,7 +539,14 @@ export function PharmacistDashboard() {
 									Priority: {data.queue.nextPrescription.priority}
 								</p>
 							</div>
-							<Button>Start Dispensing</Button>
+							<Button asChild>
+								<Link
+									to="/dashboard/dispensing/$id"
+									params={{ id: data.queue.nextPrescription.id }}
+								>
+									Start Dispensing
+								</Link>
+							</Button>
 						</div>
 					</CardContent>
 				</Card>
@@ -443,7 +563,7 @@ export function PharmacistDashboard() {
 							{data.inventory.lowStock.map((item) => (
 								<div
 									key={item.medicineId}
-									className="flex items-center justify-between rounded border border-orange-200 bg-orange-50 p-3"
+									className="flex items-center justify-between rounded border border-orange-200 bg-orange-50 p-3 dark:border-orange-900 dark:bg-orange-950"
 								>
 									<div>
 										<p className="font-medium">{item.name}</p>
@@ -452,9 +572,49 @@ export function PharmacistDashboard() {
 											{item.reorderLevel}
 										</p>
 									</div>
-									<Button size="sm" variant="outline">
-										Reorder
+									<Button size="sm" variant="outline" asChild>
+										<Link to="/dashboard/dispensing">Reorder</Link>
 									</Button>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+			)}
+
+			{/* Expiring Soon */}
+			{data.inventory.expiringSoon.length > 0 && (
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Clock className="h-5 w-5 text-orange-500" />
+							Medicines Expiring Soon
+						</CardTitle>
+						<CardDescription>
+							{data.inventory.expiringSoon.length} items expiring within 90 days
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-3">
+							{data.inventory.expiringSoon.map((item) => (
+								<div
+									key={`${item.medicineId}-${item.expiryDate}`}
+									className="flex items-center justify-between rounded border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950"
+								>
+									<div>
+										<p className="font-medium">{item.name}</p>
+										<p className="text-muted-foreground text-sm">
+											Expires: {new Date(item.expiryDate).toLocaleDateString()}{" "}
+											| Qty: {item.quantity}
+										</p>
+									</div>
+									<Badge variant="destructive">
+										{Math.ceil(
+											(new Date(item.expiryDate).getTime() - Date.now()) /
+												(1000 * 60 * 60 * 24),
+										)}{" "}
+										days
+									</Badge>
 								</div>
 							))}
 						</div>
@@ -557,7 +717,14 @@ export function ReceptionistDashboard() {
 											{new Date(appointment.scheduledTime).toLocaleTimeString()}
 										</p>
 									</div>
-									<Button size="sm">Check In</Button>
+									<Button size="sm" asChild>
+										<Link
+											to="/dashboard/appointments/$id"
+											params={{ id: appointment.id }}
+										>
+											Check In
+										</Link>
+									</Button>
 								</div>
 							))}
 						</div>
@@ -584,8 +751,13 @@ export function ReceptionistDashboard() {
 										{new Date(appointment.time).toLocaleTimeString()}
 									</p>
 								</div>
-								<Button variant="outline" size="sm">
-									View Details
+								<Button variant="outline" size="sm" asChild>
+									<Link
+										to="/dashboard/appointments/$id"
+										params={{ id: appointment.id }}
+									>
+										View Details
+									</Link>
 								</Button>
 							</div>
 						))}

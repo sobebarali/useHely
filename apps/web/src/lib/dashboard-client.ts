@@ -202,16 +202,11 @@ export type GetDashboardOutput =
 	| PharmacistDashboardOutput
 	| ReceptionistDashboardOutput;
 
+// Quick stats - matches server GetQuickStatsOutput
 export type QuickStatsOutput = {
-	totalPatients?: number;
-	appointmentsToday?: number;
-	pendingTasks?: number;
-	criticalAlerts?: number;
-	// Role-specific stats
-	opdQueue?: number;
-	prescriptionsPending?: number;
-	staffOnDuty?: number;
-	bedsAvailable?: number;
+	notifications: number;
+	pendingTasks: number;
+	alerts: number;
 };
 
 export type WidgetDataOutput = {
