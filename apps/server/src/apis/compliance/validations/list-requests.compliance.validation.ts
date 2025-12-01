@@ -21,7 +21,7 @@ export const listRequestsSchema = z.object({
 
 export type ListRequestsInput = z.infer<typeof listRequestsSchema>["query"];
 
-export interface ListRequestsOutput {
+export type ListRequestsOutput = {
 	data: Array<{
 		requestId: string;
 		type: string;
@@ -36,4 +36,4 @@ export interface ListRequestsOutput {
 		limit: number;
 		total: number;
 	};
-}
+};

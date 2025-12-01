@@ -46,7 +46,7 @@ function sanitizeCSVValue(value: string | undefined | null): string {
 	return sanitized;
 }
 
-export interface CollectedUserData {
+type CollectedUserData = {
 	profile: {
 		id: string;
 		email: string;
@@ -93,7 +93,7 @@ export interface CollectedUserData {
 		timestamp: string;
 	}>;
 	exportedAt: string;
-}
+};
 
 /**
  * Collect all data associated with a user
@@ -242,7 +242,16 @@ export async function collectUserData({
  *
  * Uses sanitizeCSVValue to prevent CSV injection attacks.
  */
-export function convertToCSV(data: CollectedUserData): string {
+export function convertToCSV({
+	profile,
+	account,
+	appointments,
+	prescriptions,
+	vitals,
+	consents,
+	auditLog,
+	exportedAt,
+}: CollectedUserData): string {
 	const lines: string[] = [];
 
 	// Helper to create a sanitized CSV row
@@ -254,11 +263,11 @@ export function convertToCSV(data: CollectedUserData): string {
 	lines.push("ID,Email,Name,Phone,Created At");
 	lines.push(
 		csvRow(
-			data.profile.id,
-			data.profile.email,
-			data.profile.name,
-			data.profile.phone,
-			data.profile.createdAt,
+			profile.id,
+			profile.email,
+			profile.name,
+			profile.phone,
+			profile.createdAt,
 		),
 	);
 	lines.push("");
@@ -267,19 +276,15 @@ export function convertToCSV(data: CollectedUserData): string {
 	lines.push("=== ACCOUNT ===");
 	lines.push("Roles,Department ID,Status");
 	lines.push(
-		csvRow(
-			data.account.roles.join(", "),
-			data.account.departmentId,
-			data.account.status,
-		),
+		csvRow(account.roles.join(", "), account.departmentId, account.status),
 	);
 	lines.push("");
 
 	// Appointments section
-	if (data.appointments.length > 0) {
+	if (appointments.length > 0) {
 		lines.push("=== APPOINTMENTS ===");
 		lines.push("ID,Date,Type,Status,Patient ID,Created At");
-		for (const apt of data.appointments) {
+		for (const apt of appointments) {
 			lines.push(
 				csvRow(
 					apt.id,
@@ -295,10 +300,10 @@ export function convertToCSV(data: CollectedUserData): string {
 	}
 
 	// Prescriptions section
-	if (data.prescriptions.length > 0) {
+	if (prescriptions.length > 0) {
 		lines.push("=== PRESCRIPTIONS ===");
 		lines.push("ID,Patient ID,Diagnosis,Status,Created At");
-		for (const rx of data.prescriptions) {
+		for (const rx of prescriptions) {
 			lines.push(
 				csvRow(rx.id, rx.patientId, rx.diagnosis, rx.status, rx.createdAt),
 			);
@@ -306,11 +311,21 @@ export function convertToCSV(data: CollectedUserData): string {
 		lines.push("");
 	}
 
+	// Vitals section
+	if (vitals.length > 0) {
+		lines.push("=== VITALS ===");
+		lines.push("ID,Patient ID,Type,Recorded At");
+		for (const v of vitals) {
+			lines.push(csvRow(v.id, v.patientId, v.type, v.recordedAt));
+		}
+		lines.push("");
+	}
+
 	// Consents section
-	if (data.consents.length > 0) {
+	if (consents.length > 0) {
 		lines.push("=== CONSENTS ===");
 		lines.push("Purpose,Granted,Granted At,Withdrawn At");
-		for (const c of data.consents) {
+		for (const c of consents) {
 			lines.push(
 				csvRow(c.purpose, String(c.granted), c.grantedAt, c.withdrawnAt),
 			);
@@ -319,16 +334,16 @@ export function convertToCSV(data: CollectedUserData): string {
 	}
 
 	// Audit log section
-	if (data.auditLog && data.auditLog.length > 0) {
+	if (auditLog && auditLog.length > 0) {
 		lines.push("=== AUDIT LOG ===");
 		lines.push("Action,Resource Type,Timestamp");
-		for (const log of data.auditLog) {
+		for (const log of auditLog) {
 			lines.push(csvRow(log.action, log.resourceType, log.timestamp));
 		}
 	}
 
 	lines.push("");
-	lines.push(`Exported at: ${sanitizeCSVValue(data.exportedAt)}`);
+	lines.push(`Exported at: ${sanitizeCSVValue(exportedAt)}`);
 
 	return lines.join("\n");
 }

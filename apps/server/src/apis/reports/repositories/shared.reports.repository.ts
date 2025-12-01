@@ -39,7 +39,11 @@ export async function findCompletedReportById({
 /**
  * Check if report is expired
  */
-export function isReportExpired(expiresAt: Date | undefined): boolean {
+export function isReportExpired({
+	expiresAt,
+}: {
+	expiresAt: Date | undefined;
+}): boolean {
 	if (!expiresAt) return false;
 	return new Date() > new Date(expiresAt);
 }

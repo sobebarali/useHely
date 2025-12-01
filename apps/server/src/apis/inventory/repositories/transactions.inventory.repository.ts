@@ -21,16 +21,6 @@ interface TransactionLean {
 	createdAt: Date;
 }
 
-interface ListTransactionsParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	itemId?: string;
-	type?: string;
-	startDate?: string;
-	endDate?: string;
-}
-
 interface ListTransactionsResult {
 	transactions: TransactionLean[];
 	total: number;
@@ -50,7 +40,15 @@ export async function listTransactions({
 	type,
 	startDate,
 	endDate,
-}: ListTransactionsParams): Promise<ListTransactionsResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	itemId?: string;
+	type?: string;
+	startDate?: string;
+	endDate?: string;
+}): Promise<ListTransactionsResult> {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing transactions");
 

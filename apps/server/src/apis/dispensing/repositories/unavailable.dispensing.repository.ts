@@ -19,14 +19,6 @@ interface MedicineSubdoc {
 	status: string;
 }
 
-interface MarkUnavailableParams {
-	tenantId: string;
-	prescriptionId: string;
-	medicineId: string;
-	reason: string;
-	alternativeSuggested?: string;
-}
-
 /**
  * Mark a medicine as unavailable in dispensing record
  */
@@ -36,7 +28,13 @@ export async function markMedicineUnavailable({
 	medicineId,
 	reason,
 	alternativeSuggested,
-}: MarkUnavailableParams): Promise<DispensingLean | null> {
+}: {
+	tenantId: string;
+	prescriptionId: string;
+	medicineId: string;
+	reason: string;
+	alternativeSuggested?: string;
+}): Promise<DispensingLean | null> {
 	try {
 		logger.debug(
 			{ tenantId, prescriptionId, medicineId },

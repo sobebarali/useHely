@@ -19,9 +19,9 @@ export const verifyDeletionSchema = z.object({
 
 export type VerifyDeletionInput = z.infer<typeof verifyDeletionSchema>;
 
-export interface VerifyDeletionOutput {
+export type VerifyDeletionOutput = {
 	requestId: string;
 	status: string;
 	scheduledDeletion: string;
 	message: string;
-}
+};

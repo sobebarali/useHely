@@ -7,17 +7,6 @@ import {
 
 const logger = createRepositoryLogger("listRoles");
 
-interface ListRolesQuery {
-	tenantId: string;
-	page: number;
-	limit: number;
-	search?: string;
-	isSystem?: boolean;
-	isActive?: boolean;
-	sortBy?: string;
-	sortOrder?: string;
-}
-
 interface RoleLean {
 	_id: string;
 	tenantId: string;
@@ -46,7 +35,16 @@ export async function listRoles({
 	isActive,
 	sortBy = "createdAt",
 	sortOrder = "desc",
-}: ListRolesQuery): Promise<{
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	search?: string;
+	isSystem?: boolean;
+	isActive?: boolean;
+	sortBy?: string;
+	sortOrder?: string;
+}): Promise<{
 	roles: RoleWithUsersCount[];
 	total: number;
 }> {

@@ -26,14 +26,14 @@ export type GetConsentHistoryInput = z.infer<
 	typeof getConsentHistorySchema
 >["params"];
 
-export interface ConsentHistoryEntry {
+export type ConsentHistoryEntry = {
 	action: string;
 	timestamp: string;
 	source: string;
 	ip: string | null;
-}
+};
 
-export interface GetConsentHistoryOutput {
+export type GetConsentHistoryOutput = {
 	purpose: string;
 	history: ConsentHistoryEntry[];
-}
+};

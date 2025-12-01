@@ -9,15 +9,6 @@ import type { MedicineLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("listMedicinesInventory");
 
-interface ListMedicinesParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	search?: string;
-	category?: string;
-	type?: string;
-}
-
 interface ListMedicinesResult {
 	medicines: MedicineLean[];
 	total: number;
@@ -37,7 +28,14 @@ export async function listMedicines({
 	search,
 	category,
 	type,
-}: ListMedicinesParams): Promise<ListMedicinesResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	search?: string;
+	category?: string;
+	type?: string;
+}): Promise<ListMedicinesResult> {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing medicines");
 

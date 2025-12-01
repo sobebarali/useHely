@@ -10,22 +10,6 @@ import type { InventoryLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("adjustStockInventory");
 
-interface AdjustStockParams {
-	tenantId: string;
-	inventoryId: string;
-	adjustment: number;
-	reason: string;
-	batchNumber?: string;
-	notes?: string;
-	performedBy: string;
-	transactionId: string;
-}
-
-interface AdjustStockResult {
-	inventory: InventoryLean;
-	previousStock: number;
-}
-
 /**
  * Adjust stock for corrections, damage, or expiry.
  * Uses atomic operations to prevent race conditions.
@@ -40,7 +24,16 @@ export async function adjustStock({
 	notes,
 	performedBy,
 	transactionId,
-}: AdjustStockParams): Promise<AdjustStockResult> {
+}: {
+	tenantId: string;
+	inventoryId: string;
+	adjustment: number;
+	reason: string;
+	batchNumber?: string;
+	notes?: string;
+	performedBy: string;
+	transactionId: string;
+}): Promise<{ inventory: InventoryLean; previousStock: number }> {
 	try {
 		logger.debug(
 			{ tenantId, inventoryId, adjustment, reason },

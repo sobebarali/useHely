@@ -15,14 +15,6 @@ import type {
 
 const logger = createRepositoryLogger("startDispensing");
 
-interface CreateDispensingParams {
-	dispensingId: string;
-	tenantId: string;
-	prescriptionId: string;
-	assignedTo: string;
-	prescription: PrescriptionLean;
-}
-
 /**
  * Create a new dispensing record when pharmacist starts dispensing
  */
@@ -32,7 +24,13 @@ export async function createDispensing({
 	prescriptionId,
 	assignedTo,
 	prescription,
-}: CreateDispensingParams): Promise<DispensingLean> {
+}: {
+	dispensingId: string;
+	tenantId: string;
+	prescriptionId: string;
+	assignedTo: string;
+	prescription: PrescriptionLean;
+}): Promise<DispensingLean> {
 	try {
 		logger.debug(
 			{ tenantId, prescriptionId, assignedTo },

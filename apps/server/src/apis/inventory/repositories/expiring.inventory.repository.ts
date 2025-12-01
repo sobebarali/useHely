@@ -16,13 +16,6 @@ interface ExpiringBatch {
 	expiryDate: Date;
 }
 
-interface ExpiringParams {
-	tenantId: string;
-	days: number;
-	limit: number;
-	skip?: number;
-}
-
 interface ExpiringResult {
 	items: ExpiringBatch[];
 	total: number;
@@ -39,7 +32,12 @@ export async function getExpiringItems({
 	days,
 	limit,
 	skip = 0,
-}: ExpiringParams): Promise<ExpiringResult> {
+}: {
+	tenantId: string;
+	days: number;
+	limit: number;
+	skip?: number;
+}): Promise<ExpiringResult> {
 	try {
 		logger.debug({ tenantId, days, limit, skip }, "Getting expiring items");
 

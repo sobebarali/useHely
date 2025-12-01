@@ -9,15 +9,6 @@ import type { VitalsLean } from "./shared.vitals.repository";
 
 const logger = createRepositoryLogger("trendsVitals");
 
-export interface TrendsVitalsFilters {
-	tenantId: string;
-	patientId: string;
-	parameter: VitalParameter;
-	startDate?: string;
-	endDate?: string;
-	limit: number;
-}
-
 export interface TrendsVitalsResult {
 	vitals: VitalsLean[];
 	dateRange: {
@@ -36,7 +27,14 @@ export async function getVitalsForTrends({
 	startDate,
 	endDate,
 	limit,
-}: TrendsVitalsFilters): Promise<TrendsVitalsResult> {
+}: {
+	tenantId: string;
+	patientId: string;
+	parameter: VitalParameter;
+	startDate?: string;
+	endDate?: string;
+	limit: number;
+}): Promise<TrendsVitalsResult> {
 	try {
 		logger.debug(
 			{ tenantId, patientId, parameter, limit },

@@ -15,7 +15,7 @@ import { createRepositoryLogger } from "@/lib/logger";
 const logger = createRepositoryLogger("sharedCompliance");
 
 // Consent document type
-export interface ConsentDocument {
+export type ConsentDocument = {
 	_id: string;
 	tenantId: string;
 	userId: string;
@@ -30,10 +30,10 @@ export interface ConsentDocument {
 	withdrawnAt?: Date;
 	createdAt: Date;
 	updatedAt: Date;
-}
+};
 
 // Consent history document type
-export interface ConsentHistoryDocument {
+export type ConsentHistoryDocument = {
 	_id: string;
 	tenantId: string;
 	consentId: string;
@@ -48,10 +48,10 @@ export interface ConsentHistoryDocument {
 	previousState?: Record<string, unknown>;
 	createdAt: Date;
 	updatedAt: Date;
-}
+};
 
 // Data subject request document type
-export interface DataSubjectRequestDocument {
+export type DataSubjectRequestDocument = {
 	_id: string;
 	tenantId: string;
 	userId: string;
@@ -80,7 +80,7 @@ export interface DataSubjectRequestDocument {
 	metadata?: Record<string, unknown>;
 	createdAt: Date;
 	updatedAt: Date;
-}
+};
 
 /**
  * Find consent by ID

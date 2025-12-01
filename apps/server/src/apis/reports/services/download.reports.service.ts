@@ -54,7 +54,7 @@ export async function downloadReportService({
 	}
 
 	// Check expiration only for completed reports
-	if (report.expiresAt && isReportExpired(report.expiresAt)) {
+	if (report.expiresAt && isReportExpired({ expiresAt: report.expiresAt })) {
 		throw new GoneError("Report has expired", "REPORT_EXPIRED");
 	}
 

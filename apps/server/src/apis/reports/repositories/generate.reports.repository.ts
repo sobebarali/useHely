@@ -110,8 +110,14 @@ export async function markReportFailed({
 /**
  * Helper to get full name from staff
  */
-function getStaffName(staff: { firstName: string; lastName: string }): string {
-	return `${staff.firstName} ${staff.lastName}`;
+function getStaffName({
+	firstName,
+	lastName,
+}: {
+	firstName: string;
+	lastName: string;
+}): string {
+	return `${firstName} ${lastName}`;
 }
 
 // ============================================

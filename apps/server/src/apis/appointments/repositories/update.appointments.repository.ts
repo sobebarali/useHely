@@ -7,17 +7,6 @@ import {
 
 const logger = createRepositoryLogger("updateAppointment");
 
-interface UpdateAppointmentData {
-	doctorId?: string;
-	date?: Date;
-	timeSlot?: { start: string; end: string };
-	type?: string;
-	reason?: string;
-	notes?: string;
-	priority?: string;
-	queueNumber?: number;
-}
-
 /**
  * Update appointment details
  */
@@ -28,7 +17,16 @@ export async function updateAppointment({
 }: {
 	tenantId: string;
 	appointmentId: string;
-	data: UpdateAppointmentData;
+	data: {
+		doctorId?: string;
+		date?: Date;
+		timeSlot?: { start: string; end: string };
+		type?: string;
+		reason?: string;
+		notes?: string;
+		priority?: string;
+		queueNumber?: number;
+	};
 }) {
 	try {
 		logger.debug({ tenantId, appointmentId }, "Updating appointment");

@@ -13,7 +13,7 @@ export const listConsentSchema = z.object({});
 
 export type ListConsentInput = z.infer<typeof listConsentSchema>;
 
-export interface ConsentRecord {
+export type ConsentRecord = {
 	id: string;
 	purpose: string;
 	description: string | null;
@@ -22,8 +22,8 @@ export interface ConsentRecord {
 	withdrawnAt: string | null;
 	version: string;
 	source: string;
-}
+};
 
-export interface ListConsentOutput {
+export type ListConsentOutput = {
 	consents: ConsentRecord[];
-}
+};

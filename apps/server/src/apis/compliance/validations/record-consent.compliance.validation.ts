@@ -34,11 +34,11 @@ export const recordConsentSchema = z.object({
 
 export type RecordConsentInput = z.infer<typeof recordConsentSchema>["body"];
 
-export interface RecordConsentOutput {
+export type RecordConsentOutput = {
 	id: string;
 	purpose: string;
 	granted: boolean;
 	grantedAt: string | null;
 	withdrawnAt: string | null;
 	version: string;
-}
+};

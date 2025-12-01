@@ -7,12 +7,6 @@ import {
 
 const logger = createRepositoryLogger("updateRole");
 
-interface UpdateRoleData {
-	name?: string;
-	description?: string;
-	permissions?: string[];
-}
-
 interface RoleLean {
 	_id: string;
 	tenantId: string;
@@ -35,7 +29,7 @@ export async function updateRole({
 }: {
 	tenantId: string;
 	roleId: string;
-	data: UpdateRoleData;
+	data: { name?: string; description?: string; permissions?: string[] };
 }): Promise<RoleLean | null> {
 	try {
 		logger.debug({ tenantId, roleId, data }, "Updating role");

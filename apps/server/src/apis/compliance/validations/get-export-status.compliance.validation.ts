@@ -18,7 +18,7 @@ export type GetExportStatusInput = z.infer<
 	typeof getExportStatusSchema
 >["params"];
 
-export interface GetExportStatusOutput {
+export type GetExportStatusOutput = {
 	requestId: string;
 	type: string;
 	status: string;
@@ -27,4 +27,4 @@ export interface GetExportStatusOutput {
 	completedAt: string | null;
 	downloadUrl: string | null;
 	expiresAt: string | null;
-}
+};

@@ -7,18 +7,6 @@ import {
 
 const logger = createRepositoryLogger("listUsers");
 
-export interface ListUsersQuery {
-	tenantId: string;
-	page: number;
-	limit: number;
-	department?: string;
-	role?: string;
-	status?: string;
-	search?: string;
-	sortBy: string;
-	sortOrder: "asc" | "desc";
-}
-
 /**
  * List users with pagination and filters
  */
@@ -32,7 +20,17 @@ export async function listUsers({
 	search,
 	sortBy,
 	sortOrder,
-}: ListUsersQuery) {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	department?: string;
+	role?: string;
+	status?: string;
+	search?: string;
+	sortBy: string;
+	sortOrder: "asc" | "desc";
+}) {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing users");
 

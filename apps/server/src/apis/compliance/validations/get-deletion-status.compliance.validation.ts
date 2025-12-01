@@ -16,7 +16,7 @@ export const getDeletionStatusSchema = z.object({
 
 export type GetDeletionStatusInput = z.infer<typeof getDeletionStatusSchema>;
 
-export interface GetDeletionStatusOutput {
+export type GetDeletionStatusOutput = {
 	requestId: string;
 	type: string;
 	status: string;
@@ -25,4 +25,4 @@ export interface GetDeletionStatusOutput {
 	scheduledDeletion?: string;
 	canCancel: boolean;
 	gracePeriodEnds?: string;
-}
+};

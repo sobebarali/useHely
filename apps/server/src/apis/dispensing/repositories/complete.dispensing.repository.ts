@@ -8,13 +8,6 @@ import type { DispensingLean } from "./shared.dispensing.repository";
 
 const logger = createRepositoryLogger("completeDispensing");
 
-interface CompleteDispensingParams {
-	tenantId: string;
-	prescriptionId: string;
-	notes?: string;
-	patientCounseled?: boolean;
-}
-
 /**
  * Complete dispensing and mark as DISPENSED
  */
@@ -23,7 +16,12 @@ export async function completeDispensing({
 	prescriptionId,
 	notes,
 	patientCounseled,
-}: CompleteDispensingParams): Promise<DispensingLean | null> {
+}: {
+	tenantId: string;
+	prescriptionId: string;
+	notes?: string;
+	patientCounseled?: boolean;
+}): Promise<DispensingLean | null> {
 	try {
 		logger.debug({ tenantId, prescriptionId }, "Completing dispensing");
 

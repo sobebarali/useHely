@@ -7,15 +7,6 @@ import {
 
 const logger = createRepositoryLogger("getStaffDepartments");
 
-interface GetStaffQuery {
-	tenantId: string;
-	departmentId: string;
-	page: number;
-	limit: number;
-	role?: string;
-	status?: string;
-}
-
 interface StaffWithDetails {
 	_id: string;
 	userId: string;
@@ -38,7 +29,14 @@ export async function getStaffByDepartmentId({
 	limit,
 	role,
 	status = "ACTIVE",
-}: GetStaffQuery): Promise<{
+}: {
+	tenantId: string;
+	departmentId: string;
+	page: number;
+	limit: number;
+	role?: string;
+	status?: string;
+}): Promise<{
 	staff: StaffWithDetails[];
 	total: number;
 }> {

@@ -8,12 +8,6 @@ import type { UpdateDepartmentBody } from "../validations/update.departments.val
 
 const logger = createRepositoryLogger("updateDepartment");
 
-interface UpdateDepartmentData {
-	tenantId: string;
-	departmentId: string;
-	data: UpdateDepartmentBody;
-}
-
 /**
  * Update a department in the database
  */
@@ -21,7 +15,11 @@ export async function updateDepartment({
 	tenantId,
 	departmentId,
 	data,
-}: UpdateDepartmentData) {
+}: {
+	tenantId: string;
+	departmentId: string;
+	data: UpdateDepartmentBody;
+}) {
 	try {
 		logger.debug({ tenantId, departmentId }, "Updating department");
 

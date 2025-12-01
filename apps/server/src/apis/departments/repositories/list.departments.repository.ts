@@ -8,17 +8,6 @@ import type { DepartmentLean } from "./shared.departments.repository";
 
 const logger = createRepositoryLogger("listDepartments");
 
-interface ListDepartmentsQuery {
-	tenantId: string;
-	page: number;
-	limit: number;
-	type?: string;
-	status?: string;
-	parentId?: string;
-	search?: string;
-	includeStaffCount?: boolean;
-}
-
 interface DepartmentWithHead extends DepartmentLean {
 	headDetails?: {
 		_id: string;
@@ -40,7 +29,16 @@ export async function listDepartments({
 	parentId,
 	search,
 	includeStaffCount,
-}: ListDepartmentsQuery): Promise<{
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	type?: string;
+	status?: string;
+	parentId?: string;
+	search?: string;
+	includeStaffCount?: boolean;
+}): Promise<{
 	departments: DepartmentWithHead[];
 	total: number;
 }> {

@@ -8,16 +8,6 @@ import type { PrescriptionLean } from "./shared.dispensing.repository";
 
 const logger = createRepositoryLogger("pendingDispensing");
 
-interface ListPendingParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	priority?: string;
-	departmentId?: string;
-	sortBy: string;
-	sortOrder: string;
-}
-
 interface ListPendingResult {
 	prescriptions: PrescriptionLean[];
 	total: number;
@@ -36,7 +26,15 @@ export async function listPendingPrescriptions({
 	departmentId,
 	sortBy,
 	sortOrder,
-}: ListPendingParams): Promise<ListPendingResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	priority?: string;
+	departmentId?: string;
+	sortBy: string;
+	sortOrder: string;
+}): Promise<ListPendingResult> {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing pending prescriptions");
 

@@ -18,10 +18,10 @@ export type WithdrawConsentInput = z.infer<
 	typeof withdrawConsentSchema
 >["params"];
 
-export interface WithdrawConsentOutput {
+export type WithdrawConsentOutput = {
 	id: string;
 	purpose: string;
 	granted: boolean;
 	withdrawnAt: string;
 	message: string;
-}
+};

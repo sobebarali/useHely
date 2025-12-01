@@ -29,15 +29,10 @@ const PENDING_STATUSES = [
 	DataSubjectRequestStatus.PROCESSING,
 ];
 
-export interface DeletionRequestWithToken extends DataSubjectRequestDocument {
+export type DeletionRequestWithToken = DataSubjectRequestDocument & {
 	/** Plain text token to send to user (not stored in DB) */
 	plainTextToken: string;
-}
-
-export interface CreateDeletionResult {
-	request: DeletionRequestWithToken;
-	alreadyExists: boolean;
-}
+};
 
 /**
  * Atomically check for existing pending requests and create a new deletion request.
@@ -63,7 +58,10 @@ export async function createDeletionRequestAtomic({
 	userEmail: string;
 	ipAddress?: string;
 	userAgent?: string;
-} & RequestDeletionInput): Promise<CreateDeletionResult> {
+} & RequestDeletionInput): Promise<{
+	request: DeletionRequestWithToken;
+	alreadyExists: boolean;
+}> {
 	const requestId = uuidv4();
 
 	// Generate token and hash it for storage

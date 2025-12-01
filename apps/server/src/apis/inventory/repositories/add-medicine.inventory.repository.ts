@@ -8,7 +8,22 @@ import type { MedicineLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("addMedicineInventory");
 
-interface AddMedicineParams {
+/**
+ * Add a new medicine to the catalog
+ */
+export async function addMedicine({
+	tenantId,
+	medicineId,
+	name,
+	genericName,
+	code,
+	category,
+	type,
+	manufacturer,
+	strength,
+	unit,
+	description,
+}: {
 	tenantId: string;
 	medicineId: string;
 	name: string;
@@ -20,16 +35,19 @@ interface AddMedicineParams {
 	strength?: string;
 	unit: string;
 	description?: string;
-}
-
-/**
- * Add a new medicine to the catalog
- */
-export async function addMedicine(
-	params: AddMedicineParams,
-): Promise<MedicineLean> {
+}): Promise<MedicineLean> {
 	try {
-		const { tenantId, medicineId, ...data } = params;
+		const data = {
+			name,
+			genericName,
+			code,
+			category,
+			type,
+			manufacturer,
+			strength,
+			unit,
+			description,
+		};
 		logger.debug({ tenantId, name: data.name }, "Adding medicine");
 
 		const now = new Date();

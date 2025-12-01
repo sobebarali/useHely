@@ -16,8 +16,8 @@ export const cancelDeletionSchema = z.object({
 
 export type CancelDeletionInput = z.infer<typeof cancelDeletionSchema>;
 
-export interface CancelDeletionOutput {
+export type CancelDeletionOutput = {
 	requestId: string;
 	status: string;
 	message: string;
-}
+};

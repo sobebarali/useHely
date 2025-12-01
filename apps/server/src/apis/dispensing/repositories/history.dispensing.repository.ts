@@ -8,17 +8,6 @@ import type { DispensingLean } from "./shared.dispensing.repository";
 
 const logger = createRepositoryLogger("historyDispensing");
 
-interface ListHistoryParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	pharmacistId?: string;
-	patientId?: string;
-	startDate?: string;
-	endDate?: string;
-	status?: string;
-}
-
 interface ListHistoryResult {
 	records: DispensingLean[];
 	total: number;
@@ -39,7 +28,16 @@ export async function listDispensingHistory({
 	startDate,
 	endDate,
 	status,
-}: ListHistoryParams): Promise<ListHistoryResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	pharmacistId?: string;
+	patientId?: string;
+	startDate?: string;
+	endDate?: string;
+	status?: string;
+}): Promise<ListHistoryResult> {
 	try {
 		logger.debug(
 			{ tenantId, page, limit, patientId },

@@ -33,7 +33,13 @@ const logger = createServiceLogger("generateReport");
 /**
  * Validate date range is within allowed limits
  */
-function validateDateRange(startDate: Date, endDate: Date): void {
+function validateDateRange({
+	startDate,
+	endDate,
+}: {
+	startDate: Date;
+	endDate: Date;
+}): void {
 	const diffDays =
 		(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
 	if (diffDays > REPORT_DEFAULTS.MAX_DATE_RANGE_DAYS) {
@@ -71,7 +77,7 @@ async function generateReportData({
 
 	// Validate date range for reports that require it
 	if (startDate && endDate) {
-		validateDateRange(startDate, endDate);
+		validateDateRange({ startDate, endDate });
 	}
 
 	switch (reportType) {

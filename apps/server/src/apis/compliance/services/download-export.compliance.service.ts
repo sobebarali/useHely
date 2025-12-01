@@ -17,12 +17,6 @@ import { findDataSubjectRequestById } from "../repositories/shared.compliance.re
 
 const logger = createServiceLogger("downloadExport");
 
-export interface DownloadExportOutput {
-	format: string;
-	content: string | Record<string, unknown>;
-	filename: string;
-}
-
 export async function downloadExportService({
 	tenantId,
 	userId,
@@ -31,7 +25,11 @@ export async function downloadExportService({
 	tenantId: string;
 	userId: string;
 	requestId: string;
-}): Promise<DownloadExportOutput> {
+}): Promise<{
+	format: string;
+	content: string | Record<string, unknown>;
+	filename: string;
+}> {
 	logger.info({ tenantId, userId, requestId }, "Downloading export");
 
 	const request = await findDataSubjectRequestById({ tenantId, requestId });

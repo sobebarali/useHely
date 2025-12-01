@@ -9,19 +9,6 @@ import type { InventoryLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("listInventory");
 
-interface ListInventoryParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	search?: string;
-	category?: string;
-	status?: string;
-	expiringWithin?: number;
-	sortBy: string;
-	sortOrder: string;
-	medicineIds?: string[];
-}
-
 interface ListInventoryResult {
 	inventoryItems: InventoryLean[];
 	total: number;
@@ -50,7 +37,18 @@ export async function listInventory({
 	sortBy,
 	sortOrder,
 	medicineIds,
-}: ListInventoryParams): Promise<ListInventoryResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	search?: string;
+	category?: string;
+	status?: string;
+	expiringWithin?: number;
+	sortBy: string;
+	sortOrder: string;
+	medicineIds?: string[];
+}): Promise<ListInventoryResult> {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing inventory");
 

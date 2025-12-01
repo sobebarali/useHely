@@ -19,10 +19,10 @@ export type RequestDeletionInput = z.infer<
 	typeof requestDeletionSchema
 >["body"];
 
-export interface RequestDeletionOutput {
+export type RequestDeletionOutput = {
 	requestId: string;
 	type: string;
 	status: string;
 	createdAt: string;
 	message: string;
-}
+};

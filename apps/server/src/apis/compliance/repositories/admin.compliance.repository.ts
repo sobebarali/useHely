@@ -10,21 +10,6 @@ import type { DataSubjectRequestDocument } from "./shared.compliance.repository"
 
 const logger = createRepositoryLogger("adminCompliance");
 
-export interface ListRequestsQuery {
-	tenantId: string;
-	type?: "export" | "deletion" | "all";
-	status?: string;
-	startDate?: string;
-	endDate?: string;
-	page: number;
-	limit: number;
-}
-
-export interface ListRequestsResult {
-	data: DataSubjectRequestDocument[];
-	total: number;
-}
-
 /**
  * List all data subject requests with filtering and pagination
  */
@@ -36,7 +21,18 @@ export async function listDataSubjectRequests({
 	endDate,
 	page,
 	limit,
-}: ListRequestsQuery): Promise<ListRequestsResult> {
+}: {
+	tenantId: string;
+	type?: "export" | "deletion" | "all";
+	status?: string;
+	startDate?: string;
+	endDate?: string;
+	page: number;
+	limit: number;
+}): Promise<{
+	data: DataSubjectRequestDocument[];
+	total: number;
+}> {
 	logger.debug(
 		{ tenantId, type, status, page, limit },
 		"Listing data subject requests",

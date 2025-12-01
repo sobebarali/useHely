@@ -7,18 +7,16 @@ import {
 
 const logger = createRepositoryLogger("returnDispensing");
 
-interface ReturnToQueueParams {
-	tenantId: string;
-	prescriptionId: string;
-}
-
 /**
  * Delete dispensing record to return prescription to queue
  */
 export async function deleteDispensing({
 	tenantId,
 	prescriptionId,
-}: ReturnToQueueParams): Promise<boolean> {
+}: {
+	tenantId: string;
+	prescriptionId: string;
+}): Promise<boolean> {
 	try {
 		logger.debug(
 			{ tenantId, prescriptionId },

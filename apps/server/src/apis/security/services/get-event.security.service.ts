@@ -7,10 +7,7 @@
 import { NotFoundError } from "@/errors";
 import { logger } from "@/lib/logger";
 import { findSecurityEventById } from "../repositories/get-event.security.repository";
-import type {
-	GetEventInput,
-	GetEventOutput,
-} from "../validations/get-event.security.validation";
+import type { GetEventOutput } from "../validations/get-event.security.validation";
 
 /**
  * Get a security event by ID
@@ -19,7 +16,11 @@ import type {
  *
  * @throws {NotFoundError} If event is not found
  */
-export async function getEvent({ id }: GetEventInput): Promise<GetEventOutput> {
+export async function getEvent({
+	id,
+}: {
+	id: string;
+}): Promise<GetEventOutput> {
 	const startTime = Date.now();
 
 	// Find event by ID

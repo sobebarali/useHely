@@ -20,9 +20,9 @@ export const processRequestSchema = z.object({
 
 export type ProcessRequestInput = z.infer<typeof processRequestSchema>;
 
-export interface ProcessRequestOutput {
+export type ProcessRequestOutput = {
 	requestId: string;
 	status: string;
 	processedBy: string;
 	processedAt: string;
-}
+};

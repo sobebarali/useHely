@@ -14,11 +14,6 @@ import type {
 
 const logger = createServiceLogger("recordConsent");
 
-export interface RecordConsentServiceResult {
-	consent: RecordConsentOutput;
-	isNew: boolean;
-}
-
 export async function recordConsentService({
 	tenantId,
 	userId,
@@ -32,7 +27,10 @@ export async function recordConsentService({
 	userId: string;
 	ipAddress?: string;
 	userAgent?: string;
-} & RecordConsentInput): Promise<RecordConsentServiceResult> {
+} & RecordConsentInput): Promise<{
+	consent: RecordConsentOutput;
+	isNew: boolean;
+}> {
 	logger.info({ tenantId, userId, purpose, granted }, "Recording consent");
 
 	const { consent, isNew } = await upsertConsent({

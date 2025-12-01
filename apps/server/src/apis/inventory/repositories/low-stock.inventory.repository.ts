@@ -8,13 +8,6 @@ import type { InventoryLean } from "./shared.inventory.repository";
 
 const logger = createRepositoryLogger("lowStockInventory");
 
-interface LowStockParams {
-	tenantId: string;
-	limit: number;
-	medicineIds?: string[];
-	includeOutOfStock?: boolean;
-}
-
 /**
  * Get items with stock at or below reorder level.
  * By default includes out-of-stock items (currentStock = 0) as they are
@@ -25,7 +18,12 @@ export async function getLowStockItems({
 	limit,
 	medicineIds,
 	includeOutOfStock = true,
-}: LowStockParams): Promise<InventoryLean[]> {
+}: {
+	tenantId: string;
+	limit: number;
+	medicineIds?: string[];
+	includeOutOfStock?: boolean;
+}): Promise<InventoryLean[]> {
 	try {
 		logger.debug(
 			{ tenantId, limit, includeOutOfStock },

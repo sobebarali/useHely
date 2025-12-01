@@ -21,11 +21,11 @@ export const requestExportSchema = z.object({
 
 export type RequestExportInput = z.infer<typeof requestExportSchema>["body"];
 
-export interface RequestExportOutput {
+export type RequestExportOutput = {
 	requestId: string;
 	type: string;
 	status: string;
 	format: string;
 	createdAt: string;
 	estimatedCompletion: string;
-}
+};

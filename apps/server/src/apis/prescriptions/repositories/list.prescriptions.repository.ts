@@ -8,19 +8,6 @@ import type { PrescriptionLean } from "./shared.prescriptions.repository";
 
 const logger = createRepositoryLogger("listPrescriptions");
 
-interface ListPrescriptionsParams {
-	tenantId: string;
-	page: number;
-	limit: number;
-	patientId?: string;
-	doctorId?: string;
-	status?: string;
-	startDate?: string;
-	endDate?: string;
-	sortBy: string;
-	sortOrder: string;
-}
-
 interface ListPrescriptionsResult {
 	prescriptions: PrescriptionLean[];
 	total: number;
@@ -43,7 +30,18 @@ export async function listPrescriptions({
 	endDate,
 	sortBy,
 	sortOrder,
-}: ListPrescriptionsParams): Promise<ListPrescriptionsResult> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+	patientId?: string;
+	doctorId?: string;
+	status?: string;
+	startDate?: string;
+	endDate?: string;
+	sortBy: string;
+	sortOrder: string;
+}): Promise<ListPrescriptionsResult> {
 	try {
 		logger.debug({ tenantId, page, limit }, "Listing prescriptions");
 

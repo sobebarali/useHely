@@ -8,17 +8,6 @@ import type { VitalsLean } from "./shared.vitals.repository";
 
 const logger = createRepositoryLogger("listVitals");
 
-export interface ListVitalsFilters {
-	tenantId: string;
-	patientId: string;
-	page: number;
-	limit: number;
-	startDate?: string;
-	endDate?: string;
-	parameter?: string;
-	admissionId?: string;
-}
-
 export interface ListVitalsResult {
 	vitals: VitalsLean[];
 	total: number;
@@ -39,7 +28,16 @@ export async function listVitals({
 	endDate,
 	parameter,
 	admissionId,
-}: ListVitalsFilters): Promise<ListVitalsResult> {
+}: {
+	tenantId: string;
+	patientId: string;
+	page: number;
+	limit: number;
+	startDate?: string;
+	endDate?: string;
+	parameter?: string;
+	admissionId?: string;
+}): Promise<ListVitalsResult> {
 	try {
 		logger.debug(
 			{ tenantId, patientId, page, limit },
