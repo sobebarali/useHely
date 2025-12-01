@@ -26,6 +26,7 @@ export const Resources = {
 	DOCTOR: "DOCTOR",
 	SECURITY: "SECURITY",
 	AUDIT: "AUDIT",
+	COMPLIANCE: "COMPLIANCE",
 } as const;
 
 // Actions
@@ -167,6 +168,10 @@ export const Permissions = {
 	AUDIT_REPORT: "AUDIT:REPORT" as Permission,
 	AUDIT_EXPORT: "AUDIT:EXPORT" as Permission,
 	AUDIT_MANAGE: "AUDIT:MANAGE" as Permission,
+
+	// Compliance permissions (GDPR)
+	COMPLIANCE_READ: "COMPLIANCE:READ" as Permission,
+	COMPLIANCE_MANAGE: "COMPLIANCE:MANAGE" as Permission,
 } as const;
 
 // Pre-defined role names
@@ -215,6 +220,7 @@ export const RolePermissions: Record<RoleName, Permission[]> = {
 		Permissions.SECURITY_MANAGE,
 		Permissions.MFA_MANAGE,
 		Permissions.AUDIT_MANAGE,
+		Permissions.COMPLIANCE_MANAGE,
 	],
 
 	[RoleNames.HOSPITAL_ADMIN]: [
@@ -245,6 +251,8 @@ export const RolePermissions: Record<RoleName, Permission[]> = {
 		Permissions.AUDIT_READ,
 		Permissions.AUDIT_REPORT,
 		Permissions.AUDIT_EXPORT,
+		Permissions.COMPLIANCE_READ,
+		Permissions.COMPLIANCE_MANAGE,
 	],
 
 	[RoleNames.DOCTOR]: [

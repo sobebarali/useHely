@@ -5,7 +5,12 @@
  * Uses bcryptjs for secure password hashing.
  */
 
-import { randomInt } from "node:crypto";
+import {
+	createHash,
+	randomBytes,
+	randomInt,
+	timingSafeEqual,
+} from "node:crypto";
 import bcrypt from "bcryptjs";
 
 /**
@@ -13,6 +18,46 @@ import bcrypt from "bcryptjs";
  * OWASP recommends 12 for bcrypt
  */
 const SALT_ROUNDS = 12;
+
+/**
+ * Generate a cryptographically secure random token
+ *
+ * @param bytes - Number of random bytes (default 32)
+ * @returns A hex-encoded random token
+ */
+export function generateSecureToken(bytes = 32): string {
+	return randomBytes(bytes).toString("hex");
+}
+
+/**
+ * Hash a token using SHA-256
+ *
+ * Used for storing verification tokens securely.
+ * Unlike passwords, tokens are random and don't need bcrypt's salt.
+ *
+ * @param token - The plain text token to hash
+ * @returns The SHA-256 hash of the token
+ */
+export function hashToken(token: string): string {
+	return createHash("sha256").update(token).digest("hex");
+}
+
+/**
+ * Compare a plain text token with a hashed token using timing-safe comparison
+ *
+ * @param token - The plain text token
+ * @param hashedToken - The hashed token to compare against
+ * @returns True if tokens match
+ */
+export function compareToken(token: string, hashedToken: string): boolean {
+	const tokenHash = hashToken(token);
+	try {
+		return timingSafeEqual(Buffer.from(tokenHash), Buffer.from(hashedToken));
+	} catch {
+		// If lengths differ, timingSafeEqual throws
+		return false;
+	}
+}
 
 /**
  * Hash a password using bcrypt

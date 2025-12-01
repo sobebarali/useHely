@@ -32,8 +32,34 @@ export {
 	AuditLog,
 } from "./audit-log.model";
 export { Account, Session, User, Verification } from "./auth.model";
+// Consent
+export {
+	Consent,
+	ConsentPurpose,
+	type ConsentPurposeValue,
+	ConsentSource,
+	type ConsentSourceValue,
+} from "./consent.model";
+// Consent History
+export {
+	ConsentHistory,
+	ConsentHistoryAction,
+	type ConsentHistoryActionValue,
+} from "./consent-history.model";
 // Counter
 export { Counter, CounterType } from "./counter.model";
+// Data Subject Request (GDPR)
+export {
+	AdminAction,
+	type AdminActionValue,
+	DataExportFormat,
+	type DataExportFormatValue,
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	type DataSubjectRequestStatusValue,
+	DataSubjectRequestType,
+	type DataSubjectRequestTypeValue,
+} from "./data-subject-request.model";
 // Department
 export {
 	Department,
