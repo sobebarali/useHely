@@ -14,16 +14,17 @@ import type {
 
 const logger = createServiceLogger("exportAudit");
 
-interface ExportParams extends ExportInput {
+export async function initiateExport({
+	tenantId,
+	userId,
+	startDate,
+	endDate,
+	format,
+	categories,
+}: {
 	tenantId: string;
 	userId: string;
-}
-
-export async function initiateExport(
-	params: ExportParams,
-): Promise<ExportOutput> {
-	const { tenantId, userId, startDate, endDate, format, categories } = params;
-
+} & ExportInput): Promise<ExportOutput> {
 	// Estimate the number of records
 	const estimatedRecords = await countAuditLogsForExport({
 		tenantId,

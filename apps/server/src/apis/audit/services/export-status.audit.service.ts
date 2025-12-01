@@ -11,20 +11,17 @@ import type { ExportStatusOutput } from "../validations/export-status.audit.vali
 
 const logger = createServiceLogger("exportStatus");
 
-interface ExportStatusParams {
+export async function getExportStatus({
+	exportId,
+	tenantId,
+}: {
 	exportId: string;
 	tenantId: string;
-}
-
-export async function getExportStatus(
-	params: ExportStatusParams,
-): Promise<ExportStatusOutput> {
-	const { exportId, tenantId } = params;
-
+}): Promise<ExportStatusOutput> {
 	const exportJob = await findExportById({ id: exportId, tenantId });
 
 	if (!exportJob) {
-		throw new NotFoundError("EXPORT_NOT_FOUND", "Export job not found");
+		throw new NotFoundError("Export job not found", "EXPORT_NOT_FOUND");
 	}
 
 	const result: ExportStatusOutput = {

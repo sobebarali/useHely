@@ -9,7 +9,10 @@ import { createRepositoryLogger, logDatabaseOperation } from "@/lib/logger";
 
 const logger = createRepositoryLogger("phiAccessReport");
 
-interface PhiAccessDocument {
+/**
+ * PHI access document type (subset of AuditLogDocument for PHI reports)
+ */
+export type PhiAccessDocument = {
 	_id: string;
 	eventType: string;
 	userId: string;
@@ -19,7 +22,7 @@ interface PhiAccessDocument {
 	ip?: string | null;
 	details?: { fieldsAccessed?: string[] } | null;
 	timestamp: Date;
-}
+};
 
 export async function findPhiAccessLogs({
 	tenantId,

@@ -14,23 +14,25 @@ import type {
 
 const logger = createServiceLogger("resourceTrail");
 
-interface ResourceTrailParams extends ResourceTrailQuery {
+export async function getResourceAuditTrail({
+	tenantId,
+	resourceType,
+	resourceId,
+	page: pageParam,
+	limit: limitParam,
+}: {
 	tenantId: string;
 	resourceType: string;
 	resourceId: string;
-}
-
-export async function getResourceAuditTrail(
-	params: ResourceTrailParams,
-): Promise<ResourceTrailOutput> {
+} & ResourceTrailQuery): Promise<ResourceTrailOutput> {
 	// Ensure page and limit are numbers (query params may be strings)
-	const page = Number(params.page) || AUDIT_DEFAULT_PAGE;
-	const limit = Number(params.limit) || AUDIT_DEFAULT_LIMIT;
+	const page = Number(pageParam) || AUDIT_DEFAULT_PAGE;
+	const limit = Number(limitParam) || AUDIT_DEFAULT_LIMIT;
 
 	const { logs, total } = await findAuditLogsByResource({
-		tenantId: params.tenantId,
-		resourceType: params.resourceType,
-		resourceId: params.resourceId,
+		tenantId,
+		resourceType,
+		resourceId,
 		page,
 		limit,
 	});
@@ -53,8 +55,8 @@ export async function getResourceAuditTrail(
 	}));
 
 	const result: ResourceTrailOutput = {
-		resourceType: params.resourceType,
-		resourceId: params.resourceId,
+		resourceType,
+		resourceId,
 		logs: transformedLogs,
 		pagination: {
 			page,
@@ -67,8 +69,8 @@ export async function getResourceAuditTrail(
 	logSuccess(
 		logger,
 		{
-			resourceType: params.resourceType,
-			resourceId: params.resourceId,
+			resourceType,
+			resourceId,
 			count: transformedLogs.length,
 			total,
 		},

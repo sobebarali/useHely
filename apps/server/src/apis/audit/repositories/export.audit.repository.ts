@@ -10,17 +10,10 @@ import { createRepositoryLogger, logDatabaseOperation } from "@/lib/logger";
 
 const logger = createRepositoryLogger("exportAudit");
 
-interface CreateExportParams {
-	tenantId: string;
-	startDate: Date;
-	endDate: Date;
-	format: string;
-	categories?: string[];
-	estimatedRecords: number;
-	requestedBy: string;
-}
-
-interface ExportDocument {
+/**
+ * Export document type
+ */
+export type ExportDocument = {
 	_id: string;
 	tenantId: string;
 	status: string;
@@ -37,28 +30,50 @@ interface ExportDocument {
 	expiresAt?: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
-}
+};
 
-export async function createExportJob(
-	params: CreateExportParams,
-): Promise<ExportDocument> {
+export async function createExportJob({
+	tenantId,
+	startDate,
+	endDate,
+	format,
+	categories,
+	estimatedRecords,
+	requestedBy,
+}: {
+	tenantId: string;
+	startDate: Date;
+	endDate: Date;
+	format: string;
+	categories?: string[];
+	estimatedRecords: number;
+	requestedBy: string;
+}): Promise<ExportDocument> {
 	const exportId = uuidv4();
 	const expiresAt = new Date();
 	expiresAt.setHours(expiresAt.getHours() + 24); // Expires in 24 hours
 
-	logDatabaseOperation(logger, "create", "audit_export", params);
+	logDatabaseOperation(logger, "create", "audit_export", {
+		tenantId,
+		startDate,
+		endDate,
+		format,
+		categories,
+		estimatedRecords,
+		requestedBy,
+	});
 
 	const exportJob = await AuditExport.create({
 		_id: exportId,
-		tenantId: params.tenantId,
+		tenantId,
 		status: AuditExportStatus.PENDING,
-		format: params.format,
-		startDate: params.startDate,
-		endDate: params.endDate,
-		categories: params.categories || [],
-		estimatedRecords: params.estimatedRecords,
+		format,
+		startDate,
+		endDate,
+		categories: categories || [],
+		estimatedRecords,
 		processedRecords: 0,
-		requestedBy: params.requestedBy,
+		requestedBy,
 		expiresAt,
 	});
 

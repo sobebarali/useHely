@@ -5,13 +5,13 @@
  * for HIPAA compliance and tamper detection.
  */
 
+import crypto from "node:crypto";
 import {
 	type AuditActionValue,
 	type AuditEventCategoryValue,
 	type AuditEventTypeValue,
 	AuditLog,
 } from "@hms/db";
-import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import { HASH_CHAIN_GENESIS } from "../apis/audit/audit.constants";
 import { createUtilLogger, logError } from "../lib/logger";

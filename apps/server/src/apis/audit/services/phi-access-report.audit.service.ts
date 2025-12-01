@@ -14,28 +14,30 @@ import type {
 
 const logger = createServiceLogger("phiAccessReport");
 
-interface PhiAccessReportParams extends PhiAccessReportInput {
+export async function generatePhiAccessReport({
+	tenantId,
+	patientId,
+	userId,
+	startDate: startDateParam,
+	endDate: endDateParam,
+	page: pageParam,
+	limit: limitParam,
+}: {
 	tenantId: string;
-}
-
-export async function generatePhiAccessReport(
-	params: PhiAccessReportParams,
-): Promise<PhiAccessReportOutput> {
-	const { tenantId, patientId, userId } = params;
-
+} & PhiAccessReportInput): Promise<PhiAccessReportOutput> {
 	// Ensure dates are Date objects (query params may be strings)
 	const startDate =
-		params.startDate instanceof Date
-			? params.startDate
-			: new Date(params.startDate as unknown as string);
+		startDateParam instanceof Date
+			? startDateParam
+			: new Date(startDateParam as unknown as string);
 	const endDate =
-		params.endDate instanceof Date
-			? params.endDate
-			: new Date(params.endDate as unknown as string);
+		endDateParam instanceof Date
+			? endDateParam
+			: new Date(endDateParam as unknown as string);
 
 	// Ensure page and limit are numbers (query params may be strings)
-	const page = Number(params.page) || AUDIT_DEFAULT_PAGE;
-	const limit = Number(params.limit) || AUDIT_DEFAULT_LIMIT;
+	const page = Number(pageParam) || AUDIT_DEFAULT_PAGE;
+	const limit = Number(limitParam) || AUDIT_DEFAULT_LIMIT;
 
 	const { logs, total } = await findPhiAccessLogs({
 		tenantId,

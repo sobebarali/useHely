@@ -11,13 +11,14 @@ import type { GetLogOutput } from "../validations/get-log.audit.validation";
 
 const logger = createServiceLogger("getAuditLog");
 
-interface GetLogParams {
+export async function getAuditLog({
+	id,
+	tenantId,
+}: {
 	id: string;
 	tenantId: string;
-}
-
-export async function getAuditLog(params: GetLogParams): Promise<GetLogOutput> {
-	const log = await findAuditLogById(params);
+}): Promise<GetLogOutput> {
+	const log = await findAuditLogById({ id, tenantId });
 
 	if (!log) {
 		throw new NotFoundError("Audit log entry not found", "AUDIT_LOG_NOT_FOUND");

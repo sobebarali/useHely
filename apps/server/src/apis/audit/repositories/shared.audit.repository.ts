@@ -9,7 +9,10 @@ import { createRepositoryLogger, logDatabaseOperation } from "@/lib/logger";
 
 const logger = createRepositoryLogger("sharedAudit");
 
-interface AuditLogDocument {
+/**
+ * Shared audit log document type
+ */
+export type AuditLogDocument = {
 	_id: string;
 	tenantId: string;
 	eventType: string;
@@ -28,7 +31,7 @@ interface AuditLogDocument {
 	hash: string;
 	previousHash?: string | null;
 	timestamp: Date;
-}
+};
 
 /**
  * Find audit logs by user with pagination

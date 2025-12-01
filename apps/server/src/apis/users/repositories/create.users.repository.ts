@@ -50,8 +50,10 @@ export async function createUser({
 			],
 			{ session },
 		);
-		// Array destructuring is safe here - create() always returns documents on success
-		const user = userDocs[0]!;
+		const user = userDocs[0];
+		if (!user) {
+			throw new Error("Failed to create user document");
+		}
 
 		logDatabaseOperation(
 			logger,
@@ -76,7 +78,10 @@ export async function createUser({
 			],
 			{ session },
 		);
-		const account = accountDocs[0]!;
+		const account = accountDocs[0];
+		if (!account) {
+			throw new Error("Failed to create account document");
+		}
 
 		logDatabaseOperation(
 			logger,
@@ -109,7 +114,10 @@ export async function createUser({
 			],
 			{ session },
 		);
-		const staff = staffDocs[0]!;
+		const staff = staffDocs[0];
+		if (!staff) {
+			throw new Error("Failed to create staff document");
+		}
 
 		logDatabaseOperation(
 			logger,

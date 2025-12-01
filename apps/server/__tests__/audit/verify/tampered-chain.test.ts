@@ -9,7 +9,7 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/audit/verify - Success", () => {
+describe("POST /api/audit/verify - Tampered Chain", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 	const createdLogIds: string[] = [];
@@ -30,7 +30,7 @@ describe("POST /api/audit/verify - Success", () => {
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create test audit logs with valid hash chain
+		// Create audit logs with a tampered hash (broken chain)
 		let previousHash = "GENESIS";
 		for (let i = 0; i < 3; i++) {
 			const logId = uuidv4();
@@ -55,7 +55,14 @@ describe("POST /api/audit/verify - Success", () => {
 				timestamp: timestamp.toISOString(),
 			});
 
-			const hash = computeHash(entryData, previousHash);
+			// For the second entry, use an incorrect hash (simulate tampering)
+			let hash: string;
+			if (i === 1) {
+				// Tampered hash - doesn't match the expected computation
+				hash = "tampered-invalid-hash-value";
+			} else {
+				hash = computeHash(entryData, previousHash);
+			}
 
 			await AuditLog.create({
 				_id: logId,
@@ -85,7 +92,7 @@ describe("POST /api/audit/verify - Success", () => {
 		await context.cleanup();
 	});
 
-	it("verifies chain integrity", async () => {
+	it("detects tampered audit log chain", async () => {
 		const startDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 		const endDate = new Date().toISOString();
 
@@ -99,28 +106,8 @@ describe("POST /api/audit/verify - Success", () => {
 
 		expect(response.status).toBe(200);
 		expect(response.body.success).toBe(true);
-		expect(response.body.data.verified).toBeDefined();
-		expect(response.body.data.entriesChecked).toBeGreaterThanOrEqual(3);
-		expect(response.body.data.verifiedAt).toBeDefined();
-	});
-
-	it("returns empty result for no logs in range", async () => {
-		// Use dates far in the past
-		const startDate = new Date("2000-01-01").toISOString();
-		const endDate = new Date("2000-01-02").toISOString();
-
-		const response = await request(app)
-			.post("/api/audit/verify")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({
-				startDate,
-				endDate,
-			});
-
-		expect(response.status).toBe(200);
-		expect(response.body.success).toBe(true);
-		expect(response.body.data.verified).toBe(true);
-		expect(response.body.data.entriesChecked).toBe(0);
-		expect(response.body.data.chainIntact).toBe(true);
+		// The chain should be detected as tampered
+		expect(response.body.data.verified).toBe(false);
+		expect(response.body.data.chainIntact).toBe(false);
 	});
 });

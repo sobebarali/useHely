@@ -19,22 +19,22 @@ import type {
 
 const logger = createServiceLogger("hipaaReport");
 
-interface HipaaReportParams extends HipaaReportInput {
+export async function generateHipaaReport({
+	tenantId,
+	startDate: startDateParam,
+	endDate: endDateParam,
+}: {
 	tenantId: string;
-}
-
-export async function generateHipaaReport(
-	params: HipaaReportParams,
-): Promise<HipaaReportOutput> {
-	const { tenantId } = params;
-
+} & HipaaReportInput): Promise<HipaaReportOutput> {
 	// Ensure dates are Date objects (query params may be strings)
 	const startDate =
-		params.startDate instanceof Date
-			? params.startDate
-			: new Date(params.startDate);
+		startDateParam instanceof Date
+			? startDateParam
+			: new Date(startDateParam as unknown as string);
 	const endDate =
-		params.endDate instanceof Date ? params.endDate : new Date(params.endDate);
+		endDateParam instanceof Date
+			? endDateParam
+			: new Date(endDateParam as unknown as string);
 
 	// Run all aggregations in parallel for efficiency
 	const [stats, phiByUser, phiByRole, incidents] = await Promise.all([

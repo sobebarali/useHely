@@ -14,23 +14,26 @@ import type {
 
 const logger = createServiceLogger("userTrail");
 
-interface UserTrailParams extends UserTrailQuery {
+export async function getUserAuditTrail({
+	tenantId,
+	userId,
+	page: pageParam,
+	limit: limitParam,
+	startDate,
+	endDate,
+}: {
 	tenantId: string;
 	userId: string;
-}
-
-export async function getUserAuditTrail(
-	params: UserTrailParams,
-): Promise<UserTrailOutput> {
+} & UserTrailQuery): Promise<UserTrailOutput> {
 	// Ensure page and limit are numbers (query params may be strings)
-	const page = Number(params.page) || AUDIT_DEFAULT_PAGE;
-	const limit = Number(params.limit) || AUDIT_DEFAULT_LIMIT;
+	const page = Number(pageParam) || AUDIT_DEFAULT_PAGE;
+	const limit = Number(limitParam) || AUDIT_DEFAULT_LIMIT;
 
 	const { logs, total } = await findAuditLogsByUser({
-		tenantId: params.tenantId,
-		userId: params.userId,
-		startDate: params.startDate,
-		endDate: params.endDate,
+		tenantId,
+		userId,
+		startDate,
+		endDate,
 		page,
 		limit,
 	});
@@ -51,7 +54,7 @@ export async function getUserAuditTrail(
 	}));
 
 	const result: UserTrailOutput = {
-		userId: params.userId,
+		userId,
 		logs: transformedLogs,
 		pagination: {
 			page,
@@ -63,7 +66,7 @@ export async function getUserAuditTrail(
 
 	logSuccess(
 		logger,
-		{ userId: params.userId, count: transformedLogs.length, total },
+		{ userId, count: transformedLogs.length, total },
 		"User audit trail retrieved",
 	);
 

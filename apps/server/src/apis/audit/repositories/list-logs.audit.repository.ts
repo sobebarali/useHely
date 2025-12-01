@@ -7,31 +7,9 @@
 import { AuditLog } from "@hms/db";
 import { createRepositoryLogger, logDatabaseOperation } from "@/lib/logger";
 import type { ListLogsInput } from "../validations/list-logs.audit.validation";
+import type { AuditLogDocument } from "./shared.audit.repository";
 
 const logger = createRepositoryLogger("listAuditLogs");
-
-interface FindAuditLogsParams extends Omit<ListLogsInput, "page" | "limit"> {
-	tenantId: string;
-	page: number;
-	limit: number;
-}
-
-interface AuditLogDocument {
-	_id: string;
-	tenantId: string;
-	eventType: string;
-	category: string;
-	userId: string;
-	userName: string;
-	resourceType?: string | null;
-	resourceId?: string | null;
-	action?: string | null;
-	ip?: string | null;
-	userAgent?: string | null;
-	sessionId?: string | null;
-	details?: Record<string, unknown> | null;
-	timestamp: Date;
-}
 
 export async function findAuditLogs({
 	tenantId,
@@ -44,7 +22,14 @@ export async function findAuditLogs({
 	resourceId,
 	startDate,
 	endDate,
-}: FindAuditLogsParams): Promise<{ logs: AuditLogDocument[]; total: number }> {
+}: {
+	tenantId: string;
+	page: number;
+	limit: number;
+} & Omit<ListLogsInput, "page" | "limit">): Promise<{
+	logs: AuditLogDocument[];
+	total: number;
+}> {
 	// Build filter object
 	const filter: Record<string, unknown> = { tenantId };
 

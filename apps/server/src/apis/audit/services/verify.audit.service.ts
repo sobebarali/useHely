@@ -4,7 +4,7 @@
  * Business logic for verifying audit log chain integrity
  */
 
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { createServiceLogger, logSuccess } from "@/lib/logger";
 import { HASH_CHAIN_GENESIS } from "../audit.constants";
 import { findAuditLogsForVerification } from "../repositories/shared.audit.repository";
@@ -14,10 +14,6 @@ import type {
 } from "../validations/verify.audit.validation";
 
 const logger = createServiceLogger("verifyIntegrity");
-
-interface VerifyParams extends VerifyInput {
-	tenantId: string;
-}
 
 /**
  * Compute SHA-256 hash for integrity verification
@@ -29,20 +25,22 @@ function computeHash(data: string, previousHash: string): string {
 		.digest("hex");
 }
 
-export async function verifyIntegrity(
-	params: VerifyParams,
-): Promise<VerifyOutput> {
-	const { tenantId } = params;
-
+export async function verifyIntegrity({
+	tenantId,
+	startDate: startDateParam,
+	endDate: endDateParam,
+}: {
+	tenantId: string;
+} & VerifyInput): Promise<VerifyOutput> {
 	// Ensure dates are Date objects (query params may be strings)
 	const startDate =
-		params.startDate instanceof Date
-			? params.startDate
-			: new Date(params.startDate as unknown as string);
+		startDateParam instanceof Date
+			? startDateParam
+			: new Date(startDateParam as unknown as string);
 	const endDate =
-		params.endDate instanceof Date
-			? params.endDate
-			: new Date(params.endDate as unknown as string);
+		endDateParam instanceof Date
+			? endDateParam
+			: new Date(endDateParam as unknown as string);
 
 	// Get all logs in the date range, sorted by timestamp (oldest first)
 	const logs = await findAuditLogsForVerification({
