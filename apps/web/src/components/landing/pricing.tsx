@@ -29,7 +29,7 @@ const plans = [
 	},
 	{
 		name: "Professional",
-		description: "For mid-size hospitals with full operations",
+		description: "For growing practices with full operations",
 		price: "$299",
 		period: "/month",
 		popular: true,
@@ -46,7 +46,7 @@ const plans = [
 	},
 	{
 		name: "Enterprise",
-		description: "For hospital chains and large institutions",
+		description: "For healthcare networks and large institutions",
 		price: "Custom",
 		period: "",
 		popular: false,
@@ -76,7 +76,7 @@ export function Pricing() {
 						Plans That Scale With You
 					</h2>
 					<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-						Start small and upgrade as your hospital grows. All plans include
+						Start small and upgrade as your practice grows. All plans include
 						core useHely features.
 					</p>
 				</div>

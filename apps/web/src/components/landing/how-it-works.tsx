@@ -7,14 +7,14 @@ const steps = [
 		icon: ClipboardCheck,
 		title: "Register",
 		description:
-			"Hospital self-registers with license details, contact information, and admin credentials.",
+			"Choose your organization type - hospital, clinic, or solo practice. Clinics and practices get instant activation.",
 	},
 	{
 		step: 2,
 		icon: Mail,
 		title: "Verify",
 		description:
-			"Email verification activates the account with pre-configured roles, default department, and admin user.",
+			"Hospitals verify via email. Clinics and solo practices are instantly activated with pre-configured roles.",
 	},
 	{
 		step: 3,
@@ -93,7 +93,7 @@ export function HowItWorks() {
 						{[
 							{
 								title: "6 System Roles",
-								desc: "Super Admin, Hospital Admin, Doctor, Nurse, Pharmacist, Receptionist",
+								desc: "Super Admin, Admin, Doctor, Nurse, Pharmacist, Receptionist",
 							},
 							{
 								title: "Default Department",
@@ -101,7 +101,7 @@ export function HowItWorks() {
 							},
 							{
 								title: "Admin Account",
-								desc: "Hospital admin with temporary password and force change",
+								desc: "Admin user with temporary password and force change",
 							},
 							{
 								title: "Welcome Email",

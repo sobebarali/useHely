@@ -1,49 +1,68 @@
 ---
 title: Getting Started
-description: Quick start guide to begin using the Hospital Management System.
+description: Quick start guide to begin using useHely.
 ---
 
 ## Overview
 
-The Hospital Management System (useHely) is a multi-tenant SaaS platform that enables hospitals to digitize their operations. This guide walks you through the initial setup process.
+useHely is a multi-tenant SaaS platform for healthcare organizations. Whether you're running a hospital, clinic, or solo practice, this guide walks you through the initial setup process.
 
-## Hospital Registration
+## Choose Your Organization Type
 
-### Step 1: Register Your Hospital
+useHely supports three organization types with different registration flows:
 
-To begin using useHely, register your hospital on the platform:
+| Type | Best For | Registration |
+|------|----------|--------------|
+| **Hospital** | Large facilities with multiple departments | Email verification required |
+| **Clinic** | Medical clinics with team members | Instant activation |
+| **Solo Practice** | Individual practitioners | Instant activation + Doctor role |
+
+## Registration
+
+### Option A: Hospital Registration
+
+For hospitals requiring license verification:
 
 1. Navigate to the registration page
-2. Provide the following information:
+2. Select **Hospital** as organization type
+3. Provide the following information:
    - Hospital name
    - Address (street, city, state, postal code, country)
    - Contact email and phone
-   - Hospital license number
+   - **Hospital license number** (required)
    - Administrator email and phone
 
-3. Submit the registration form
+4. Submit the registration form
+5. Check your admin email inbox for a verification link
+6. Click the verification link within 24 hours
+7. Your hospital status changes from `PENDING` to `VERIFIED`
+8. Receive admin credentials via email
 
-### Step 2: Verify Email
+### Option B: Clinic or Solo Practice (Self-Service)
 
-After registration:
+For clinics and solo practices with instant activation:
 
-1. Check your admin email inbox for a verification link
-2. Click the verification link within 24 hours
-3. Your hospital status will change from `PENDING` to `VERIFIED`
+1. Navigate to the registration page
+2. Select **Clinic** or **Solo Practice** as organization type
+3. Provide the following information:
+   - Organization name
+   - Address (street, city, state, postal code, country)
+   - Contact email and phone
+   - Administrator email and phone
+   - No license number required
 
-### Step 3: Activate Hospital
+4. Submit the registration form
+5. Your organization is **immediately activated**
+6. Receive admin credentials via email
+7. Log in and start using useHely right away
 
-Once verified, a platform administrator will review and activate your hospital. Upon activation:
-
-- Your hospital status changes to `ACTIVE`
-- You receive admin credentials
-- You can begin configuring your hospital
+> **Note:** Solo Practice admins automatically receive both Administrator and Doctor roles, allowing immediate access to patient care features.
 
 ## Initial Configuration
 
 ### Configure Departments
 
-Set up your hospital departments:
+Set up your departments:
 
 1. Navigate to **Settings > Departments**
 2. Add departments with:
@@ -54,7 +73,7 @@ Set up your hospital departments:
 
 ### Create Staff Accounts
 
-Add users for your hospital:
+Add users for your organization:
 
 1. Navigate to **Users > Add User**
 2. Provide user details:
@@ -77,7 +96,7 @@ useHely provides pre-configured roles:
 
 | Role | Description |
 |------|-------------|
-| Hospital Admin | Full hospital management access |
+| Admin | Full organization management access |
 | Doctor | Patient management, prescriptions |
 | Nurse | Patient care, vitals recording |
 | Pharmacist | Prescription dispensing |
@@ -85,16 +104,16 @@ useHely provides pre-configured roles:
 
 ## Next Steps
 
-Once your hospital is configured:
+Once your organization is configured:
 
-- [Register patients](/api/04-patients)
-- [Schedule appointments](/api/07-appointments)
-- [Create prescriptions](/api/05-prescriptions)
-- [Manage inventory](/api/13-inventory)
+- [Register patients](/api/05-patients)
+- [Schedule appointments](/api/08-appointments)
+- [Create prescriptions](/api/06-prescriptions)
+- [Manage inventory](/api/14-inventory)
 
 ## Support
 
 For assistance with setup or configuration:
 
 - Review the [API Reference](/api/01-hospital) documentation
-- Contact platform support
+- Contact support at info@usehely.com

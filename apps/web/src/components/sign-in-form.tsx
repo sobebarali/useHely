@@ -1,7 +1,7 @@
 import { useForm } from "@tanstack/react-form";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { useHospitalsForEmail, useSignIn } from "@/hooks/use-auth";
@@ -10,6 +10,7 @@ import {
 	isMfaChallengeResponse,
 	type MfaChallengeResponse,
 } from "@/lib/auth-client";
+import { getTerminology } from "@/lib/terminology";
 import MfaChallengeForm from "./mfa-challenge-form";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
@@ -42,6 +43,16 @@ export default function SignInForm({
 		useHospitalsForEmail(email);
 	const signInMutation = useSignIn();
 
+	// Get terminology based on selected organization's type
+	const selectedOrg = useMemo(
+		() => hospitals?.find((h) => h.id === selectedHospital),
+		[hospitals, selectedHospital],
+	);
+	const terminology = useMemo(
+		() => getTerminology(selectedOrg?.type),
+		[selectedOrg?.type],
+	);
+
 	// Auto-select hospital if only one available
 	useEffect(() => {
 		if (hospitals?.length === 1 && !selectedHospital) {
@@ -62,7 +73,7 @@ export default function SignInForm({
 		},
 		onSubmit: async ({ value }) => {
 			if (!selectedHospital) {
-				toast.error("Please select a hospital");
+				toast.error("Please select an organization");
 				return;
 			}
 
@@ -173,13 +184,15 @@ export default function SignInForm({
 
 						{showHospitalSelector && (
 							<div className="space-y-2">
-								<Label htmlFor="hospital">Hospital</Label>
+								<Label htmlFor="hospital">
+									{selectedOrg ? terminology.organization : "Organization"}
+								</Label>
 								<Select
 									value={selectedHospital}
 									onValueChange={setSelectedHospital}
 								>
 									<SelectTrigger className="bg-background/50">
-										<SelectValue placeholder="Select a hospital" />
+										<SelectValue placeholder="Select an organization" />
 									</SelectTrigger>
 									<SelectContent>
 										{hospitals.map((hospital) => (
@@ -191,8 +204,8 @@ export default function SignInForm({
 								</Select>
 								{hospitals.length > 1 && (
 									<p className="text-muted-foreground text-xs">
-										You have access to multiple hospitals. Select which one to
-										sign into.
+										You have access to multiple organizations. Select which one
+										to sign into.
 									</p>
 								)}
 							</div>
@@ -201,15 +214,15 @@ export default function SignInForm({
 						{hospitalsLoading && email.includes("@") && (
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<Loader2 className="h-4 w-4 animate-spin" />
-								<span>Finding your hospitals...</span>
+								<span>Finding your organizations...</span>
 							</div>
 						)}
 
 						{noHospitalsFound && (
 							<div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
 								<p className="text-red-400 text-sm">
-									No hospitals found for this email. Please check your email or
-									contact your administrator.
+									No organizations found for this email. Please check your email
+									or contact your administrator.
 								</p>
 							</div>
 						)}

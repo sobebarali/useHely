@@ -34,7 +34,7 @@ function LoginPage() {
 					<div className="absolute inset-0">
 						<img
 							src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=1200&h=1600&fit=crop&q=80"
-							alt="Medical team collaborating in a modern hospital"
+							alt="Medical team collaborating in a modern healthcare facility"
 							className="h-full w-full object-cover"
 						/>
 						{/* Dark overlay */}
@@ -52,7 +52,7 @@ function LoginPage() {
 						</Link>
 
 						<h1 className="mb-4 font-bold text-4xl leading-tight">
-							Welcome back to your hospital dashboard
+							Welcome back to your dashboard
 						</h1>
 						<p className="mb-8 max-w-md text-lg text-muted-foreground">
 							Sign in to manage patients, appointments, prescriptions, and more

@@ -33,12 +33,13 @@ export async function findHospitalsForEmail({
 		_id: { $in: tenantIds },
 		status: { $in: ["ACTIVE", "VERIFIED"] },
 	})
-		.select("_id name status")
+		.select("_id name status type")
 		.lean();
 
 	return hospitals.map((h) => ({
 		id: String(h._id),
 		name: h.name,
 		status: h.status,
+		type: h.type || "HOSPITAL",
 	}));
 }

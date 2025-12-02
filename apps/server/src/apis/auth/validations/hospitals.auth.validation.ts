@@ -18,6 +18,7 @@ export interface HospitalInfo {
 	id: string;
 	name: string;
 	status: string;
+	type: string;
 }
 
 export interface HospitalsOutput {

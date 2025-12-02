@@ -52,7 +52,7 @@ function ForgotPasswordPage() {
 		},
 		onSubmit: async ({ value }) => {
 			if (!selectedHospital) {
-				toast.error("Please select a hospital");
+				toast.error("Please select an organization");
 				return;
 			}
 
@@ -208,13 +208,13 @@ function ForgotPasswordPage() {
 
 								{showHospitalSelector && (
 									<div className="space-y-2">
-										<Label htmlFor="hospital">Hospital</Label>
+										<Label htmlFor="hospital">Organization</Label>
 										<Select
 											value={selectedHospital}
 											onValueChange={setSelectedHospital}
 										>
 											<SelectTrigger className="bg-background/50">
-												<SelectValue placeholder="Select a hospital" />
+												<SelectValue placeholder="Select an organization" />
 											</SelectTrigger>
 											<SelectContent>
 												{hospitals.map((hospital) => (
@@ -230,15 +230,15 @@ function ForgotPasswordPage() {
 								{hospitalsLoading && email.includes("@") && (
 									<div className="flex items-center gap-2 text-muted-foreground text-sm">
 										<Loader2 className="h-4 w-4 animate-spin" />
-										<span>Finding your hospitals...</span>
+										<span>Finding your organizations...</span>
 									</div>
 								)}
 
 								{noHospitalsFound && (
 									<div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
 										<p className="text-red-400 text-sm">
-											No hospitals found for this email. Please check your email
-											or contact support at{" "}
+											No organizations found for this email. Please check your
+											email or contact support at{" "}
 											<a
 												href="mailto:info@usehely.com"
 												className="underline hover:text-red-300"

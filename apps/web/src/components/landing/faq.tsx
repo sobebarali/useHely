@@ -7,7 +7,7 @@ const faqs = [
 	{
 		question: "How long does it take to set up?",
 		answer:
-			"Setup takes just minutes. Register your hospital, verify your email, and you're ready to go. The system automatically provisions roles, departments, and your admin account.",
+			"Setup takes just minutes. Register your organization, and you're ready to go. Clinics and solo practices are activated instantly, while hospitals verify via email. The system automatically provisions roles, departments, and your admin account.",
 	},
 	{
 		question: "Can I import existing patient data?",
@@ -30,9 +30,9 @@ const faqs = [
 			"We perform automated daily backups with point-in-time recovery. Data is encrypted at rest and stored across multiple availability zones for redundancy.",
 	},
 	{
-		question: "Can multiple hospitals use the same platform?",
+		question: "Can multiple organizations use the same platform?",
 		answer:
-			"Absolutely. Our multi-tenant architecture allows hospital chains to manage multiple locations from a single platform while maintaining complete data isolation between facilities.",
+			"Absolutely. Our multi-tenant architecture allows healthcare networks to manage hospitals, clinics, and practices from a single platform while maintaining complete data isolation between facilities.",
 	},
 	{
 		question: "What compliance standards do you follow?",
@@ -90,7 +90,7 @@ export function FAQ() {
 						Frequently Asked Questions
 					</h2>
 					<p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-						Everything you need to know about the Hospital Management System.
+						Everything you need to know about useHely.
 					</p>
 				</div>
 

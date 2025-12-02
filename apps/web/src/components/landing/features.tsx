@@ -25,7 +25,7 @@ const features = [
 		icon: Building2,
 		title: "Self-Service Registration",
 		description:
-			"Hospitals register instantly with automatic tenant provisioning, email verification, and pre-configured admin accounts.",
+			"Register your hospital, clinic, or practice instantly with automatic tenant provisioning and pre-configured admin accounts.",
 	},
 	{
 		icon: Users,
@@ -82,7 +82,7 @@ export function Features() {
 							Features
 						</Badge>
 						<h2 className="font-bold text-3xl tracking-tight sm:text-4xl">
-							Everything You Need to Manage a Hospital
+							Everything You Need to Manage Your Practice
 						</h2>
 						<p className="mt-4 text-lg text-muted-foreground">
 							A comprehensive suite of tools designed for modern healthcare
@@ -154,12 +154,12 @@ export function Features() {
 					<div className="grid lg:grid-cols-2">
 						<div className="p-8 lg:p-12">
 							<h3 className="font-bold text-2xl">
-								Ready to modernize your hospital?
+								Ready to modernize your practice?
 							</h3>
 							<p className="mt-4 text-muted-foreground">
-								Join hospitals that have streamlined their operations with our
-								comprehensive management system. Get started in minutes with our
-								self-service registration.
+								Join healthcare providers who have streamlined their operations
+								with our comprehensive management system. Get started in minutes
+								with our self-service registration.
 							</p>
 							<ul className="mt-6 space-y-3">
 								{[

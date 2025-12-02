@@ -85,6 +85,7 @@ export interface Hospital {
 	id: string;
 	name: string;
 	status: string;
+	type: OrganizationType;
 }
 
 export type OrganizationType = "HOSPITAL" | "CLINIC" | "SOLO_PRACTICE";

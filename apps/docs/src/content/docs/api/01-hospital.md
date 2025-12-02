@@ -1,19 +1,29 @@
 ---
-title: Hospital & Tenant API
-description: API reference for hospital registration, tenant management, and multi-tenancy operations.
+title: Organization & Tenant API
+description: API reference for organization registration, tenant management, and multi-tenancy operations.
 ---
 
 ## Overview
 
-The Hospital & Tenant API enables hospitals to self-register on the platform and manages tenant isolation for the multi-tenant SaaS architecture.
+The Organization & Tenant API enables healthcare organizations to self-register on the platform and manages tenant isolation for the multi-tenant SaaS architecture.
+
+### Organization Types
+
+The platform supports three organization types with different registration flows:
+
+| Type | Description | Registration Flow |
+|------|-------------|-------------------|
+| HOSPITAL | Large healthcare facility with multiple departments | Requires license verification via email |
+| CLINIC | Medical clinic with one or more practitioners | Instant activation (self-service) |
+| SOLO_PRACTICE | Individual practitioner | Instant activation with DOCTOR role |
 
 ---
 
-## Register Hospital
+## Register Organization
 
 **POST** `/api/hospitals`
 
-Creates a new hospital registration on the platform.
+Creates a new organization registration on the platform.
 
 ### Authentication
 
@@ -23,8 +33,9 @@ None required (public endpoint)
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| name | string | Yes | Hospital name |
-| address | object | Yes | Hospital address details |
+| type | string | No | Organization type: `HOSPITAL`, `CLINIC`, `SOLO_PRACTICE`. Defaults to `HOSPITAL` |
+| name | string | Yes | Organization name |
+| address | object | Yes | Organization address details |
 | address.street | string | Yes | Street address |
 | address.city | string | Yes | City |
 | address.state | string | Yes | State/Province |
@@ -32,9 +43,10 @@ None required (public endpoint)
 | address.country | string | Yes | Country |
 | contactEmail | string | Yes | Primary contact email |
 | contactPhone | string | Yes | Primary contact phone |
-| licenseNumber | string | Yes | Hospital license number (must be unique) |
+| licenseNumber | string | Conditional | Required for `HOSPITAL` type only |
 | adminEmail | string | Yes | Administrator email for initial admin account |
 | adminPhone | string | Yes | Administrator phone number |
+| pricingTier | string | No | `FREE`, `STARTER`, `PROFESSIONAL`, `ENTERPRISE`. Defaults based on type |
 
 ### Response
 
@@ -42,37 +54,46 @@ None required (public endpoint)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Hospital ID (UUID) |
+| id | string | Organization ID (UUID) |
 | tenantId | string | Auto-generated tenant ID (UUID) |
-| name | string | Hospital name |
-| status | string | Initial status: `PENDING` |
-| adminUsername | string | Auto-generated admin username: `admin@{hospital-domain}` |
-| message | string | Confirmation message about verification email |
+| name | string | Organization name |
+| type | string | Organization type |
+| status | string | `PENDING` for HOSPITAL, `ACTIVE` for CLINIC/SOLO_PRACTICE |
+| adminUsername | string | Auto-generated admin username: `admin@{organization-domain}` |
+| message | string | Confirmation message |
+| temporaryPassword | string | Only for CLINIC/SOLO_PRACTICE (self-service flow) |
 
 ### Errors
 
 | Status | Code | Description |
 |--------|------|-------------|
 | 400 | INVALID_REQUEST | Missing or invalid required fields |
+| 400 | LICENSE_REQUIRED | License number required for HOSPITAL type |
 | 409 | LICENSE_EXISTS | License number already registered |
 | 409 | EMAIL_EXISTS | Admin email already in use |
 
 ### Business Rules
 
-- License number must be unique across the entire platform
-- System auto-generates a tenant ID (UUID-based)
-- Creates isolated database schema per tenant
+#### Hospital Registration
+- License number required and must be unique across the platform
+- Status is `PENDING` until email verification
 - Sends verification email with activation link
-- Admin credentials created automatically with username format: `admin@{hospital-domain}`
-- Initial hospital status is `PENDING`
+- Admin account created after verification
+
+#### Clinic & Solo Practice Registration (Self-Service)
+- No license number required
+- Status is `ACTIVE` immediately
+- Admin account created instantly with temporary password
+- Welcome email sent with login credentials
+- For `SOLO_PRACTICE`: Admin also receives DOCTOR role
 
 ---
 
-## Get Hospital
+## Get Organization
 
 **GET** `/api/hospitals/:id`
 
-Retrieves hospital details by ID.
+Retrieves organization details by ID.
 
 ### Authentication
 
@@ -82,7 +103,7 @@ Required. Bearer token with `HOSPITAL:READ` permission.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 
 ### Response
 
@@ -90,14 +111,16 @@ Required. Bearer token with `HOSPITAL:READ` permission.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 | tenantId | string | Tenant ID |
-| name | string | Hospital name |
-| address | object | Hospital address |
+| name | string | Organization name |
+| type | string | Organization type |
+| address | object | Organization address |
 | contactEmail | string | Contact email |
 | contactPhone | string | Contact phone |
-| licenseNumber | string | License number |
+| licenseNumber | string | License number (HOSPITAL only) |
 | status | string | Current status |
+| pricingTier | string | Pricing tier |
 | createdAt | string | ISO 8601 timestamp |
 | updatedAt | string | ISO 8601 timestamp |
 
@@ -107,15 +130,15 @@ Required. Bearer token with `HOSPITAL:READ` permission.
 |--------|------|-------------|
 | 401 | UNAUTHORIZED | Missing or invalid token |
 | 403 | FORBIDDEN | Insufficient permissions |
-| 404 | NOT_FOUND | Hospital not found |
+| 404 | NOT_FOUND | Organization not found |
 
 ---
 
-## Update Hospital
+## Update Organization
 
 **PATCH** `/api/hospitals/:id`
 
-Updates hospital information.
+Updates organization information.
 
 ### Authentication
 
@@ -125,7 +148,7 @@ Required. Bearer token with `HOSPITAL:UPDATE` permission. Only `HOSPITAL_ADMIN` 
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 
 ### Request Body
 
@@ -133,8 +156,8 @@ All fields optional:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| name | string | Hospital name |
-| address | object | Hospital address |
+| name | string | Organization name |
+| address | object | Organization address |
 | contactEmail | string | Contact email |
 | contactPhone | string | Contact phone |
 
@@ -144,9 +167,9 @@ All fields optional:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Hospital ID |
-| name | string | Hospital name |
-| address | object | Hospital address |
+| id | string | Organization ID |
+| name | string | Organization name |
+| address | object | Organization address |
 | address.street | string | Street address |
 | address.city | string | City |
 | address.state | string | State/Province |
@@ -164,20 +187,22 @@ All fields optional:
 | 400 | INVALID_REQUEST | Invalid field values |
 | 401 | UNAUTHORIZED | Missing or invalid token |
 | 403 | FORBIDDEN | Insufficient permissions |
-| 404 | NOT_FOUND | Hospital not found |
+| 404 | NOT_FOUND | Organization not found |
 
 ### Business Rules
 
-- License number cannot be changed after registration
-- Only users within the same tenant can update their hospital
+- License number and type cannot be changed after registration
+- Only users within the same tenant can update their organization
 
 ---
 
-## Verify Hospital
+## Verify Organization (Hospital Only)
 
 **POST** `/api/hospitals/:id/verify`
 
-Verifies hospital email and activates the account.
+Verifies hospital email and activates the account. This endpoint is only used for HOSPITAL type registrations.
+
+> **Note:** CLINIC and SOLO_PRACTICE types are activated immediately upon registration and do not require verification.
 
 ### Authentication
 
@@ -187,7 +212,7 @@ None required (uses verification token)
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 
 ### Request Body
 
@@ -201,7 +226,7 @@ None required (uses verification token)
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 | status | string | Updated status: `VERIFIED` |
 | message | string | Confirmation message |
 
@@ -211,11 +236,12 @@ None required (uses verification token)
 |--------|------|-------------|
 | 400 | INVALID_TOKEN | Token is invalid or malformed |
 | 400 | TOKEN_EXPIRED | Verification token has expired |
-| 404 | NOT_FOUND | Hospital not found |
-| 409 | ALREADY_VERIFIED | Hospital already verified |
+| 404 | NOT_FOUND | Organization not found |
+| 409 | ALREADY_VERIFIED | Organization already verified |
 
 ### Business Rules
 
+- Only applies to HOSPITAL type organizations
 - Email verification is mandatory before activation
 - Verification token expires after 24 hours
 - Status changes from `PENDING` to `VERIFIED`
@@ -250,12 +276,12 @@ Each role comes with pre-configured permissions. See [Authentication API](/api/0
 
 #### 3. Admin User Created
 
-The admin user is automatically created using the `adminEmail` and `adminPhone` from the hospital registration:
+The admin user is automatically created using the `adminEmail` and `adminPhone` from the organization registration:
 
 | Field | Value |
 |-------|-------|
 | Email | From `adminEmail` in registration |
-| Role | HOSPITAL_ADMIN |
+| Role | HOSPITAL_ADMIN (+ DOCTOR for SOLO_PRACTICE) |
 | Department | Administration |
 | Employee ID | EMP-00001 |
 | Status | ACTIVE |
@@ -316,11 +342,11 @@ POST /api/hospitals/:id/verify
 
 ---
 
-## Update Hospital Status
+## Update Organization Status
 
 **PATCH** `/api/hospitals/:id/status`
 
-Updates the hospital operational status.
+Updates the organization operational status.
 
 ### Authentication
 
@@ -330,7 +356,7 @@ Required. Bearer token with `HOSPITAL:MANAGE` permission. `SUPER_ADMIN` role req
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 
 ### Request Body
 
@@ -369,7 +395,7 @@ PENDING → VERIFIED → ACTIVE → SUSPENDED → INACTIVE
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | Hospital ID |
+| id | string | Organization ID |
 | status | string | Updated status |
 | updatedAt | string | ISO 8601 timestamp |
 
@@ -381,14 +407,14 @@ PENDING → VERIFIED → ACTIVE → SUSPENDED → INACTIVE
 | 400 | INVALID_TRANSITION | Status transition not allowed |
 | 401 | UNAUTHORIZED | Missing or invalid token |
 | 403 | FORBIDDEN | Only SUPER_ADMIN can change status |
-| 404 | NOT_FOUND | Hospital not found |
+| 404 | NOT_FOUND | Organization not found |
 
 ### Business Rules
 
-- Only `SUPER_ADMIN` can manually change hospital status
+- Only `SUPER_ADMIN` can manually change organization status
 - Status transitions must follow the defined flow
-- Suspending a hospital disables all user access
-- Inactive hospitals cannot be reactivated
+- Suspending an organization disables all user access
+- Inactive organizations cannot be reactivated
 
 ---
 

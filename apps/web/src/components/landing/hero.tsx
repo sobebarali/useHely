@@ -35,14 +35,14 @@ export function Hero() {
 						</Badge>
 
 						<h1 className="font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
-							Complete Hospital Operations.{" "}
+							Complete Healthcare Operations.{" "}
 							<span className="text-primary">One Platform.</span>
 						</h1>
 
 						<p className="mt-6 max-w-xl text-lg text-muted-foreground">
-							Multi-tenant platform that lets hospitals self-register, manage
-							patients, appointments, prescriptions, and pharmacy - all with
-							enterprise-grade security and role-based access control.
+							Multi-tenant platform for hospitals, clinics, and solo practices.
+							Manage patients, appointments, prescriptions, and pharmacy - all
+							with enterprise-grade security and role-based access control.
 						</p>
 
 						{/* Feature highlights */}
@@ -65,7 +65,7 @@ export function Hero() {
 						<div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
 							<Button size="lg" asChild>
 								<Link to="/register-hospital">
-									Register Your Hospital
+									Get Started
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</Link>
 							</Button>
@@ -125,7 +125,7 @@ export function Hero() {
 				{/* Floating module icons */}
 				<div className="mt-16 flex flex-wrap items-center justify-center gap-4 sm:gap-6">
 					{[
-						{ icon: Building2, label: "Hospitals" },
+						{ icon: Building2, label: "Organizations" },
 						{ icon: Users, label: "Patients" },
 						{ icon: Calendar, label: "Appointments" },
 						{ icon: FileText, label: "Prescriptions" },

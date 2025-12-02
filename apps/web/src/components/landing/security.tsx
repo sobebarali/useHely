@@ -25,7 +25,7 @@ const securityFeatures = [
 		icon: Database,
 		title: "Tenant Data Isolation",
 		description:
-			"Schema-per-tenant architecture ensures complete data separation between hospitals.",
+			"Schema-per-tenant architecture ensures complete data separation between organizations.",
 	},
 	{
 		icon: Key,
@@ -66,9 +66,9 @@ const roles = [
 		description: "Platform administrator with full system access",
 	},
 	{
-		name: "HOSPITAL_ADMIN",
+		name: "ADMIN",
 		level: 1,
-		description: "Hospital administrator with tenant-wide access",
+		description: "Organization administrator with tenant-wide access",
 	},
 	{
 		name: "DOCTOR",
