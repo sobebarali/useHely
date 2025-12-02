@@ -44,6 +44,12 @@ export function Footer() {
 								Multi-tenant Hospital Management System for modern healthcare
 								operations.
 							</p>
+							<a
+								href="mailto:info@usehely.com"
+								className="mt-3 inline-block text-muted-foreground text-sm hover:text-foreground"
+							>
+								info@usehely.com
+							</a>
 						</div>
 
 						{/* Product */}
@@ -98,7 +104,12 @@ export function Footer() {
 									<span className="cursor-not-allowed opacity-60">About</span>
 								</li>
 								<li>
-									<span className="cursor-not-allowed opacity-60">Contact</span>
+									<a
+										href="mailto:info@usehely.com"
+										className="hover:text-foreground"
+									>
+										Contact
+									</a>
 								</li>
 								<li>
 									<span className="cursor-not-allowed opacity-60">

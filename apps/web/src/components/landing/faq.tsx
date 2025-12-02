@@ -12,7 +12,7 @@ const faqs = [
 	{
 		question: "Can I import existing patient data?",
 		answer:
-			"Yes, we provide data import tools for migrating existing patient records. Our API also allows for custom integrations with your existing systems. Contact support for large-scale migrations.",
+			"Yes, we provide data import tools for migrating existing patient records. Our API also allows for custom integrations with your existing systems. Contact us at info@usehely.com for large-scale migrations.",
 	},
 	{
 		question: "What happens to my data if I cancel?",
@@ -37,7 +37,7 @@ const faqs = [
 	{
 		question: "What compliance standards do you follow?",
 		answer:
-			"We build with HIPAA considerations in mind and implement industry-standard security practices including encryption, audit logging, and role-based access control. Contact us for detailed compliance documentation.",
+			"We build with HIPAA considerations in mind and implement industry-standard security practices including encryption, audit logging, and role-based access control. Contact us at info@usehely.com for detailed compliance documentation.",
 	},
 	{
 		question: "Do you offer training and onboarding?",

@@ -238,7 +238,13 @@ function ForgotPasswordPage() {
 									<div className="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
 										<p className="text-red-400 text-sm">
 											No hospitals found for this email. Please check your email
-											or contact your administrator.
+											or contact support at{" "}
+											<a
+												href="mailto:info@usehely.com"
+												className="underline hover:text-red-300"
+											>
+												info@usehely.com
+											</a>
 										</p>
 									</div>
 								)}

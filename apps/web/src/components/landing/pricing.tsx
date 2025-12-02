@@ -121,17 +121,19 @@ export function Pricing() {
 							</CardContent>
 
 							<CardFooter>
-								<Button
-									className="w-full"
-									variant={plan.popular ? "default" : "outline"}
-									asChild
-								>
-									<Link to="/login">
-										{plan.name === "Enterprise"
-											? "Contact Sales"
-											: "Get Started"}
-									</Link>
-								</Button>
+								{plan.name === "Enterprise" ? (
+									<Button className="w-full" variant="outline" asChild>
+										<a href="mailto:info@usehely.com">Contact Sales</a>
+									</Button>
+								) : (
+									<Button
+										className="w-full"
+										variant={plan.popular ? "default" : "outline"}
+										asChild
+									>
+										<Link to="/login">Get Started</Link>
+									</Button>
+								)}
 							</CardFooter>
 						</Card>
 					))}
