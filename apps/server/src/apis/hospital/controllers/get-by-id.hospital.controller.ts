@@ -26,6 +26,6 @@ export const getHospitalByIdController = asyncHandler(
 			duration,
 		);
 
-		res.status(200).json(hospital);
+		res.status(200).json({ success: true, data: hospital });
 	},
 );

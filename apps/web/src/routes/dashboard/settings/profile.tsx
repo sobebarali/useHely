@@ -1,18 +1,32 @@
 import { useForm } from "@tanstack/react-form";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import {
+	AlertTriangle,
 	Building2,
+	CheckCircle,
 	Edit,
 	Loader2,
 	Mail,
 	MapPin,
 	Phone,
 	Save,
+	Shield,
 	X,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,13 +38,23 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { useSession } from "@/hooks/use-auth";
 import {
 	type HospitalDetails,
+	type HospitalStatus,
 	useHospital,
 	useUpdateHospital,
+	useUpdateHospitalStatus,
 } from "@/hooks/use-hospital";
 import { type AuthError, authClient } from "@/lib/auth-client";
 
@@ -44,12 +68,17 @@ export const Route = createFileRoute("/dashboard/settings/profile")({
 });
 
 function HospitalProfilePage() {
-	const { data: session } = useSession();
+	const { data: session, isLoading: isSessionLoading } = useSession();
 	const hospitalId = session?.hospital?.id;
-	const { data: hospital, isLoading, error } = useHospital(hospitalId);
+	const {
+		data: hospital,
+		isLoading: isHospitalLoading,
+		error,
+	} = useHospital(hospitalId);
 	const [isEditing, setIsEditing] = useState(false);
 
-	if (isLoading) {
+	// Show loading if either session or hospital is loading
+	if (isSessionLoading || isHospitalLoading) {
 		return <HospitalProfileSkeleton />;
 	}
 
@@ -99,7 +128,9 @@ function HospitalProfilePage() {
 }
 
 function HospitalDetailsView({ hospital }: { hospital: HospitalDetails }) {
+	const { data: session } = useSession();
 	const statusVariant = getStatusVariant(hospital.status);
+	const canManageStatus = session?.permissions?.includes("TENANT:MANAGE");
 
 	return (
 		<div className="grid gap-6 md:grid-cols-2">
@@ -123,7 +154,9 @@ function HospitalDetailsView({ hospital }: { hospital: HospitalDetails }) {
 						<Label className="text-muted-foreground text-xs">
 							License Number
 						</Label>
-						<p className="font-mono text-sm">{hospital.licenseNumber}</p>
+						<p className="font-mono text-sm">
+							{hospital.licenseNumber || "N/A"}
+						</p>
 					</div>
 					<div className="space-y-1">
 						<Label className="text-muted-foreground text-xs">Status</Label>
@@ -212,6 +245,24 @@ function HospitalDetailsView({ hospital }: { hospital: HospitalDetails }) {
 					</div>
 				</CardContent>
 			</Card>
+
+			{/* Status Management - Only visible to users with TENANT_MANAGE permission */}
+			{canManageStatus && (
+				<Card className="md:col-span-2">
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2">
+							<Shield className="h-5 w-5" />
+							Status Management
+						</CardTitle>
+						<CardDescription>
+							Manage the operational status of this organization
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<HospitalStatusManager hospital={hospital} />
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }
@@ -512,6 +563,195 @@ function HospitalEditForm({
 				</div>
 			</div>
 		</form>
+	);
+}
+
+const HOSPITAL_STATUSES: {
+	value: HospitalStatus;
+	label: string;
+	description: string;
+}[] = [
+	{ value: "PENDING", label: "Pending", description: "Awaiting verification" },
+	{
+		value: "VERIFIED",
+		label: "Verified",
+		description: "Verified but not yet active",
+	},
+	{ value: "ACTIVE", label: "Active", description: "Fully operational" },
+	{
+		value: "SUSPENDED",
+		label: "Suspended",
+		description: "Temporarily suspended",
+	},
+	{
+		value: "INACTIVE",
+		label: "Inactive",
+		description: "Permanently deactivated",
+	},
+];
+
+function HospitalStatusManager({ hospital }: { hospital: HospitalDetails }) {
+	const [selectedStatus, setSelectedStatus] = useState<HospitalStatus>(
+		hospital.status as HospitalStatus,
+	);
+	const [reason, setReason] = useState("");
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const updateStatusMutation = useUpdateHospitalStatus();
+
+	const currentStatus = hospital.status as HospitalStatus;
+	const isStatusChanged = selectedStatus !== currentStatus;
+	const requiresReason =
+		selectedStatus === "SUSPENDED" || selectedStatus === "INACTIVE";
+
+	const handleStatusUpdate = async () => {
+		try {
+			await updateStatusMutation.mutateAsync({
+				hospitalId: hospital.id,
+				data: {
+					status: selectedStatus,
+					reason: reason || undefined,
+				},
+			});
+			toast.success(`Organization status updated to ${selectedStatus}`);
+			setIsDialogOpen(false);
+			setReason("");
+		} catch (error) {
+			const apiError = error as AuthError;
+			toast.error(apiError.message || "Failed to update organization status");
+		}
+	};
+
+	const getStatusIcon = (status: HospitalStatus) => {
+		switch (status) {
+			case "ACTIVE":
+				return <CheckCircle className="h-4 w-4 text-green-500" />;
+			case "SUSPENDED":
+			case "INACTIVE":
+				return <AlertTriangle className="h-4 w-4 text-destructive" />;
+			default:
+				return <Shield className="h-4 w-4 text-muted-foreground" />;
+		}
+	};
+
+	return (
+		<div className="space-y-4">
+			<div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
+				{getStatusIcon(currentStatus)}
+				<div>
+					<p className="font-medium">Current Status: {currentStatus}</p>
+					<p className="text-muted-foreground text-sm">
+						{
+							HOSPITAL_STATUSES.find((s) => s.value === currentStatus)
+								?.description
+						}
+					</p>
+				</div>
+			</div>
+
+			<div className="space-y-3">
+				<Label>Change Status</Label>
+				<Select
+					value={selectedStatus}
+					onValueChange={(value) => setSelectedStatus(value as HospitalStatus)}
+				>
+					<SelectTrigger>
+						<SelectValue placeholder="Select new status" />
+					</SelectTrigger>
+					<SelectContent>
+						{HOSPITAL_STATUSES.map((status) => (
+							<SelectItem key={status.value} value={status.value}>
+								<div className="flex items-center gap-2">
+									{getStatusIcon(status.value)}
+									<div>
+										<span className="font-medium">{status.label}</span>
+										<span className="ml-2 text-muted-foreground text-xs">
+											- {status.description}
+										</span>
+									</div>
+								</div>
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</div>
+
+			{requiresReason && isStatusChanged && (
+				<div className="space-y-2">
+					<Label htmlFor="status-reason">
+						Reason {requiresReason ? "*" : "(Optional)"}
+					</Label>
+					<Textarea
+						id="status-reason"
+						placeholder="Enter the reason for this status change..."
+						value={reason}
+						onChange={(e) => setReason(e.target.value)}
+						rows={3}
+					/>
+					<p className="text-muted-foreground text-xs">
+						A reason is required when suspending or deactivating an
+						organization.
+					</p>
+				</div>
+			)}
+
+			<AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<AlertDialogTrigger asChild>
+					<Button
+						disabled={
+							!isStatusChanged ||
+							(requiresReason && !reason.trim()) ||
+							updateStatusMutation.isPending
+						}
+						variant={
+							selectedStatus === "SUSPENDED" || selectedStatus === "INACTIVE"
+								? "destructive"
+								: "default"
+						}
+					>
+						{updateStatusMutation.isPending ? (
+							<>
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								Updating...
+							</>
+						) : (
+							<>
+								<Shield className="mr-2 h-4 w-4" />
+								Update Status
+							</>
+						)}
+					</Button>
+				</AlertDialogTrigger>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Confirm Status Change</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to change the organization status from{" "}
+							<span className="font-medium">{currentStatus}</span> to{" "}
+							<span className="font-medium">{selectedStatus}</span>?
+							{(selectedStatus === "SUSPENDED" ||
+								selectedStatus === "INACTIVE") && (
+								<span className="mt-2 block text-destructive">
+									This action may affect users' access to the system.
+								</span>
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleStatusUpdate}
+							className={
+								selectedStatus === "SUSPENDED" || selectedStatus === "INACTIVE"
+									? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+									: ""
+							}
+						>
+							Confirm
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
 	);
 }
 
