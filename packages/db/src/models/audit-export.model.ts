@@ -27,7 +27,7 @@ export type AuditExportFormatValue =
 const auditExportSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		status: {
 			type: String,
 			enum: Object.values(AuditExportStatus),

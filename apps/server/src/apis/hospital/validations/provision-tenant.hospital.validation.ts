@@ -1,4 +1,11 @@
+import { OrganizationType } from "@hms/db";
 import { z } from "zod";
+
+// Organization types enum for validation
+const organizationTypeValues = Object.values(OrganizationType) as [
+	string,
+	...string[],
+];
 
 // Zod schema for runtime validation (used internally, not for HTTP requests)
 export const provisionTenantSchema = z.object({
@@ -7,6 +14,9 @@ export const provisionTenantSchema = z.object({
 	adminEmail: z.string().email(),
 	adminPhone: z.string().min(1),
 	adminName: z.string().optional(),
+	organizationType: z
+		.enum(organizationTypeValues)
+		.default(OrganizationType.HOSPITAL),
 });
 
 // Input type - inferred from Zod (single source of truth)

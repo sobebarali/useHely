@@ -52,7 +52,7 @@ const contactSchema = new Schema(
 const departmentSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		name: { type: String, required: true },
 		code: { type: String, required: true },
 		description: { type: String },

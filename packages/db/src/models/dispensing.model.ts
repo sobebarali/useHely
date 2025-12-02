@@ -39,7 +39,7 @@ const dispensingMedicineSchema = new Schema(
 const dispensingSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		prescriptionId: { type: String, ref: "Prescription", required: true },
 		status: {
 			type: String,

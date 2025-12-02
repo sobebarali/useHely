@@ -17,6 +17,7 @@ export interface GetHospitalByIdOutput {
 	id: string;
 	tenantId: string;
 	name: string;
+	type?: string;
 	address: {
 		street: string;
 		city: string;
@@ -26,8 +27,9 @@ export interface GetHospitalByIdOutput {
 	};
 	contactEmail: string;
 	contactPhone: string;
-	licenseNumber: string;
+	licenseNumber?: string;
 	status: string;
+	pricingTier?: string;
 	createdAt: string;
 	updatedAt: string;
 }

@@ -62,7 +62,7 @@ export type AuditActionValue = (typeof AuditAction)[keyof typeof AuditAction];
 const auditLogSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		eventType: {
 			type: String,
 			enum: Object.values(AuditEventType),

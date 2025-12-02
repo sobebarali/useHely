@@ -50,7 +50,7 @@ const templateMedicineSchema = new Schema(
 const prescriptionSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		prescriptionId: { type: String, required: true },
 		patientId: { type: String, ref: "Patient", required: true },
 		doctorId: { type: String, ref: "Staff", required: true },
@@ -93,7 +93,7 @@ prescriptionSchema.plugin(fieldEncryptionPlugin, {
 const prescriptionTemplateSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		name: { type: String, required: true },
 		category: { type: String },
 		condition: { type: String },

@@ -67,7 +67,7 @@ const generatedBySchema = new Schema(
 const reportSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		reportType: {
 			type: String,
 			enum: Object.values(ReportType),

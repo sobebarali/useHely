@@ -33,7 +33,7 @@ export type SecurityEventSeverityValue =
 const securityEventSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital" },
+		tenantId: { type: String, ref: "Organization" },
 		type: {
 			type: String,
 			enum: Object.values(SecurityEventType),

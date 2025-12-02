@@ -1,4 +1,4 @@
-import { mongoose } from "@hms/db";
+import { mongoose, OrganizationType } from "@hms/db";
 import { RoleNames } from "../../../constants";
 import { InternalError } from "../../../errors";
 import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
@@ -25,6 +25,8 @@ const logger = createServiceLogger("provisionTenant");
  *
  * Uses MongoDB transactions to ensure atomicity - if any step fails,
  * all previous steps are rolled back automatically.
+ *
+ * For SOLO_PRACTICE: Admin user also receives DOCTOR role
  */
 export async function provisionTenant({
 	tenantId,
@@ -32,8 +34,12 @@ export async function provisionTenant({
 	adminEmail,
 	adminPhone,
 	adminName,
+	organizationType = OrganizationType.HOSPITAL,
 }: ProvisionTenantInput): Promise<ProvisionTenantOutput> {
-	logger.info({ tenantId, adminEmail }, "Starting tenant provisioning");
+	logger.info(
+		{ tenantId, adminEmail, organizationType },
+		"Starting tenant provisioning",
+	);
 
 	// Check if admin already exists before starting transaction (idempotency)
 	const adminExists = await checkAdminExists({ tenantId, adminEmail });
@@ -78,7 +84,7 @@ export async function provisionTenant({
 				"Default department created successfully",
 			);
 
-			// Step 3: Get HOSPITAL_ADMIN role ID for the tenant
+			// Step 3: Get required roles for the admin user
 			const hospitalAdminRole = await findRoleByName({
 				tenantId,
 				name: RoleNames.HOSPITAL_ADMIN,
@@ -94,12 +100,40 @@ export async function provisionTenant({
 				throw new InternalError("Failed to find HOSPITAL_ADMIN role");
 			}
 
+			// For SOLO_PRACTICE: Also get DOCTOR role
+			const adminRoleIds = [String(hospitalAdminRole._id)];
+
+			if (organizationType === OrganizationType.SOLO_PRACTICE) {
+				const doctorRole = await findRoleByName({
+					tenantId,
+					name: RoleNames.DOCTOR,
+					isSystem: true,
+					session,
+				});
+
+				if (doctorRole) {
+					adminRoleIds.push(String(doctorRole._id));
+					logger.info(
+						{ tenantId },
+						"DOCTOR role added for solo practice admin",
+					);
+				} else {
+					logger.warn(
+						{ tenantId },
+						"DOCTOR role not found for solo practice - admin will only have HOSPITAL_ADMIN role",
+					);
+				}
+			}
+
 			// Step 4: Generate temporary password and create admin user
 			displayName = adminName || `${hospitalName} Admin`;
 			temporaryPassword = generateTemporaryPassword();
 			const hashedPwd = await hashPassword(temporaryPassword);
 
-			logger.debug({ tenantId, adminEmail }, "Creating admin user");
+			logger.debug(
+				{ tenantId, adminEmail, roleCount: adminRoleIds.length },
+				"Creating admin user",
+			);
 
 			await createAdminUser({
 				tenantId,
@@ -107,13 +141,16 @@ export async function provisionTenant({
 				adminName: displayName,
 				adminPhone,
 				hashedPassword: hashedPwd,
-				hospitalAdminRoleId: String(hospitalAdminRole._id),
+				adminRoleIds,
 				adminDepartmentId: String(department._id),
 				session,
 			});
 
 			adminCreated = true;
-			logger.info({ tenantId, adminEmail }, "Admin user created successfully");
+			logger.info(
+				{ tenantId, adminEmail, roles: adminRoleIds.length },
+				"Admin user created successfully",
+			);
 		});
 
 		// Step 5: Send welcome email with credentials (outside transaction - non-critical)

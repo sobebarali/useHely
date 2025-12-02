@@ -16,7 +16,7 @@ export const CounterType = {
 const counterSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		type: {
 			type: String,
 			required: true,

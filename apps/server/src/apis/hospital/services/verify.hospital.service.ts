@@ -1,4 +1,4 @@
-import { HospitalStatus } from "@hms/db";
+import { HospitalStatus, OrganizationType } from "@hms/db";
 import { BadRequestError, ConflictError, NotFoundError } from "../../../errors";
 import {
 	deleteVerificationToken,
@@ -122,12 +122,16 @@ export async function verifyHospital({
 		);
 
 		// Provision tenant: seed roles, create default department, create admin user
+		// Note: Verification flow is only used by HOSPITAL type (CLINIC/SOLO_PRACTICE use self-service)
 		logger.info({ hospitalId: id }, "Starting tenant provisioning");
+		const organizationType =
+			(hospital as { type?: string }).type || OrganizationType.HOSPITAL;
 		const provisioningResult = await provisionTenant({
 			tenantId: id,
 			hospitalName: hospital.name,
 			adminEmail: hospital.adminEmail,
 			adminPhone: hospital.adminPhone,
+			organizationType,
 		});
 
 		logger.info(

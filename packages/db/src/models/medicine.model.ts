@@ -35,7 +35,7 @@ export const MedicineType = {
 const medicineSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		name: { type: String, required: true },
 		genericName: { type: String },
 		code: { type: String, required: true },

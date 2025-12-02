@@ -21,7 +21,7 @@ export const StaffStatus = {
 const staffSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		userId: { type: String, ref: "User", required: true },
 		employeeId: { type: String, required: true },
 		firstName: { type: String, required: true },

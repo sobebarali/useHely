@@ -40,7 +40,7 @@ const timeSlotSchema = new Schema(
 const appointmentSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		appointmentNumber: { type: String, required: true },
 		patientId: { type: String, ref: "Patient", required: true },
 		doctorId: { type: String, ref: "Staff", required: true },

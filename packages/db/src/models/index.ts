@@ -72,7 +72,7 @@ export {
 	DispensingStatus,
 	MedicineDispensingStatus,
 } from "./dispensing.model";
-// Hospital/Tenant
+// Backward compatibility aliases
 export { Hospital, HospitalStatus } from "./hospital.model";
 // Inventory
 export {
@@ -84,6 +84,16 @@ export {
 export { KeyRotation } from "./key-rotation.model";
 // Medicine
 export { Medicine, MedicineCategory, MedicineType } from "./medicine.model";
+// Organization/Tenant (formerly Hospital)
+export {
+	Organization,
+	OrganizationStatus,
+	type OrganizationStatusValue,
+	OrganizationType,
+	type OrganizationTypeValue,
+	PricingTier,
+	type PricingTierValue,
+} from "./organization.model";
 // Patient
 export { Gender, Patient, PatientStatus, PatientType } from "./patient.model";
 // Prescription

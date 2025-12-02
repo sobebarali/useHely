@@ -18,6 +18,8 @@ const logger = createRepositoryLogger("provisionTenant");
 /**
  * Create admin user with associated account and staff record
  * This is called during tenant provisioning after hospital verification
+ *
+ * @param adminRoleIds - Array of role IDs to assign to the admin (e.g., [HOSPITAL_ADMIN, DOCTOR] for solo practice)
  */
 export async function createAdminUser({
 	tenantId,
@@ -25,7 +27,7 @@ export async function createAdminUser({
 	adminName,
 	adminPhone,
 	hashedPassword,
-	hospitalAdminRoleId,
+	adminRoleIds,
 	adminDepartmentId,
 	session,
 }: {
@@ -34,7 +36,7 @@ export async function createAdminUser({
 	adminName: string;
 	adminPhone: string;
 	hashedPassword: string;
-	hospitalAdminRoleId: string;
+	adminRoleIds: string[];
 	adminDepartmentId: string;
 	session?: mongoose.ClientSession;
 }) {
@@ -117,7 +119,7 @@ export async function createAdminUser({
 					lastName,
 					phone: adminPhone,
 					departmentId: adminDepartmentId,
-					roles: [hospitalAdminRoleId],
+					roles: adminRoleIds,
 					status: "ACTIVE",
 					passwordHistory: [hashedPassword],
 					forcePasswordChange: true, // Admin should change password on first login

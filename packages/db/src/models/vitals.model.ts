@@ -93,7 +93,7 @@ const alertSchema = new Schema(
 const vitalsSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		patientId: { type: String, ref: "Patient", required: true },
 		appointmentId: { type: String, ref: "Appointment" },
 		admissionId: { type: String, ref: "Admission" },

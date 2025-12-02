@@ -37,7 +37,7 @@ const batchSchema = new Schema(
 const inventorySchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		medicineId: { type: String, ref: "Medicine", required: true },
 		currentStock: { type: Number, default: 0 },
 		reorderLevel: { type: Number, default: 10 },
@@ -61,7 +61,7 @@ inventorySchema.index({ tenantId: 1, "batches.expiryDate": 1 });
 const inventoryTransactionSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		inventoryId: { type: String, ref: "Inventory", required: true },
 		type: {
 			type: String,

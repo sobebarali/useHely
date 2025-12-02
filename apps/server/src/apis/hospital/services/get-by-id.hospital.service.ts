@@ -44,6 +44,7 @@ export async function getHospitalById({
 			id: String(hospital._id),
 			tenantId: String(hospital._id), // In hospital context, hospital ID serves as tenant ID
 			name: hospital.name,
+			type: (hospital as { type?: string }).type,
 			address: {
 				street: hospital.address?.street || "",
 				city: hospital.address?.city || "",
@@ -53,8 +54,9 @@ export async function getHospitalById({
 			},
 			contactEmail: hospital.contactEmail,
 			contactPhone: hospital.contactPhone,
-			licenseNumber: hospital.licenseNumber,
+			licenseNumber: hospital.licenseNumber || undefined,
 			status: hospital.status || "PENDING",
+			pricingTier: (hospital as { pricingTier?: string }).pricingTier,
 			createdAt: hospital.createdAt.toISOString(),
 			updatedAt: hospital.updatedAt.toISOString(),
 		};

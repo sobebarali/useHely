@@ -5,7 +5,7 @@ const { Schema, model } = mongoose;
 const roleSchema = new Schema(
 	{
 		_id: { type: String },
-		tenantId: { type: String, ref: "Hospital", required: true },
+		tenantId: { type: String, ref: "Organization", required: true },
 		name: { type: String, required: true },
 		description: { type: String },
 		permissions: [{ type: String }],

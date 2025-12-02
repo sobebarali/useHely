@@ -16,6 +16,7 @@ import {
 import { SectionCards } from "@/components/section-cards";
 import { Button } from "@/components/ui/button";
 import { useDashboardType, useRefreshDashboard } from "@/hooks/use-dashboard";
+import { useTerminology } from "@/hooks/use-terminology";
 
 export const Route = createFileRoute("/dashboard/")({
 	component: DashboardHomePage,
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/dashboard/")({
 function DashboardHomePage() {
 	const refreshMutation = useRefreshDashboard();
 	const dashboardType = useDashboardType();
+	const { terminology } = useTerminology();
 
 	const handleRefresh = async () => {
 		try {
@@ -46,7 +48,7 @@ function DashboardHomePage() {
 			case "receptionist":
 				return <ReceptionistDashboard />;
 			default:
-				// Hospital admin or fallback - show default dashboard
+				// Organization admin or fallback - show default dashboard
 				return null;
 		}
 	};
@@ -55,9 +57,12 @@ function DashboardHomePage() {
 		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
 			<div className="flex items-center justify-between px-4 lg:px-6">
 				<div>
-					<h1 className="font-bold text-3xl tracking-tight">Dashboard</h1>
+					<h1 className="font-bold text-3xl tracking-tight">
+						{terminology.dashboardTitle}
+					</h1>
 					<p className="text-muted-foreground">
-						Welcome back! Here's an overview of your hospital.
+						Welcome back! Here's an overview of your{" "}
+						{terminology.organization.toLowerCase()}.
 					</p>
 				</div>
 				<Button

@@ -2,9 +2,12 @@ import { useForm } from "@tanstack/react-form";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	ArrowLeft,
+	Building2,
 	CheckCircle2,
 	Lock,
 	ShieldCheck,
+	Stethoscope,
+	User,
 	Users,
 } from "lucide-react";
 import { useState } from "react";
@@ -16,35 +19,77 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRegisterHospital } from "@/hooks/use-hospital";
-import type { AuthError } from "@/lib/auth-client";
+import { useRegistrationTerminology } from "@/hooks/use-terminology";
+import type { AuthError, OrganizationType } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/register-hospital")({
 	component: RegisterHospitalPage,
 });
 
-const registrationSchema = z.object({
-	name: z.string().min(1, "Hospital name is required"),
-	address: z.object({
-		street: z.string().min(1, "Street address is required"),
-		city: z.string().min(1, "City is required"),
-		state: z.string().min(1, "State is required"),
-		postalCode: z.string().min(1, "Postal code is required"),
-		country: z.string().min(1, "Country is required"),
-	}),
-	contactEmail: z.string().email("Invalid contact email"),
-	contactPhone: z.string().min(1, "Contact phone is required"),
-	licenseNumber: z.string().min(1, "License number is required"),
-	adminEmail: z.string().email("Invalid admin email"),
-	adminPhone: z.string().min(1, "Admin phone is required"),
-});
+// Create validation schema based on organization type
+const createRegistrationSchema = (orgType: OrganizationType) =>
+	z.object({
+		type: z.enum(["HOSPITAL", "CLINIC", "SOLO_PRACTICE"]),
+		name: z.string().min(1, "Name is required"),
+		address: z.object({
+			street: z.string().min(1, "Street address is required"),
+			city: z.string().min(1, "City is required"),
+			state: z.string().min(1, "State is required"),
+			postalCode: z.string().min(1, "Postal code is required"),
+			country: z.string().min(1, "Country is required"),
+		}),
+		contactEmail: z.string().email("Invalid contact email"),
+		contactPhone: z.string().min(1, "Contact phone is required"),
+		licenseNumber:
+			orgType === "HOSPITAL"
+				? z.string().min(1, "License number is required")
+				: z.string().optional(),
+		adminEmail: z.string().email("Invalid admin email"),
+		adminPhone: z.string().min(1, "Admin phone is required"),
+	});
+
+const organizationTypeOptions: {
+	type: OrganizationType;
+	label: string;
+	description: string;
+	icon: typeof Building2;
+	badge?: string;
+}[] = [
+	{
+		type: "HOSPITAL",
+		label: "Hospital",
+		description: "Large healthcare facility with multiple departments",
+		icon: Building2,
+		badge: "Requires verification",
+	},
+	{
+		type: "CLINIC",
+		label: "Clinic",
+		description: "Medical clinic with one or more doctors",
+		icon: Stethoscope,
+		badge: "Instant activation",
+	},
+	{
+		type: "SOLO_PRACTICE",
+		label: "Solo Practice",
+		description: "Individual practitioner managing patients",
+		icon: User,
+		badge: "Instant activation",
+	},
+];
 
 function RegisterHospitalPage() {
 	const registerMutation = useRegisterHospital();
 	const [registrationSuccess, setRegistrationSuccess] = useState(false);
 	const [registeredEmail, setRegisteredEmail] = useState("");
+	const [organizationType, setOrganizationType] =
+		useState<OrganizationType>("CLINIC");
+	const { terminology, needsVerification } =
+		useRegistrationTerminology(organizationType);
 
 	const form = useForm({
 		defaultValues: {
+			type: "CLINIC" as OrganizationType,
 			name: "",
 			address: {
 				street: "",
@@ -55,23 +100,27 @@ function RegisterHospitalPage() {
 			},
 			contactEmail: "",
 			contactPhone: "",
-			licenseNumber: "",
+			licenseNumber: "" as string | undefined,
 			adminEmail: "",
 			adminPhone: "",
 		},
 		onSubmit: async ({ value }) => {
 			try {
-				await registerMutation.mutateAsync(value);
+				await registerMutation.mutateAsync({
+					...value,
+					licenseNumber:
+						organizationType === "HOSPITAL" ? value.licenseNumber : undefined,
+				});
 				setRegisteredEmail(value.adminEmail);
 				setRegistrationSuccess(true);
-				toast.success("Hospital registered successfully!");
+				toast.success(terminology.registrationSuccessTitle);
 			} catch (error) {
 				const authError = error as AuthError;
 				toast.error(authError.message || "Registration failed");
 			}
 		},
 		validators: {
-			onSubmit: registrationSchema,
+			onSubmit: createRegistrationSchema(organizationType),
 		},
 	});
 
@@ -89,34 +138,66 @@ function RegisterHospitalPage() {
 						<div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-500/10">
 							<CheckCircle2 className="h-10 w-10 text-green-500" />
 						</div>
-						<h1 className="font-bold text-2xl">Registration Successful!</h1>
+						<h1 className="font-bold text-2xl">
+							{terminology.registrationSuccessTitle}
+						</h1>
 					</CardHeader>
 					<CardContent className="space-y-4 text-center">
 						<p className="text-muted-foreground">
-							We've sent a verification email to{" "}
-							<span className="font-medium text-foreground">
-								{registeredEmail}
-							</span>
+							{needsVerification ? (
+								<>
+									We've sent a verification email to{" "}
+									<span className="font-medium text-foreground">
+										{registeredEmail}
+									</span>
+								</>
+							) : (
+								<>
+									Your login credentials have been sent to{" "}
+									<span className="font-medium text-foreground">
+										{registeredEmail}
+									</span>
+								</>
+							)}
 						</p>
 						<p className="text-muted-foreground text-sm">
-							Please check your inbox and click the verification link to
-							activate your hospital account. The link will expire in 24 hours.
+							{terminology.registrationSuccessMessage}
 						</p>
 						<div className="rounded-lg border bg-muted/50 p-4">
 							<p className="font-medium text-sm">What happens next?</p>
 							<ul className="mt-2 space-y-1 text-left text-muted-foreground text-sm">
-								<li className="flex items-center gap-2">
-									<CheckCircle2 className="h-4 w-4 text-green-500" />
-									Verify your email address
-								</li>
-								<li className="flex items-center gap-2">
-									<CheckCircle2 className="h-4 w-4 text-green-500" />
-									Receive your admin login credentials
-								</li>
-								<li className="flex items-center gap-2">
-									<CheckCircle2 className="h-4 w-4 text-green-500" />
-									Sign in to set up your hospital
-								</li>
+								{needsVerification ? (
+									<>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Verify your email address
+										</li>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Receive your admin login credentials
+										</li>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Sign in to set up your{" "}
+											{terminology.organization.toLowerCase()}
+										</li>
+									</>
+								) : (
+									<>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Check your email for login credentials
+										</li>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Sign in to your {terminology.organization.toLowerCase()}
+										</li>
+										<li className="flex items-center gap-2">
+											<CheckCircle2 className="h-4 w-4 text-green-500" />
+											Start managing your patients
+										</li>
+									</>
+								)}
 							</ul>
 						</div>
 						<Button asChild className="w-full">
@@ -169,11 +250,10 @@ function RegisterHospitalPage() {
 						</div>
 
 						<h1 className="mb-4 font-bold text-4xl leading-tight">
-							Join thousands of hospitals on our platform
+							{terminology.registrationTitle}
 						</h1>
 						<p className="mb-8 max-w-md text-lg text-muted-foreground">
-							Register your hospital today and get access to a complete
-							management system with enterprise-grade security.
+							{terminology.registrationSubtitle}
 						</p>
 
 						{/* Feature cards */}
@@ -229,7 +309,9 @@ function RegisterHospitalPage() {
 								<UseHelyLogo className="h-5 w-5 text-primary" />
 							</div>
 							<div>
-								<h1 className="font-bold text-xl">Register Your Hospital</h1>
+								<h1 className="font-bold text-xl">
+									{terminology.registrationTitle}
+								</h1>
 								<p className="text-muted-foreground text-sm">
 									Join the useHely platform
 								</p>
@@ -241,7 +323,8 @@ function RegisterHospitalPage() {
 					<div className="mb-8 hidden lg:block">
 						<h2 className="font-bold text-2xl">Create your account</h2>
 						<p className="text-muted-foreground">
-							Fill in your hospital details to get started
+							Fill in your {terminology.organization.toLowerCase()} details to
+							get started
 						</p>
 					</div>
 
@@ -256,60 +339,131 @@ function RegisterHospitalPage() {
 								}}
 								className="space-y-6"
 							>
-								{/* Hospital Information */}
+								{/* Organization Type Selector */}
 								<div className="space-y-4">
-									<h3 className="font-semibold">Hospital Information</h3>
+									<h3 className="font-semibold">What type of facility?</h3>
+									<div className="grid gap-3">
+										{organizationTypeOptions.map((option) => (
+											<button
+												key={option.type}
+												type="button"
+												onClick={() => {
+													setOrganizationType(option.type);
+													form.setFieldValue("type", option.type);
+												}}
+												className={`flex items-start gap-4 rounded-xl border p-4 text-left transition-colors ${
+													organizationType === option.type
+														? "border-primary bg-primary/5"
+														: "border-border/50 bg-background/50 hover:border-primary/50"
+												}`}
+											>
+												<div
+													className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+														organizationType === option.type
+															? "bg-primary/20"
+															: "bg-muted"
+													}`}
+												>
+													<option.icon
+														className={`h-5 w-5 ${
+															organizationType === option.type
+																? "text-primary"
+																: "text-muted-foreground"
+														}`}
+													/>
+												</div>
+												<div className="flex-1">
+													<div className="flex items-center gap-2">
+														<span className="font-semibold">
+															{option.label}
+														</span>
+														{option.badge && (
+															<span
+																className={`rounded-full px-2 py-0.5 text-xs ${
+																	option.type === "HOSPITAL"
+																		? "bg-amber-500/10 text-amber-600"
+																		: "bg-green-500/10 text-green-600"
+																}`}
+															>
+																{option.badge}
+															</span>
+														)}
+													</div>
+													<p className="text-muted-foreground text-sm">
+														{option.description}
+													</p>
+												</div>
+											</button>
+										))}
+									</div>
+								</div>
+
+								{/* Organization Information */}
+								<div className="space-y-4">
+									<h3 className="font-semibold">
+										{terminology.organization} Information
+									</h3>
 
 									<form.Field name="name">
 										{(field) => (
 											<div className="space-y-2">
-												<Label htmlFor={field.name}>Hospital Name *</Label>
+												<Label htmlFor={field.name}>
+													{terminology.organization} Name *
+												</Label>
 												<Input
 													id={field.name}
 													value={field.state.value}
 													onChange={(e) => field.handleChange(e.target.value)}
 													onBlur={field.handleBlur}
-													placeholder="City General Hospital"
+													placeholder={
+														organizationType === "HOSPITAL"
+															? "City General Hospital"
+															: organizationType === "CLINIC"
+																? "Downtown Medical Clinic"
+																: "Dr. Smith's Practice"
+													}
 													className="bg-background/50"
 												/>
 												{field.state.meta.errors.map((error) => (
 													<p
-														key={error?.message}
+														key={String(error)}
 														className="text-red-500 text-sm"
 													>
-														{error?.message}
+														{String(error)}
 													</p>
 												))}
 											</div>
 										)}
 									</form.Field>
 
-									<form.Field name="licenseNumber">
-										{(field) => (
-											<div className="space-y-2">
-												<Label htmlFor={field.name}>License Number *</Label>
-												<Input
-													id={field.name}
-													value={field.state.value}
-													onChange={(e) => field.handleChange(e.target.value)}
-													onBlur={field.handleBlur}
-													placeholder="MED-2024-001234"
-													className="bg-background/50"
-												/>
-												<p className="text-muted-foreground text-xs">
-													Your official hospital license number
-												</p>
-												{field.state.meta.errors.map((error) => (
-													<p
-														key={error?.message}
-														className="text-red-500 text-sm"
-													>
-														{error?.message}
+									{organizationType === "HOSPITAL" && (
+										<form.Field name="licenseNumber">
+											{(field) => (
+												<div className="space-y-2">
+													<Label htmlFor={field.name}>License Number *</Label>
+													<Input
+														id={field.name}
+														value={field.state.value}
+														onChange={(e) => field.handleChange(e.target.value)}
+														onBlur={field.handleBlur}
+														placeholder="MED-2024-001234"
+														className="bg-background/50"
+													/>
+													<p className="text-muted-foreground text-xs">
+														Your official hospital license number
 													</p>
-												))}
-											</div>
-										)}
-									</form.Field>
+													{field.state.meta.errors.map((error) => (
+														<p
+															key={String(error)}
+															className="text-red-500 text-sm"
+														>
+															{String(error)}
+														</p>
+													))}
+												</div>
+											)}
+										</form.Field>
+									)}
 
 									<div className="grid gap-4 sm:grid-cols-2">
 										<form.Field name="contactEmail">
@@ -327,10 +481,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -352,10 +506,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -382,10 +536,10 @@ function RegisterHospitalPage() {
 												/>
 												{field.state.meta.errors.map((error) => (
 													<p
-														key={error?.message}
+														key={String(error)}
 														className="text-red-500 text-sm"
 													>
-														{error?.message}
+														{String(error)}
 													</p>
 												))}
 											</div>
@@ -407,10 +561,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -431,10 +585,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -457,10 +611,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -481,10 +635,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -495,34 +649,50 @@ function RegisterHospitalPage() {
 
 								{/* Admin Account */}
 								<div className="space-y-4">
-									<h3 className="font-semibold">Administrator Account</h3>
+									<h3 className="font-semibold">
+										{organizationType === "SOLO_PRACTICE"
+											? "Your Account"
+											: "Administrator Account"}
+									</h3>
 									<p className="text-muted-foreground text-sm">
-										This will be the primary administrator for your hospital
+										{organizationType === "SOLO_PRACTICE"
+											? "This will be your login for the practice"
+											: `This will be the primary administrator for your ${terminology.organization.toLowerCase()}`}
 									</p>
 
 									<div className="grid gap-4 sm:grid-cols-2">
 										<form.Field name="adminEmail">
 											{(field) => (
 												<div className="space-y-2">
-													<Label htmlFor={field.name}>Admin Email *</Label>
+													<Label htmlFor={field.name}>
+														{organizationType === "SOLO_PRACTICE"
+															? "Your Email *"
+															: "Admin Email *"}
+													</Label>
 													<Input
 														id={field.name}
 														type="email"
 														value={field.state.value}
 														onChange={(e) => field.handleChange(e.target.value)}
 														onBlur={field.handleBlur}
-														placeholder="admin@hospital.com"
+														placeholder={
+															organizationType === "SOLO_PRACTICE"
+																? "doctor@example.com"
+																: "admin@organization.com"
+														}
 														className="bg-background/50"
 													/>
 													<p className="text-muted-foreground text-xs">
-														Verification link will be sent here
+														{needsVerification
+															? "Verification link will be sent here"
+															: "Login credentials will be sent here"}
 													</p>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -532,7 +702,11 @@ function RegisterHospitalPage() {
 										<form.Field name="adminPhone">
 											{(field) => (
 												<div className="space-y-2">
-													<Label htmlFor={field.name}>Admin Phone *</Label>
+													<Label htmlFor={field.name}>
+														{organizationType === "SOLO_PRACTICE"
+															? "Your Phone *"
+															: "Admin Phone *"}
+													</Label>
 													<Input
 														id={field.name}
 														type="tel"
@@ -544,10 +718,10 @@ function RegisterHospitalPage() {
 													/>
 													{field.state.meta.errors.map((error) => (
 														<p
-															key={error?.message}
+															key={String(error)}
 															className="text-red-500 text-sm"
 														>
-															{error?.message}
+															{String(error)}
 														</p>
 													))}
 												</div>
@@ -572,7 +746,7 @@ function RegisterHospitalPage() {
 											>
 												{state.isSubmitting || registerMutation.isPending
 													? "Registering..."
-													: "Register Hospital"}
+													: `Register ${terminology.organization}`}
 											</Button>
 										)}
 									</form.Subscribe>

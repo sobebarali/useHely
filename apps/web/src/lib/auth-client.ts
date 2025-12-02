@@ -87,10 +87,14 @@ export interface Hospital {
 	status: string;
 }
 
+export type OrganizationType = "HOSPITAL" | "CLINIC" | "SOLO_PRACTICE";
+export type PricingTier = "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
+
 export interface HospitalDetails {
 	id: string;
 	tenantId: string;
 	name: string;
+	type?: OrganizationType;
 	address: {
 		street: string;
 		city: string;
@@ -100,13 +104,15 @@ export interface HospitalDetails {
 	};
 	contactEmail: string;
 	contactPhone: string;
-	licenseNumber: string;
+	licenseNumber?: string;
 	status: string;
+	pricingTier?: PricingTier;
 	createdAt: string;
 	updatedAt: string;
 }
 
 export interface RegisterHospitalInput {
+	type?: OrganizationType;
 	name: string;
 	address: {
 		street: string;
@@ -117,15 +123,17 @@ export interface RegisterHospitalInput {
 	};
 	contactEmail: string;
 	contactPhone: string;
-	licenseNumber: string;
+	licenseNumber?: string;
 	adminEmail: string;
 	adminPhone: string;
+	pricingTier?: PricingTier;
 }
 
 export interface RegisterHospitalResponse {
 	id: string;
 	tenantId: string;
 	name: string;
+	type?: OrganizationType;
 	status: string;
 	adminUsername: string;
 	message: string;

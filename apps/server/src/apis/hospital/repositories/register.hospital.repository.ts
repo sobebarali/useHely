@@ -1,4 +1,11 @@
-import { Hospital, HospitalStatus } from "@hms/db";
+import {
+	Organization,
+	type OrganizationStatusValue,
+	OrganizationType,
+	type OrganizationTypeValue,
+	PricingTier,
+	type PricingTierValue,
+} from "@hms/db";
 import {
 	createRepositoryLogger,
 	logDatabaseOperation,
@@ -9,6 +16,7 @@ const logger = createRepositoryLogger("registerHospital");
 
 export async function createHospital({
 	id,
+	type,
 	name,
 	slug,
 	licenseNumber,
@@ -19,11 +27,14 @@ export async function createHospital({
 	adminPhone,
 	verificationToken,
 	verificationExpires,
+	status,
+	pricingTier,
 }: {
 	id: string;
+	type: OrganizationTypeValue;
 	name: string;
 	slug: string;
-	licenseNumber: string;
+	licenseNumber?: string;
 	address: {
 		street: string;
 		city: string;
@@ -35,31 +46,44 @@ export async function createHospital({
 	contactPhone: string;
 	adminEmail: string;
 	adminPhone: string;
-	verificationToken: string;
-	verificationExpires: Date;
+	verificationToken?: string;
+	verificationExpires?: Date;
+	status: OrganizationStatusValue;
+	pricingTier?: PricingTierValue;
 }) {
 	try {
 		logger.debug(
 			{
-				hospitalId: id,
-				hospitalName: name,
+				organizationId: id,
+				organizationName: name,
+				type,
 			},
-			"Creating hospital in database",
+			"Creating organization in database",
 		);
 
-		const hospital = await Hospital.create({
+		// Determine default pricing tier based on organization type
+		const defaultPricingTier =
+			type === OrganizationType.HOSPITAL
+				? PricingTier.ENTERPRISE
+				: type === OrganizationType.CLINIC
+					? PricingTier.PROFESSIONAL
+					: PricingTier.STARTER;
+
+		const organization = await Organization.create({
 			_id: id,
+			type,
 			name,
 			slug,
-			licenseNumber,
+			...(licenseNumber && { licenseNumber }),
 			address,
 			contactEmail,
 			contactPhone,
 			adminEmail,
 			adminPhone,
-			verificationToken,
-			verificationExpires,
-			status: HospitalStatus.PENDING,
+			...(verificationToken && { verificationToken }),
+			...(verificationExpires && { verificationExpires }),
+			status,
+			pricingTier: pricingTier || defaultPricingTier,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
@@ -67,24 +91,26 @@ export async function createHospital({
 		logDatabaseOperation(
 			logger,
 			"create",
-			"hospitals",
+			"organization",
 			{ _id: id },
-			{ _id: hospital._id, status: hospital.status },
+			{ _id: organization._id, status: organization.status, type },
 		);
 
 		logger.info(
 			{
-				hospitalId: hospital._id,
-				status: hospital.status,
+				organizationId: organization._id,
+				status: organization.status,
+				type,
 			},
-			"Hospital created in database",
+			"Organization created in database",
 		);
 
-		return hospital;
+		return organization;
 	} catch (error) {
-		logError(logger, error, "Failed to create hospital in database", {
-			hospitalId: id,
-			hospitalName: name,
+		logError(logger, error, "Failed to create organization in database", {
+			organizationId: id,
+			organizationName: name,
+			type,
 		});
 		throw error;
 	}
