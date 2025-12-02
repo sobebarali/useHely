@@ -8,9 +8,7 @@
 		"build": "vite build",
 		"serve": "vite preview",
 		"start": "serve dist -l $PORT",
-		"check-types": "tsc --noEmit",
-		"deploy": "alchemy deploy",
-		"destroy": "alchemy destroy"
+		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@dnd-kit/core": "^6.3.1",
@@ -62,7 +60,6 @@
 		"@types/react": "^19.2.0",
 		"@types/react-dom": "^19.0.4",
 		"@vitejs/plugin-react": "^4.3.4",
-		"alchemy": "^0.77.0",
 		"postcss": "^8.5.3",
 		"tailwindcss": "^4.0.15",
 		"typescript": "^5.8.3",

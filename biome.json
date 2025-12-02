@@ -23,7 +23,6 @@
 			"!bts.jsonc",
 			"!**/.expo",
 			"!**/.wrangler",
-			"!**/.alchemy",
 			"!**/.svelte-kit",
 			"!**/wrangler.jsonc",
 			"!**/.source"
