@@ -42,6 +42,13 @@ const sessionSchema = new Schema(
 	{ collection: "session" },
 );
 
+// TTL index for automatic session cleanup
+// MongoDB will automatically delete sessions after expiresAt date
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Index for session lookups by user
+sessionSchema.index({ userId: 1 });
+
 const accountSchema = new Schema(
 	{
 		_id: { type: String },

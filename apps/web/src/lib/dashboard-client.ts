@@ -4,9 +4,7 @@
  * Interfaces with dashboard API endpoints
  */
 
-import { getAccessToken } from "./auth-client";
-
-const API_BASE_URL = import.meta.env.VITE_SERVER_URL || "";
+import { authenticatedRequest } from "./api-client";
 
 // Dashboard types from server validation
 export type HospitalAdminDashboardOutput = {
@@ -220,38 +218,6 @@ export type RefreshResponse = {
 	message: string;
 	refreshedAt: string;
 };
-
-// API helper function
-async function authenticatedRequest<T>(
-	endpoint: string,
-	options: RequestInit = {},
-): Promise<T> {
-	const accessToken = getAccessToken();
-
-	if (!accessToken) {
-		throw new Error("Not authenticated");
-	}
-
-	const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-		...options,
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${accessToken}`,
-			...options.headers,
-		},
-	});
-
-	const data = await response.json();
-
-	if (!response.ok) {
-		throw {
-			code: data.code || "UNKNOWN_ERROR",
-			message: data.message || "An error occurred",
-		};
-	}
-
-	return data;
-}
 
 // Dashboard API functions
 export async function getDashboard(): Promise<GetDashboardOutput> {

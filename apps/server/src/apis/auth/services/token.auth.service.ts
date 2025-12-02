@@ -29,6 +29,7 @@ import { findHospitalById } from "../../hospital/repositories/shared.hospital.re
 import {
 	findStaffByUserAndTenant,
 	findUserByEmail,
+	findUserById,
 	getActiveRolesByIds as getRolesByIds,
 } from "../../users/repositories/shared.users.repository";
 import {
@@ -350,7 +351,7 @@ async function handleMfaGrant({
 	const { userId, tenantId } = challenge;
 
 	// Find user
-	const user = await User.findById(userId).lean();
+	const user = await findUserById({ userId });
 
 	if (!user) {
 		logger.warn({ userId }, "User not found for MFA challenge");

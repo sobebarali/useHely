@@ -79,13 +79,3 @@ export interface MfaChallengeOutput {
 	challenge_token: string;
 	expires_in: number; // Seconds until challenge expires (typically 5 minutes)
 }
-
-// Token payload structure (JWT claims)
-export interface TokenPayload {
-	sub: string; // User ID
-	tenantId: string;
-	roles: string[];
-	permissions: string[];
-	iat: number;
-	exp: number;
-}

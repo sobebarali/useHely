@@ -5,9 +5,7 @@
  * at /api/security/* on the server.
  */
 
-import { authClient } from "./auth-client";
-
-const API_BASE_URL = import.meta.env.VITE_SERVER_URL || "";
+import { authenticatedRequest } from "./api-client";
 
 // Types
 export interface ApiError {
@@ -79,38 +77,6 @@ export interface RotateKeysResponse {
 	newKeyId: string;
 	recordsReEncrypted: number;
 	rotatedAt: string;
-}
-
-// API helpers
-async function authenticatedRequest<T>(
-	endpoint: string,
-	options: RequestInit = {},
-): Promise<T> {
-	const accessToken = authClient.getAccessToken();
-
-	if (!accessToken) {
-		throw { code: "UNAUTHORIZED", message: "Not authenticated" } as ApiError;
-	}
-
-	const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-		...options,
-		headers: {
-			"Content-Type": "application/json",
-			Authorization: `Bearer ${accessToken}`,
-			...options.headers,
-		},
-	});
-
-	const data = await response.json();
-
-	if (!response.ok) {
-		throw {
-			code: data.code || "UNKNOWN_ERROR",
-			message: data.message || "An error occurred",
-		} as ApiError;
-	}
-
-	return data;
 }
 
 // Security Events API
