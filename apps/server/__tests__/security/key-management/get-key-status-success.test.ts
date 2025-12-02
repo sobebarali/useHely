@@ -80,6 +80,10 @@ describe("GET /api/security/keys/status - Success", () => {
 	});
 
 	it("should calculate days since rotation correctly", async () => {
+		// Clean up previous rotations to ensure test isolation
+		await KeyRotation.deleteMany({});
+		createdRotationIds = [];
+
 		// Create a rotation record from 45 days ago
 		const rotationId = uuidv4();
 		const daysAgo = 45;
@@ -106,6 +110,10 @@ describe("GET /api/security/keys/status - Success", () => {
 	});
 
 	it("should recommend rotation if more than 90 days since last rotation", async () => {
+		// Clean up previous rotations to ensure test isolation
+		await KeyRotation.deleteMany({});
+		createdRotationIds = [];
+
 		// Create a rotation record from 100 days ago
 		const rotationId = uuidv4();
 		const rotatedAt = new Date(Date.now() - 100 * 24 * 60 * 60 * 1000);

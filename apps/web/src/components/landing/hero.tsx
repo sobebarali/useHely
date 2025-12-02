@@ -111,7 +111,7 @@ export function Hero() {
 						{ value: "6+", label: "Pre-defined Roles" },
 						{ value: "100%", label: "Data Isolation" },
 						{ value: "OPD + IPD", label: "Full Patient Lifecycle" },
-						{ value: "HIPAA", label: "Compliant Security" },
+						{ value: "HIPAA", label: "Ready Architecture" },
 					].map((stat) => (
 						<div key={stat.label} className="flex flex-col items-center">
 							<div className="font-bold text-3xl text-primary">

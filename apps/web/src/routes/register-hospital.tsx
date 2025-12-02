@@ -182,7 +182,7 @@ function RegisterHospitalPage() {
 								{
 									icon: ShieldCheck,
 									title: "Enterprise Security",
-									desc: "HIPAA compliant with end-to-end encryption",
+									desc: "HIPAA-ready with end-to-end encryption",
 								},
 								{
 									icon: Users,

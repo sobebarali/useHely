@@ -81,7 +81,7 @@ function LoginPage() {
 						<div className="mt-8 flex items-center gap-6">
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<ShieldCheck className="h-4 w-4 text-green-500" />
-								<span>HIPAA Compliant</span>
+								<span>HIPAA-Ready</span>
 							</div>
 							<div className="flex items-center gap-2 text-muted-foreground text-sm">
 								<Lock className="h-4 w-4 text-green-500" />
