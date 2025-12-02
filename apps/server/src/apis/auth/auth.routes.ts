@@ -8,6 +8,7 @@ import { hospitalsController } from "./controllers/hospitals.auth.controller";
 import { meController } from "./controllers/me.auth.controller";
 import { revokeController } from "./controllers/revoke.auth.controller";
 import { switchTenantController } from "./controllers/switch-tenant.auth.controller";
+import { listUserTenantsController } from "./controllers/tenants.auth.controller";
 import { tokenController } from "./controllers/token.auth.controller";
 import { verifyMfaController } from "./controllers/verify-mfa.auth.controller";
 import { hospitalsQuerySchema } from "./validations/hospitals.auth.validation";
@@ -45,6 +46,11 @@ router.post(
 // GET /api/auth/me - Get current authenticated user
 // Authentication required
 router.get("/me", authenticate, meController);
+
+// GET /api/auth/tenants - List all tenants the user belongs to
+// Authentication required
+// Returns tenant details including roles and status for each tenant
+router.get("/tenants", authenticate, listUserTenantsController);
 
 // POST /api/auth/mfa/enable - Enable MFA for current user
 // Authentication required

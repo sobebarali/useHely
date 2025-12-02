@@ -13,9 +13,9 @@ import {
 	Users,
 } from "lucide-react";
 import type * as React from "react";
-import { HospitalSwitcher } from "@/components/hospital-switcher";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
+import { TenantSelector } from "@/components/tenant-selector";
 import {
 	Sidebar,
 	SidebarContent,
@@ -82,13 +82,9 @@ export interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 		email: string;
 		image?: string | null;
 	};
-	hospital?: {
-		name: string;
-		plan: string;
-	};
 }
 
-export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
 	const { data: menuData, isLoading, error } = useMenu();
 
 	// Show loading state while menu is being fetched
@@ -96,7 +92,7 @@ export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
 		return (
 			<Sidebar collapsible="icon" {...props}>
 				<SidebarHeader>
-					<HospitalSwitcher hospital={hospital} />
+					<TenantSelector />
 				</SidebarHeader>
 				<SidebarContent>
 					<div className="p-4">
@@ -120,7 +116,7 @@ export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
 		return (
 			<Sidebar collapsible="icon" {...props}>
 				<SidebarHeader>
-					<HospitalSwitcher hospital={hospital} />
+					<TenantSelector />
 				</SidebarHeader>
 				<SidebarContent>
 					<div className="p-4">
@@ -142,7 +138,7 @@ export function AppSidebar({ user, hospital, ...props }: AppSidebarProps) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<HospitalSwitcher hospital={hospital} />
+				<TenantSelector />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={navItems} />

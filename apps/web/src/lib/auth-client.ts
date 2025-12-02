@@ -181,6 +181,33 @@ export interface AuthError {
 	message: string;
 }
 
+// User Tenant Types
+export interface TenantRole {
+	id: string;
+	name: string;
+}
+
+export interface UserTenant {
+	id: string;
+	name: string;
+	status: string;
+	roles: TenantRole[];
+	staffStatus: string;
+	isCurrent: boolean;
+}
+
+export interface ListUserTenantsResponse {
+	tenants: UserTenant[];
+	currentTenantId: string;
+}
+
+export interface SwitchTenantResponse extends AuthTokens {
+	tenant: {
+		id: string;
+		name: string;
+	};
+}
+
 // Token management
 function getStoredTokens(): {
 	accessToken: string | null;
@@ -441,6 +468,34 @@ export async function disableMfa(): Promise<MfaDisableResponse> {
 	return response.data;
 }
 
+// User Tenants Functions
+export async function getUserTenants(): Promise<ListUserTenantsResponse> {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ListUserTenantsResponse;
+	}>("/api/auth/tenants");
+	return response.data;
+}
+
+export async function switchTenant({
+	tenantId,
+}: {
+	tenantId: string;
+}): Promise<SwitchTenantResponse> {
+	const response = await authenticatedRequest<SwitchTenantResponse>(
+		"/api/auth/switch-tenant",
+		{
+			method: "POST",
+			body: JSON.stringify({ tenant_id: tenantId }),
+		},
+	);
+
+	// Store new tokens
+	storeTokens(response);
+
+	return response;
+}
+
 // Hospital API functions
 export async function registerHospital(
 	data: RegisterHospitalInput,
@@ -538,6 +593,9 @@ export const authClient = {
 	getHospital,
 	updateHospital,
 	updateHospitalStatus,
+	// User tenants functions
+	getUserTenants,
+	switchTenant,
 };
 
 export default authClient;

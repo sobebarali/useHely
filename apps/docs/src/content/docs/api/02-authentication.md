@@ -510,6 +510,92 @@ Required. Bearer token.
 
 ---
 
+## List User Tenants
+
+**GET** `/api/auth/tenants`
+
+Retrieve all tenants/organizations the authenticated user belongs to. Used to populate a tenant selector UI for multi-tenant users.
+
+### Authentication
+
+Required. Bearer token.
+
+### Response
+
+**Status: 200 OK**
+
+```json
+{
+  "success": true,
+  "data": {
+    "tenants": [
+      {
+        "id": "hospital-uuid-1",
+        "name": "City General Hospital",
+        "status": "ACTIVE",
+        "roles": [
+          { "id": "role-uuid-1", "name": "DOCTOR" }
+        ],
+        "staffStatus": "ACTIVE",
+        "isCurrent": true
+      },
+      {
+        "id": "hospital-uuid-2",
+        "name": "County Medical Center",
+        "status": "ACTIVE",
+        "roles": [
+          { "id": "role-uuid-2", "name": "CONSULTANT" }
+        ],
+        "staffStatus": "ACTIVE",
+        "isCurrent": false
+      },
+      {
+        "id": "hospital-uuid-3",
+        "name": "Rural Health Clinic",
+        "status": "SUSPENDED",
+        "roles": [
+          { "id": "role-uuid-3", "name": "NURSE" }
+        ],
+        "staffStatus": "ACTIVE",
+        "isCurrent": false
+      }
+    ],
+    "currentTenantId": "hospital-uuid-1"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| success | boolean | Request success status |
+| data.tenants | array | List of user's tenants |
+| data.tenants[].id | string | Tenant/Hospital ID |
+| data.tenants[].name | string | Hospital name |
+| data.tenants[].status | string | Hospital status (ACTIVE, VERIFIED, SUSPENDED, etc.) |
+| data.tenants[].roles | array | User's roles in this tenant |
+| data.tenants[].roles[].id | string | Role ID |
+| data.tenants[].roles[].name | string | Role name |
+| data.tenants[].staffStatus | string | User's staff status in this tenant (ACTIVE, INACTIVE, LOCKED, PASSWORD_EXPIRED) |
+| data.tenants[].isCurrent | boolean | Whether this is the current active tenant |
+| data.currentTenantId | string | ID of the current active tenant |
+
+### Notes
+
+- Tenants are sorted with the current tenant first, then alphabetically by name
+- Includes all tenants regardless of status (allows UI to show disabled/grayed options)
+- The `staffStatus` field indicates the user's status in that specific tenant
+- To switch to a different tenant, use the Switch Tenant endpoint
+- Users can only switch to tenants where both the hospital status is ACTIVE/VERIFIED and their staffStatus is ACTIVE
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 401 | UNAUTHORIZED | Missing authentication token |
+| 401 | TOKEN_EXPIRED | Access token has expired |
+
+---
+
 ## Role-Based Access Control (RBAC)
 
 ### Pre-defined Roles

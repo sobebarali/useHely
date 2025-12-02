@@ -7,11 +7,14 @@ import {
 	type AuthUser,
 	authClient,
 	type Hospital,
+	type ListUserTenantsResponse,
 	type MfaChallengeResponse,
 	type MfaDisableResponse,
 	type MfaSetupResponse,
 	type MfaVerifyResponse,
 	type SignInResponse,
+	type SwitchTenantResponse,
+	type UserTenant,
 } from "../lib/auth-client";
 
 // Query keys
@@ -19,6 +22,7 @@ export const authKeys = {
 	all: ["auth"] as const,
 	session: () => [...authKeys.all, "session"] as const,
 	hospitals: (email: string) => [...authKeys.all, "hospitals", email] as const,
+	tenants: () => [...authKeys.all, "tenants"] as const,
 };
 
 /**
@@ -157,12 +161,44 @@ export function useDisableMfa() {
 	});
 }
 
+/**
+ * Hook to get all tenants the user belongs to
+ */
+export function useUserTenants() {
+	return useQuery({
+		queryKey: authKeys.tenants(),
+		queryFn: () => authClient.getUserTenants(),
+		staleTime: 1000 * 60 * 5, // 5 minutes
+	});
+}
+
+/**
+ * Hook for switching to a different tenant
+ * After successful switch, invalidates all queries to refresh data for new tenant context
+ */
+export function useSwitchTenant() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: ({ tenantId }: { tenantId: string }) =>
+			authClient.switchTenant({ tenantId }),
+		onSuccess: () => {
+			// Invalidate all queries since tenant context changed
+			// This ensures all data is refetched for the new tenant
+			queryClient.invalidateQueries();
+		},
+	});
+}
+
 export type {
 	AuthUser,
 	Hospital,
+	ListUserTenantsResponse,
 	MfaChallengeResponse,
+	MfaDisableResponse,
 	MfaSetupResponse,
 	MfaVerifyResponse,
-	MfaDisableResponse,
 	SignInResponse,
+	SwitchTenantResponse,
+	UserTenant,
 };

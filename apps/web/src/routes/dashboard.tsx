@@ -38,13 +38,8 @@ function DashboardLayoutRoute() {
 		image: undefined,
 	};
 
-	const hospital = {
-		name: session.hospital?.name || "Unknown Hospital",
-		plan: "Pro", // TODO: Add plan info to hospital model
-	};
-
 	return (
-		<DashboardLayout user={user} hospital={hospital} pageTitle="Dashboard">
+		<DashboardLayout user={user} pageTitle="Dashboard">
 			<Outlet />
 		</DashboardLayout>
 	);

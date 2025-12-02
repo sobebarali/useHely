@@ -10,17 +10,12 @@ interface DashboardLayoutProps {
 		email: string;
 		image?: string | null;
 	};
-	hospital?: {
-		name: string;
-		plan: string;
-	};
 	pageTitle?: string;
 }
 
 export function DashboardLayout({
 	children,
 	user,
-	hospital,
 	pageTitle = "Dashboard",
 }: DashboardLayoutProps) {
 	return (
@@ -32,7 +27,7 @@ export function DashboardLayout({
 				} as React.CSSProperties
 			}
 		>
-			<AppSidebar user={user} hospital={hospital} />
+			<AppSidebar user={user} />
 			<SidebarInset>
 				<SiteHeader title={pageTitle} />
 				<div className="flex flex-1 flex-col">
