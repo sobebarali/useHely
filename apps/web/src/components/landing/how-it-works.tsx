@@ -82,11 +82,9 @@ export function HowItWorks() {
 				{/* Auto-provisioning highlight */}
 				<div className="mt-16 rounded-2xl border bg-card p-8 shadow-sm">
 					<div className="text-center">
-						<h3 className="font-semibold text-xl">
-							Automatic Tenant Provisioning
-						</h3>
+						<h3 className="font-semibold text-xl">Instant Setup Includes</h3>
 						<p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
-							Upon verification, the system automatically creates:
+							When you sign up, we automatically set up:
 						</p>
 					</div>
 					<div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

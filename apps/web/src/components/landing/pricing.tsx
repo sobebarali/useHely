@@ -13,6 +13,20 @@ import {
 
 const plans = [
 	{
+		name: "Free",
+		description: "For small practices just getting started",
+		price: "$0",
+		period: "/month",
+		popular: false,
+		features: [
+			"Up to 2 staff users",
+			"100 patients",
+			"OPD management",
+			"Basic reporting",
+			"Email support",
+		],
+	},
+	{
 		name: "Starter",
 		description: "Perfect for small clinics and practices",
 		price: "$99",
@@ -79,6 +93,14 @@ export function Pricing() {
 						Start small and upgrade as your practice grows. All plans include
 						core useHely features.
 					</p>
+					<div className="mx-auto mt-6 max-w-md rounded-full border border-green-500/30 bg-green-500/10 px-6 py-3 text-center">
+						<span className="font-semibold text-green-600 dark:text-green-400">
+							Launch Offer:
+						</span>{" "}
+						<span className="text-muted-foreground">
+							All plans free for the first 3 months!
+						</span>
+					</div>
 				</div>
 
 				<div className="mt-12 grid gap-8 lg:grid-cols-3">
@@ -131,7 +153,7 @@ export function Pricing() {
 										variant={plan.popular ? "default" : "outline"}
 										asChild
 									>
-										<Link to="/login">Get Started</Link>
+										<Link to="/register-hospital">Try Free for 3 Months</Link>
 									</Button>
 								)}
 							</CardFooter>
@@ -140,7 +162,7 @@ export function Pricing() {
 				</div>
 
 				<p className="mt-8 text-center text-muted-foreground text-sm">
-					All plans include a 14-day free trial. No credit card required.
+					All plans are free for the first 3 months. No credit card required.
 				</p>
 			</div>
 		</section>

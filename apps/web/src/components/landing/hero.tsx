@@ -31,7 +31,7 @@ export function Hero() {
 					{/* Left Column - Text Content */}
 					<div className="text-center lg:text-left">
 						<Badge variant="secondary" className="mb-6">
-							Multi-Tenant Cloud Platform
+							Try Free for 3 Months
 						</Badge>
 
 						<h1 className="font-bold text-4xl tracking-tight sm:text-5xl lg:text-6xl">
@@ -40,9 +40,9 @@ export function Hero() {
 						</h1>
 
 						<p className="mt-6 max-w-xl text-lg text-muted-foreground">
-							Multi-tenant platform for hospitals, clinics, and solo practices.
-							Manage patients, appointments, prescriptions, and pharmacy - all
-							with enterprise-grade security and role-based access control.
+							Everything you need to run your hospital, clinic, or practice.
+							Manage patients, appointments, prescriptions, and pharmacy — all
+							in one secure place.
 						</p>
 
 						{/* Feature highlights */}
@@ -50,7 +50,7 @@ export function Hero() {
 							{[
 								"Self-service registration",
 								"OPD & IPD workflows",
-								"Role-based access",
+								"Staff permission controls",
 							].map((feature) => (
 								<div
 									key={feature}
@@ -65,7 +65,7 @@ export function Hero() {
 						<div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
 							<Button size="lg" asChild>
 								<Link to="/register-hospital">
-									Get Started
+									Try Free for 3 Months
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</Link>
 							</Button>
@@ -108,10 +108,13 @@ export function Hero() {
 				{/* Stats Section */}
 				<div className="mt-20 grid grid-cols-2 gap-8 sm:grid-cols-4">
 					{[
-						{ value: "6+", label: "Pre-defined Roles" },
-						{ value: "100%", label: "Data Isolation" },
-						{ value: "OPD + IPD", label: "Full Patient Lifecycle" },
-						{ value: "HIPAA", label: "Ready Architecture" },
+						{ value: "6+", label: "Built-in Staff Roles" },
+						{ value: "100%", label: "Complete Privacy" },
+						{
+							value: "Outpatient + Inpatient",
+							label: "Full Patient Lifecycle",
+						},
+						{ value: "Healthcare", label: "Security Standards" },
 					].map((stat) => (
 						<div key={stat.label} className="flex flex-col items-center">
 							<div className="font-bold text-3xl text-primary">

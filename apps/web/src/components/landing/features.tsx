@@ -61,7 +61,7 @@ const features = [
 		icon: Shield,
 		title: "Role-Based Access Control",
 		description:
-			"6 pre-defined roles with granular permissions using RBAC + ABAC for enterprise security.",
+			"6 built-in roles (Admin, Doctor, Nurse, Pharmacist, Receptionist) with granular permissions for complete security.",
 	},
 	{
 		icon: BarChart3,
@@ -90,8 +90,8 @@ export function Features() {
 						</p>
 						<div className="mt-6">
 							<Button variant="outline" asChild>
-								<Link to="/login">
-									Get Started
+								<Link to="/register-hospital">
+									Try Free for 3 Months
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</Link>
 							</Button>
@@ -179,8 +179,8 @@ export function Features() {
 							</ul>
 							<div className="mt-8">
 								<Button size="lg" asChild>
-									<Link to="/login">
-										Start Free Trial
+									<Link to="/register-hospital">
+										Try Free for 3 Months
 										<ArrowRight className="ml-2 h-4 w-4" />
 									</Link>
 								</Button>

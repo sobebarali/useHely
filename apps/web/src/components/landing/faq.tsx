@@ -32,7 +32,7 @@ const faqs = [
 	{
 		question: "Can multiple organizations use the same platform?",
 		answer:
-			"Absolutely. Our multi-tenant architecture allows healthcare networks to manage hospitals, clinics, and practices from a single platform while maintaining complete data isolation between facilities.",
+			"Absolutely. Our platform allows healthcare networks to manage hospitals, clinics, and practices from a single platform while maintaining complete data separation between facilities.",
 	},
 	{
 		question: "What compliance standards do you follow?",

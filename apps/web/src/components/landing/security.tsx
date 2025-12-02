@@ -23,27 +23,27 @@ import {
 const securityFeatures = [
 	{
 		icon: Database,
-		title: "Tenant Data Isolation",
+		title: "Complete Data Privacy",
 		description:
-			"Schema-per-tenant architecture ensures complete data separation between organizations.",
+			"Your organization's data is completely separate and private from all other users.",
 	},
 	{
 		icon: Key,
-		title: "JWT Authentication",
+		title: "Secure Login System",
 		description:
-			"Secure token-based auth with Better-Auth, including access and refresh token rotation.",
+			"Industry-standard secure login with automatic session management and token refresh.",
 	},
 	{
 		icon: Users,
-		title: "Role-Based Access (RBAC)",
+		title: "Staff Permission Controls",
 		description:
-			"6 pre-defined roles with granular permission format: RESOURCE:ACTION.",
+			"6 pre-defined roles with granular permissions for every feature and action.",
 	},
 	{
 		icon: Eye,
-		title: "Attribute-Based Access (ABAC)",
+		title: "Department-Level Access",
 		description:
-			"Fine-grained control based on user attributes like department and specialization.",
+			"Fine-grained control based on staff department and specialization.",
 	},
 	{
 		icon: AlertTriangle,
@@ -94,7 +94,7 @@ const roles = [
 
 const complianceItems = [
 	"Field-level encryption",
-	"HIPAA-ready architecture",
+	"Healthcare security standards",
 	"GDPR-ready infrastructure",
 	"SOC 2-aligned practices",
 	"Comprehensive audit logging",
@@ -257,15 +257,15 @@ export function Security() {
 				<div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-muted-foreground">
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Lock className="h-4 w-4" />
-						<span className="text-sm">AES-256 Encryption</span>
+						<span className="text-sm">Bank-Level Encryption</span>
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Shield className="h-4 w-4" />
-						<span className="text-sm">HIPAA-Ready</span>
+						<span className="text-sm">Healthcare Security</span>
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Database className="h-4 w-4" />
-						<span className="text-sm">Isolated Tenants</span>
+						<span className="text-sm">Private Data</span>
 					</div>
 					<div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
 						<Server className="h-4 w-4" />
