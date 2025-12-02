@@ -110,10 +110,7 @@ export function Hero() {
 					{[
 						{ value: "6+", label: "Built-in Staff Roles" },
 						{ value: "100%", label: "Complete Privacy" },
-						{
-							value: "Outpatient + Inpatient",
-							label: "Full Patient Lifecycle",
-						},
+						{ value: "OPD + IPD", label: "Full Patient Lifecycle" },
 						{ value: "Healthcare", label: "Security Standards" },
 					].map((stat) => (
 						<div key={stat.label} className="flex flex-col items-center">

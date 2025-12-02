@@ -103,7 +103,7 @@ export function Pricing() {
 					</div>
 				</div>
 
-				<div className="mt-12 grid gap-8 lg:grid-cols-3">
+				<div className="mt-12 grid gap-8 lg:grid-cols-4">
 					{plans.map((plan) => (
 						<Card
 							key={plan.name}
