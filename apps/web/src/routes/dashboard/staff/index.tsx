@@ -72,6 +72,8 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useDepartments } from "@/hooks/use-departments";
+import { useRoles } from "@/hooks/use-roles";
 import {
 	type UserListItem,
 	useCreateUser,
@@ -114,6 +116,13 @@ function StaffListPage() {
 			statusFilter && statusFilter !== "ALL"
 				? (statusFilter as "ACTIVE" | "INACTIVE" | "PASSWORD_EXPIRED")
 				: undefined,
+	});
+
+	// Fetch departments and roles dynamically
+	const { data: departmentsData, isLoading: departmentsLoading } =
+		useDepartments({ status: "ACTIVE" });
+	const { data: rolesData, isLoading: rolesLoading } = useRoles({
+		isActive: true,
 	});
 
 	const deactivateMutation = useDeactivateUser();
@@ -680,22 +689,30 @@ function StaffListPage() {
 										<Select
 											value={field.state.value}
 											onValueChange={field.handleChange}
+											disabled={departmentsLoading}
 										>
 											<SelectTrigger id={field.name}>
-												<SelectValue placeholder="Select department" />
+												<SelectValue
+													placeholder={
+														departmentsLoading
+															? "Loading..."
+															: "Select department"
+													}
+												/>
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="emergency">Emergency</SelectItem>
-												<SelectItem value="cardiology">Cardiology</SelectItem>
-												<SelectItem value="neurology">Neurology</SelectItem>
-												<SelectItem value="orthopedics">Orthopedics</SelectItem>
-												<SelectItem value="pediatrics">Pediatrics</SelectItem>
-												<SelectItem value="oncology">Oncology</SelectItem>
-												<SelectItem value="radiology">Radiology</SelectItem>
-												<SelectItem value="pharmacy">Pharmacy</SelectItem>
-												<SelectItem value="administration">
-													Administration
-												</SelectItem>
+												{departmentsData?.data.map((dept) => (
+													<SelectItem key={dept.id} value={dept.id}>
+														{dept.name}
+													</SelectItem>
+												))}
+												{!departmentsLoading &&
+													(!departmentsData?.data ||
+														departmentsData.data.length === 0) && (
+														<SelectItem value="" disabled>
+															No departments available
+														</SelectItem>
+													)}
 											</SelectContent>
 										</Select>
 										{field.state.meta.errors.map((error) => (
@@ -714,21 +731,27 @@ function StaffListPage() {
 										<Select
 											value={field.state.value}
 											onValueChange={field.handleChange}
+											disabled={rolesLoading}
 										>
 											<SelectTrigger id={field.name}>
-												<SelectValue placeholder="Select role" />
+												<SelectValue
+													placeholder={
+														rolesLoading ? "Loading..." : "Select role"
+													}
+												/>
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="doctor">Doctor</SelectItem>
-												<SelectItem value="nurse">Nurse</SelectItem>
-												<SelectItem value="pharmacist">Pharmacist</SelectItem>
-												<SelectItem value="receptionist">
-													Receptionist
-												</SelectItem>
-												<SelectItem value="lab_technician">
-													Lab Technician
-												</SelectItem>
-												<SelectItem value="admin">Administrator</SelectItem>
+												{rolesData?.data.map((role) => (
+													<SelectItem key={role.id} value={role.id}>
+														{role.name}
+													</SelectItem>
+												))}
+												{!rolesLoading &&
+													(!rolesData?.data || rolesData.data.length === 0) && (
+														<SelectItem value="" disabled>
+															No roles available
+														</SelectItem>
+													)}
 											</SelectContent>
 										</Select>
 										{field.state.meta.errors.map((error) => (

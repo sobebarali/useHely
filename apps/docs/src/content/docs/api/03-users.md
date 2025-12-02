@@ -23,14 +23,14 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| firstName | string | Yes | First name |
-| lastName | string | Yes | Last name |
-| email | string | Yes | Email address |
-| phone | string | Yes | Phone number |
-| department | string | Yes | Department assignment |
-| roles | array | Yes | Array of role IDs to assign |
+| firstName | string | Yes | First name (max 50 characters) |
+| lastName | string | Yes | Last name (max 50 characters) |
+| email | string | Yes | Email address (normalized to lowercase) |
+| phone | string | Yes | Phone number (E.164 format, e.g., +1234567890) |
+| department | string | Yes | Department ID |
+| roles | array | Yes | Array of role IDs to assign (min 1 required) |
 | specialization | string | No | Medical specialization (for doctors) |
-| shift | string | No | Work shift assignment |
+| shift | string | No | Work shift: `MORNING`, `EVENING`, or `NIGHT` |
 
 ### Response
 
@@ -40,11 +40,11 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 |-------|------|-------------|
 | id | string | Staff ID |
 | username | string | Auto-generated: `{firstName}.{lastName}@{hospitalDomain}` |
-| email | string | Email address |
+| email | string | Email address (lowercase) |
 | firstName | string | First name |
 | lastName | string | Last name |
-| department | string | Department |
-| roles | array | Assigned roles |
+| department | string | Department ID |
+| roles | array | Array of `{ id: string, name: string }` objects |
 | status | string | `ACTIVE` |
 | message | string | Status message (see below) |
 
@@ -59,10 +59,12 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 
 | Status | Code | Description |
 |--------|------|-------------|
-| 400 | INVALID_REQUEST | Missing or invalid required fields |
-| 400 | INVALID_ROLE | One or more role IDs are invalid |
+| 400 | VALIDATION_ERROR | Invalid field format (email, phone) or missing required fields |
+| 400 | INVALID_REQUEST | Invalid department ID or hospital not found |
+| 400 | INVALID_ROLE | One or more role IDs are invalid or don't exist |
 | 401 | UNAUTHORIZED | Missing or invalid token |
-| 403 | FORBIDDEN | Insufficient permissions |
+| 403 | PERMISSION_DENIED | User lacks USER:CREATE permission |
+| 403 | FORBIDDEN | Non-admin attempting to assign system roles |
 | 409 | EMAIL_EXISTS | Email already in use within this tenant (user is already staff here) |
 
 ### Business Rules
@@ -71,7 +73,9 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 - Username auto-generated: `{firstName}.{lastName}@{hospitalDomain}`
 - System generates temporary password
 - Welcome email sent with temporary credentials
-- User must change password on first login
+- User must change password on first login (enforced via `forcePasswordChange` flag)
+- Email is normalized to lowercase before storage
+- Phone must be in E.164 format (+1234567890)
 - Users can only be created within the admin's tenant
 
 #### Linking Existing Users (Multi-Tenant Support)

@@ -121,6 +121,7 @@ export async function createUser({
 					specialization: data.specialization,
 					shift: data.shift,
 					status: "ACTIVE",
+					forcePasswordChange: true, // New users must change password on first login
 					passwordHistory: [hashedPassword],
 					createdAt: new Date(),
 					updatedAt: new Date(),

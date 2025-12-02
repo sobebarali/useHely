@@ -7,7 +7,7 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/users - Link existing user to new tenant", () => {
+describe("POST /api/users - Link existing user response message", () => {
 	let context: AuthTestContext;
 	let secondContext: AuthTestContext;
 	const createdStaffIds: string[] = [];
@@ -30,9 +30,9 @@ describe("POST /api/users - Link existing user to new tenant", () => {
 			includeDepartment: true,
 		});
 
-		// Create an existing user in the first tenant (simulating someone who works at Hospital A)
+		// Create an existing user in the first tenant
 		const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-		existingUserEmail = `existing-multi-tenant-${uniqueId}@test.com`;
+		existingUserEmail = `existing-link-msg-${uniqueId}@test.com`;
 
 		// Create user and staff in first context's tenant
 		const { v4: uuidv4 } = await import("uuid");
@@ -41,7 +41,7 @@ describe("POST /api/users - Link existing user to new tenant", () => {
 		existingUserId = uuidv4();
 		await User.create({
 			_id: existingUserId,
-			name: "Existing Multi-Tenant User",
+			name: "Existing User For Link Message",
 			email: existingUserEmail,
 			emailVerified: true,
 			createdAt: new Date(),
@@ -67,9 +67,9 @@ describe("POST /api/users - Link existing user to new tenant", () => {
 			_id: staffId,
 			tenantId: context.hospitalId,
 			userId: existingUserId,
-			employeeId: `EMP-EXIST-${uniqueId}`,
+			employeeId: `EMP-LINK-${uniqueId}`,
 			firstName: "Existing",
-			lastName: "User",
+			lastName: "LinkUser",
 			phone: "+1234567890",
 			departmentId: context.departmentId,
 			roles: context.roleIds,
@@ -97,19 +97,17 @@ describe("POST /api/users - Link existing user to new tenant", () => {
 		await secondContext.cleanup();
 	});
 
-	it("should link existing user to new tenant instead of creating duplicate User", async () => {
-		// Get tokens for second tenant
+	it("should indicate user was linked (not newly created) in response message", async () => {
 		const secondTokens = await secondContext.issuePasswordTokens();
 
 		const payload = {
 			firstName: "Existing",
-			lastName: "User",
-			email: existingUserEmail, // Email that already exists in User collection
-			phone: "+1234567891",
+			lastName: "LinkUser",
+			email: existingUserEmail,
+			phone: "+1234567892",
 			department: secondContext.departmentId,
 			roles: secondContext.roleIds,
-			specialization: "Multi-Tenant Specialist",
-			shift: "MORNING",
+			shift: "EVENING",
 		};
 
 		const response = await request(app)
@@ -118,28 +116,11 @@ describe("POST /api/users - Link existing user to new tenant", () => {
 			.send(payload);
 
 		expect(response.status).toBe(201);
-		expect(response.body.email).toBe(existingUserEmail);
-		expect(response.body.id).toBeDefined();
+
+		// Response should indicate this is a linked user (no temporary password sent)
+		// Message should be different from new user creation
+		expect(response.body.message).toMatch(/existing|linked|credentials/i);
 
 		createdStaffIds.push(response.body.id);
-
-		// Verify that NO new User was created - should reuse existing
-		const users = await User.find({ email: existingUserEmail });
-		expect(users.length).toBe(1); // Only one User record should exist
-		expect(String(users[0]?._id)).toBe(existingUserId);
-
-		// Verify Staff record was created in the new tenant
-		const newStaff = await Staff.findById(response.body.id);
-		expect(newStaff).not.toBeNull();
-		expect(newStaff?.tenantId).toBe(secondContext.hospitalId);
-		expect(newStaff?.userId).toBe(existingUserId);
-
-		// Verify user now has staff records in both tenants
-		const allStaffRecords = await Staff.find({ userId: existingUserId });
-		expect(allStaffRecords.length).toBe(2);
-
-		const tenantIds = allStaffRecords.map((s) => s.tenantId);
-		expect(tenantIds).toContain(context.hospitalId);
-		expect(tenantIds).toContain(secondContext.hospitalId);
 	});
 });

@@ -43,7 +43,9 @@ export async function createUserService({
 	data: CreateUserInput;
 	userRoles: string[];
 }): Promise<CreateUserOutput> {
-	const { firstName, lastName, email, department, roles } = data;
+	const { firstName, lastName, department, roles } = data;
+	// Normalize email to lowercase to prevent case-sensitive duplicates
+	const email = data.email.toLowerCase();
 
 	logger.info({ tenantId, email }, "Creating new user");
 
@@ -194,9 +196,10 @@ export async function createUserService({
 	const temporaryPassword = generateTemporaryPassword();
 	const hashedPassword = await hashPassword(temporaryPassword);
 
+	// Pass normalized email to ensure consistency
 	const result = await createUser({
 		tenantId,
-		data,
+		data: { ...data, email },
 		hashedPassword,
 		employeeId,
 	});

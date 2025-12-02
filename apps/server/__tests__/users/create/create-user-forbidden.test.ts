@@ -6,13 +6,14 @@ import {
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
 
-describe("POST /api/users - Fail when user already staff in same tenant", () => {
+describe("POST /api/users - Forbidden (missing permission)", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
 
 	beforeAll(async () => {
+		// Create context WITHOUT USER:CREATE permission
 		context = await createAuthTestContext({
-			rolePermissions: ["USER:CREATE", "USER:READ"],
+			rolePermissions: ["USER:READ"], // Only read permission, not create
 			includeDepartment: true,
 		});
 		const tokens = await context.issuePasswordTokens();
@@ -23,17 +24,14 @@ describe("POST /api/users - Fail when user already staff in same tenant", () => 
 		await context.cleanup();
 	});
 
-	it("should return 409 when trying to add user who is already staff in the same tenant", async () => {
-		// The context already has a user (context.email) who is staff in this tenant
-		// Try to add the same email again
+	it("returns 403 when user lacks USER:CREATE permission", async () => {
 		const payload = {
-			firstName: "Duplicate",
-			lastName: "User",
-			email: context.email, // Email of existing staff in this tenant
+			firstName: "John",
+			lastName: "Doe",
+			email: `john.doe.${context.uniqueId}@test.com`,
 			phone: "+1234567890",
 			department: context.departmentId,
 			roles: context.roleIds,
-			shift: "MORNING",
 		};
 
 		const response = await request(app)
@@ -41,8 +39,7 @@ describe("POST /api/users - Fail when user already staff in same tenant", () => 
 			.set("Authorization", `Bearer ${accessToken}`)
 			.send(payload);
 
-		expect(response.status).toBe(409);
-		expect(response.body.code).toBe("EMAIL_EXISTS");
-		expect(response.body.message).toContain("already in use");
+		expect(response.status).toBe(403);
+		expect(response.body.code).toBe("PERMISSION_DENIED");
 	});
 });
