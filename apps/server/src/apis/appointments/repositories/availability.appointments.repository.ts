@@ -37,10 +37,14 @@ export async function getBookedSlots({
 	date: Date;
 }) {
 	try {
-		const startOfDay = new Date(date);
-		startOfDay.setHours(0, 0, 0, 0);
-		const endOfDay = new Date(date);
-		endOfDay.setHours(23, 59, 59, 999);
+		// Get the date components in local timezone
+		const year = date.getFullYear();
+		const month = date.getMonth();
+		const day = date.getDate();
+
+		// Create start and end of day in local timezone
+		const startOfDay = new Date(year, month, day, 0, 0, 0, 0);
+		const endOfDay = new Date(year, month, day, 23, 59, 59, 999);
 
 		logger.debug({ tenantId, doctorId, date }, "Getting booked slots");
 

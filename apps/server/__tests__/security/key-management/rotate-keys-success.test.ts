@@ -1,29 +1,50 @@
-import { KeyRotation, Patient, Prescription, Vitals } from "@hms/db";
+import { KeyRotation, Patient, Prescription, Staff, Vitals } from "@hms/db";
 import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+} from "vitest";
 import { app } from "../../../src/index";
 import {
 	type AuthTestContext,
 	createAuthTestContext,
 } from "../../helpers/auth-test-context";
-import {
-	type EncryptionTestContext,
-	setupEncryptionTestKey,
-} from "../../helpers/encryption-test-helper";
 import { cleanupSecurityEvents } from "../../helpers/security-test-helper";
 
-describe("POST /api/security/keys/rotate - Success", () => {
+// This test file must run in isolation because rotate-keys processes ALL records
+// in the database. Running in parallel with other tests causes conflicts.
+describe.sequential("POST /api/security/keys/rotate - Success", () => {
 	let context: AuthTestContext;
 	let accessToken: string;
-	let encContext: EncryptionTestContext;
+	let originalKey: string | undefined;
 	const createdPatientIds: string[] = [];
 	const createdPrescriptionIds: string[] = [];
 	const createdVitalsIds: string[] = [];
 
 	beforeAll(async () => {
-		// Setup encryption test key
-		encContext = setupEncryptionTestKey();
+		// Save original key from .env.test
+		originalKey = process.env.ENCRYPTION_MASTER_KEY;
+	});
+
+	beforeEach(async () => {
+		// Restore original key before each test
+		// This ensures each test starts with a known key state
+		if (originalKey) {
+			process.env.ENCRYPTION_MASTER_KEY = originalKey;
+		}
+
+		// Clean up any existing encrypted data to ensure isolation
+		await Patient.deleteMany({});
+		await Staff.deleteMany({});
+		await Prescription.deleteMany({});
+		await Vitals.deleteMany({});
+		await KeyRotation.deleteMany({});
 
 		// Create test context with SECURITY:MANAGE permission
 		context = await createAuthTestContext({
@@ -67,8 +88,19 @@ describe("POST /api/security/keys/rotate - Success", () => {
 		createdPatientIds.push(patientId);
 	}, 60000);
 
+	afterEach(async () => {
+		// Clean up after each test
+		await cleanupSecurityEvents(context.hospitalId);
+		await context.cleanup();
+
+		// Restore original key for next test
+		if (originalKey) {
+			process.env.ENCRYPTION_MASTER_KEY = originalKey;
+		}
+	});
+
 	afterAll(async () => {
-		// Clean up test data
+		// Final cleanup
 		for (const id of createdPatientIds) {
 			await Patient.deleteOne({ _id: id });
 		}
@@ -79,14 +111,10 @@ describe("POST /api/security/keys/rotate - Success", () => {
 			await Vitals.deleteOne({ _id: id });
 		}
 
-		// Clean up key rotation records created during tests
-		await KeyRotation.deleteMany({ rotatedBy: context.userId });
-
-		await cleanupSecurityEvents(context.hospitalId);
-		await context.cleanup();
-
-		// Restore original encryption key
-		encContext.restoreKey();
+		// Ensure original key is restored
+		if (originalKey) {
+			process.env.ENCRYPTION_MASTER_KEY = originalKey;
+		}
 	});
 
 	it("should generate new 256-bit master key", async () => {

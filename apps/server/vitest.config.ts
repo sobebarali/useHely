@@ -19,6 +19,9 @@ export default defineConfig({
 			],
 		},
 		testTimeout: 10000,
+		// Run tests sequentially to avoid conflicts with shared database state
+		// especially for tests that modify encryption keys or global data
+		fileParallelism: false,
 	},
 	resolve: {
 		alias: {
