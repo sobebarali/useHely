@@ -1,22 +1,6 @@
-import { MailtrapTransport } from "mailtrap";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// Looking to send emails in production? Check out our Email API/SMTP product!
-export const devTransporter = nodemailer.createTransport({
-	host: process.env.MAILTRAP_HOST ?? "sandbox.smtp.mailtrap.io",
-	port: Number(process.env.MAILTRAP_PORT) ?? 2525,
-	auth: {
-		user: process.env.MAILTRAP_USER ?? "",
-		pass: process.env.MAILTRAP_PASS ?? "",
-	},
-});
-
-export const prodTransporter = nodemailer.createTransport(
-	MailtrapTransport({
-		token: process.env.MAILTRAP_API_TOKEN || "",
-		testInboxId: Number.parseInt(process.env.MAILTRAP_TEST_INBOX_ID || "0", 10),
-	}),
-);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Email sender configuration
 export const emailConfig = {
@@ -41,27 +25,20 @@ export async function sendEmail({
 	// Skip sending emails in test environment
 	if (process.env.NODE_ENV === "test") {
 		console.log("[TEST MODE] Email not sent:", { to, subject, category });
-		return { messageId: "test-message-id" };
+		return { id: "test-message-id" };
 	}
 
-	const mailOptions = {
-		from: {
-			address: emailConfig.from,
-			name: emailConfig.fromName,
-		},
-		to,
+	const { data, error } = await resend.emails.send({
+		from: `${emailConfig.fromName} <${emailConfig.from}>`,
+		to: Array.isArray(to) ? to : [to],
 		subject,
-		text,
-		html,
-		category: category || "General",
-		sandbox: process.env.NODE_ENV !== "production",
-	};
+		html: html || undefined,
+		text: text || subject,
+	});
 
-	if (process.env.NODE_ENV === "production") {
-		return await prodTransporter.sendMail(mailOptions);
+	if (error) {
+		throw error;
 	}
 
-	const transporter = devTransporter;
-
-	return await transporter.sendMail(mailOptions);
+	return data;
 }
