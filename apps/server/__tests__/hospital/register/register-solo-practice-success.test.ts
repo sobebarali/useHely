@@ -61,7 +61,6 @@ describe("POST /api/hospitals - Successfully register a new SOLO_PRACTICE (self-
 		expect(response.body.type).toBe("SOLO_PRACTICE");
 		// SOLO_PRACTICE should be ACTIVE immediately (self-service flow)
 		expect(response.body.status).toBe(OrganizationStatus.ACTIVE);
-		expect(response.body.adminUsername).toBe("admin@drsmith.com");
 		expect(response.body.message).toContain("practice");
 
 		// Store for cleanup

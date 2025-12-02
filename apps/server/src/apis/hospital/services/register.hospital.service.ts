@@ -102,12 +102,6 @@ export async function registerHospital({
 
 	logger.debug({ slug }, "Generated slug from organization name");
 
-	// Extract domain from admin email for admin username
-	const emailDomain = adminEmail.split("@")[1];
-	const adminUsername = `admin@${emailDomain}`;
-
-	logger.debug({ adminUsername }, "Generated admin username");
-
 	// Self-service flow for CLINIC and SOLO_PRACTICE
 	if (isSelfService) {
 		return registerSelfService({
@@ -120,7 +114,6 @@ export async function registerHospital({
 			contactPhone,
 			adminEmail,
 			adminPhone,
-			adminUsername,
 			pricingTier,
 		});
 	}
@@ -137,7 +130,6 @@ export async function registerHospital({
 		contactPhone,
 		adminEmail,
 		adminPhone,
-		adminUsername,
 		pricingTier,
 	});
 }
@@ -156,7 +148,6 @@ async function registerSelfService({
 	contactPhone,
 	adminEmail,
 	adminPhone,
-	adminUsername,
 	pricingTier,
 }: {
 	organizationId: string;
@@ -168,7 +159,6 @@ async function registerSelfService({
 	contactPhone: string;
 	adminEmail: string;
 	adminPhone: string;
-	adminUsername: string;
 	pricingTier?: string;
 }): Promise<RegisterHospitalOutput> {
 	logger.info(
@@ -230,7 +220,6 @@ async function registerSelfService({
 			name: organization.name,
 			type,
 			status: OrganizationStatus.ACTIVE,
-			adminUsername,
 			message: `Your ${type === OrganizationType.CLINIC ? "clinic" : "practice"} has been registered and activated. Check your email for login credentials.`,
 		};
 	} catch (error) {
@@ -258,7 +247,6 @@ async function registerHospitalWithVerification({
 	contactPhone,
 	adminEmail,
 	adminPhone,
-	adminUsername,
 	pricingTier,
 }: {
 	organizationId: string;
@@ -271,7 +259,6 @@ async function registerHospitalWithVerification({
 	contactPhone: string;
 	adminEmail: string;
 	adminPhone: string;
-	adminUsername: string;
 	pricingTier?: string;
 }): Promise<RegisterHospitalOutput> {
 	// Generate verification token
@@ -335,7 +322,7 @@ async function registerHospitalWithVerification({
 				data: {
 					hospitalName: name,
 					licenseNumber,
-					adminUsername,
+					adminEmail,
 					verificationUrl,
 					supportEmail: contactEmail,
 				},
@@ -359,7 +346,6 @@ async function registerHospitalWithVerification({
 			name: organization.name,
 			type,
 			status: OrganizationStatus.PENDING,
-			adminUsername,
 			message:
 				"Hospital registration successful. A verification email has been sent to the admin email address.",
 		};

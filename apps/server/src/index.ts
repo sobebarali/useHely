@@ -38,11 +38,35 @@ app.use(requestContext);
 // CORS configuration with fail-closed approach
 // In production, CORS_ORIGIN must be explicitly configured
 // In development/test, defaults to localhost for convenience
-const corsOrigin =
-	process.env.CORS_ORIGIN ||
-	(process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test"
-		? "http://localhost:3000"
-		: false); // Deny all origins if not configured in production
+// Supports comma-separated origins: https://example.com,https://www.example.com
+const parseCorsOrigin = (): string | string[] | false => {
+	const envOrigin = process.env.CORS_ORIGIN;
+
+	if (envOrigin) {
+		const origins = envOrigin
+			.split(",")
+			.map((o) => o.trim())
+			.filter((o): o is string => o.length > 0);
+		if (origins.length === 0) {
+			return false;
+		}
+		if (origins.length === 1) {
+			return origins[0] as string;
+		}
+		return origins;
+	}
+
+	if (
+		process.env.NODE_ENV === "development" ||
+		process.env.NODE_ENV === "test"
+	) {
+		return "http://localhost:3000";
+	}
+
+	return false;
+};
+
+const corsOrigin = parseCorsOrigin();
 
 if (corsOrigin === false && process.env.NODE_ENV === "production") {
 	logger.warn(

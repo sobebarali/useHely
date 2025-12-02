@@ -59,7 +59,6 @@ describe("POST /api/hospitals - Successfully register a new CLINIC (self-service
 		expect(response.body.type).toBe("CLINIC");
 		// CLINIC should be ACTIVE immediately (self-service flow)
 		expect(response.body.status).toBe(OrganizationStatus.ACTIVE);
-		expect(response.body.adminUsername).toBe("admin@testclinic.com");
 		expect(response.body.message).toContain("clinic");
 
 		// Store for cleanup

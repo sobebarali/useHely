@@ -51,7 +51,6 @@ export interface RegisterHospitalOutput {
 	name: string;
 	type: string;
 	status: string;
-	adminUsername: string;
 	message: string;
 	/** Only present for self-service registrations (CLINIC, SOLO_PRACTICE) */
 	temporaryPassword?: string;

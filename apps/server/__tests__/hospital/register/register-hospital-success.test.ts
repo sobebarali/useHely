@@ -48,7 +48,6 @@ describe("POST /api/hospitals - Successfully register a new hospital", () => {
 		expect(response.body).toHaveProperty("tenantId");
 		expect(response.body.name).toBe(hospitalData.name);
 		expect(response.body.status).toBe("PENDING");
-		expect(response.body.adminUsername).toBe("admin@testhospital.com");
 		expect(response.body).toHaveProperty("message");
 
 		// Verify database entry

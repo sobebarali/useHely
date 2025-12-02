@@ -59,7 +59,6 @@ None required (public endpoint)
 | name | string | Organization name |
 | type | string | Organization type |
 | status | string | `PENDING` for HOSPITAL, `ACTIVE` for CLINIC/SOLO_PRACTICE |
-| adminUsername | string | Auto-generated admin username: `admin@{organization-domain}` |
 | message | string | Confirmation message |
 | temporaryPassword | string | Only for CLINIC/SOLO_PRACTICE (self-service flow) |
 

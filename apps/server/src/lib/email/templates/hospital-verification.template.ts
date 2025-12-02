@@ -1,7 +1,7 @@
 export interface HospitalVerificationEmailData {
 	hospitalName: string;
 	licenseNumber: string;
-	adminUsername: string;
+	adminEmail: string;
 	verificationUrl: string;
 	supportEmail: string;
 }
@@ -12,7 +12,7 @@ export function getHospitalVerificationEmailHtml(
 	const {
 		hospitalName,
 		licenseNumber,
-		adminUsername,
+		adminEmail,
 		verificationUrl,
 		supportEmail,
 	} = data;
@@ -37,7 +37,7 @@ export function getHospitalVerificationEmailHtml(
 						<ul style="margin: 10px 0; padding-left: 20px;">
 							<li>Hospital Name: ${hospitalName}</li>
 							<li>License Number: ${licenseNumber}</li>
-							<li>Admin Username: ${adminUsername}</li>
+							<li>Admin Email: ${adminEmail}</li>
 						</ul>
 					</div>
 					
@@ -70,7 +70,7 @@ export function getHospitalVerificationEmailText(
 	const {
 		hospitalName,
 		licenseNumber,
-		adminUsername,
+		adminEmail,
 		verificationUrl,
 		supportEmail,
 	} = data;
@@ -83,7 +83,7 @@ Thank you for registering ${hospitalName} with our Hospital Management System.
 Hospital Details:
 - Hospital Name: ${hospitalName}
 - License Number: ${licenseNumber}
-- Admin Username: ${adminUsername}
+- Admin Email: ${adminEmail}
 
 To complete your registration and activate your account, please verify your email address by visiting the following link:
 

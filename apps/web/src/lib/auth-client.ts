@@ -136,7 +136,6 @@ export interface RegisterHospitalResponse {
 	name: string;
 	type?: OrganizationType;
 	status: string;
-	adminUsername: string;
 	message: string;
 }
 
