@@ -7,4 +7,3 @@ export { HowItWorks } from "./how-it-works";
 export { Modules } from "./modules";
 export { Pricing } from "./pricing";
 export { Security } from "./security";
-export { Testimonials } from "./testimonials";

@@ -7,7 +7,6 @@ import {
 	CheckCircle2,
 	FileText,
 	Pill,
-	Play,
 	Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -71,10 +70,7 @@ export function Hero() {
 								</Link>
 							</Button>
 							<Button variant="outline" size="lg" asChild>
-								<a href="#features">
-									<Play className="mr-2 h-4 w-4" />
-									Watch Demo
-								</a>
+								<a href="#features">View Features</a>
 							</Button>
 						</div>
 					</div>
@@ -106,21 +102,6 @@ export function Hero() {
 								</div>
 							</div>
 						</div>
-
-						{/* Decorative elements */}
-						<div className="-left-4 absolute top-4 hidden rounded-xl border bg-card p-3 shadow-lg lg:block">
-							<div className="flex items-center gap-2">
-								<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-									<Users className="h-4 w-4 text-primary" />
-								</div>
-								<div>
-									<div className="font-medium text-xs">10,000+</div>
-									<div className="text-muted-foreground text-xs">
-										Patients managed
-									</div>
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
 
@@ -130,7 +111,7 @@ export function Hero() {
 						{ value: "6+", label: "Pre-defined Roles" },
 						{ value: "100%", label: "Data Isolation" },
 						{ value: "OPD + IPD", label: "Full Patient Lifecycle" },
-						{ value: "REST API", label: "Full Documentation" },
+						{ value: "HIPAA", label: "Compliant Security" },
 					].map((stat) => (
 						<div key={stat.label} className="flex flex-col items-center">
 							<div className="font-bold text-3xl text-primary">

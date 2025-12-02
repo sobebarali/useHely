@@ -9,7 +9,6 @@ import {
 	Modules,
 	Pricing,
 	Security,
-	Testimonials,
 } from "@/components/landing";
 
 export const Route = createFileRoute("/")({
@@ -27,7 +26,6 @@ function LandingPage() {
 				<Modules />
 				<Security />
 				<Pricing />
-				<Testimonials />
 				<FAQ />
 			</main>
 			<Footer />
