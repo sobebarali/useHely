@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
+import { checkUserLimit } from "../../middlewares/check-subscription";
 import { validate } from "../../middlewares/validate";
 
 // Controllers
@@ -57,6 +58,7 @@ router.post(
 router.post(
 	"/",
 	authorize("USER:CREATE"),
+	checkUserLimit, // Check subscription user limit
 	validate(createUserSchema),
 	createUserController,
 );

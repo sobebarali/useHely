@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
+import { requireFeature } from "../../middlewares/check-subscription";
 import { validate } from "../../middlewares/validate";
 import { completeDispensingController } from "./controllers/complete.dispensing.controller";
 import { dispenseDispensingController } from "./controllers/dispense.dispensing.controller";
@@ -23,8 +24,9 @@ import { unavailableDispensingSchema } from "./validations/unavailable.dispensin
 
 const router = Router();
 
-// All routes require authentication
+// All routes require authentication and PHARMACY feature (PROFESSIONAL+)
 router.use(authenticate);
+router.use(requireFeature("PHARMACY"));
 
 // GET /api/dispensing/pending - List pending prescriptions awaiting dispensing
 router.get(

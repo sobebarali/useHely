@@ -72,6 +72,7 @@ const organizationSchema = new Schema(
 			enum: Object.values(PricingTier),
 			default: PricingTier.FREE,
 		},
+		dodoCustomerId: { type: String, sparse: true },
 		verificationToken: { type: String },
 		verificationExpires: { type: Date },
 		settings: { type: Schema.Types.Mixed },

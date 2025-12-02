@@ -122,6 +122,14 @@ export {
 } from "./security-event.model";
 // Staff
 export { Staff, StaffShift, StaffStatus } from "./staff.model";
+// Subscription
+export {
+	BillingCycle,
+	type BillingCycleValue,
+	Subscription,
+	SubscriptionStatus,
+	type SubscriptionStatusValue,
+} from "./subscription.model";
 // Vitals
 export {
 	AlertSeverity,

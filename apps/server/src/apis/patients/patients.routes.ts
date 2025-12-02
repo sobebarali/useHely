@@ -2,6 +2,7 @@ import { Router } from "express";
 import { patientOwnershipPolicy } from "../../middlewares/abac-policies";
 import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
+import { checkPatientLimit } from "../../middlewares/check-subscription";
 import { validate } from "../../middlewares/validate";
 
 // Controllers
@@ -45,6 +46,7 @@ router.get(
 router.post(
 	"/",
 	authorize("PATIENT:CREATE"),
+	checkPatientLimit, // Check subscription patient limit
 	validate(registerPatientSchema),
 	registerPatientController,
 );

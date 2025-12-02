@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
+import { requireFeature } from "../../middlewares/check-subscription";
 import { inventoryStockRateLimiter } from "../../middlewares/rate-limit";
 import { validate } from "../../middlewares/validate";
 // Controllers
@@ -26,8 +27,9 @@ import { transactionsInventorySchema } from "./validations/transactions.inventor
 
 const router = Router();
 
-// All routes require authentication
+// All routes require authentication and INVENTORY feature (PROFESSIONAL+)
 router.use(authenticate);
+router.use(requireFeature("INVENTORY"));
 
 // GET /api/inventory - List inventory items
 router.get(
