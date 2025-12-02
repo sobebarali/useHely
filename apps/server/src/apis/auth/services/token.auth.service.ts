@@ -272,6 +272,7 @@ async function handlePasswordGrant({
 		expiresAt: accessExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId: tenant_id,
 	});
 
 	await createSession({
@@ -280,6 +281,7 @@ async function handlePasswordGrant({
 		expiresAt: refreshExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId: tenant_id,
 	});
 
 	// Cache session data for fast lookup
@@ -506,6 +508,7 @@ async function handleMfaGrant({
 		expiresAt: accessExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId,
 	});
 
 	await createSession({
@@ -514,6 +517,7 @@ async function handleMfaGrant({
 		expiresAt: refreshExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId,
 	});
 
 	// Cache session data
@@ -576,15 +580,59 @@ async function handleRefreshTokenGrant({
 
 	const userId = String(session.userId);
 
-	// Find user's staff records to get tenant and roles
-	const staff = await Staff.findOne({ userId }).lean();
+	// Get tenantId from session (stored at login time)
+	// Fall back to Staff lookup for backward compatibility with sessions created before this fix
+	let tenantId: string;
 
-	if (!staff) {
-		logger.warn({ userId }, "No staff record found for user");
-		throw new InvalidTokenError("User not found");
+	if (session.tenantId) {
+		// Use stored tenantId - this is the correct behavior
+		tenantId = String(session.tenantId);
+		logger.debug({ userId, tenantId }, "Using tenantId from session");
+	} else {
+		// Backward compatibility: find staff record if session doesn't have tenantId
+		// This handles old sessions created before the tenantId field was added
+		logger.warn(
+			{ userId },
+			"Session missing tenantId - falling back to Staff lookup (legacy session)",
+		);
+		const staff = await Staff.findOne({ userId }).lean();
+
+		if (!staff) {
+			logger.warn({ userId }, "No staff record found for user");
+			throw new InvalidTokenError("User not found");
+		}
+
+		tenantId = String(staff.tenantId);
 	}
 
-	const tenantId = String(staff.tenantId);
+	// Find staff record for the correct tenant to get roles
+	const staff = await findStaffByUserAndTenant({ userId, tenantId });
+
+	if (!staff) {
+		logger.warn({ userId, tenantId }, "User not associated with tenant");
+		throw new TenantInactiveError(
+			"You are no longer associated with this organization",
+		);
+	}
+
+	if (staff.status !== "ACTIVE") {
+		logger.warn(
+			{ staffId: staff._id, status: staff.status },
+			"Staff not active during refresh",
+		);
+
+		if (staff.status === "PASSWORD_EXPIRED") {
+			throw new PasswordExpiredError();
+		}
+
+		if (staff.status === "LOCKED") {
+			throw new AccountLockedError();
+		}
+
+		throw new AccountLockedError(
+			"Your account is not active. Please contact your administrator.",
+		);
+	}
 
 	// Verify tenant is still active
 	const hospital = await findHospitalById({ hospitalId: tenantId });
@@ -617,6 +665,7 @@ async function handleRefreshTokenGrant({
 		expiresAt: accessExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId,
 	});
 
 	// Cache session data
@@ -650,6 +699,7 @@ async function handleRefreshTokenGrant({
 		expiresAt: refreshExpiresAt,
 		ipAddress,
 		userAgent,
+		tenantId,
 	});
 
 	// Return new tokens (refresh token is rotated for security)

@@ -68,15 +68,17 @@ export async function createSession({
 	expiresAt,
 	ipAddress,
 	userAgent,
+	tenantId,
 }: {
 	userId: string;
 	token: string;
 	expiresAt: Date;
 	ipAddress?: string;
 	userAgent?: string;
+	tenantId?: string;
 }) {
 	try {
-		logger.debug({ userId }, "Creating session");
+		logger.debug({ userId, tenantId }, "Creating session");
 
 		const session = await Session.create({
 			_id: uuidv4(),
@@ -85,6 +87,7 @@ export async function createSession({
 			expiresAt,
 			ipAddress,
 			userAgent,
+			tenantId,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		});
@@ -93,11 +96,14 @@ export async function createSession({
 			logger,
 			"create",
 			"session",
-			{ userId },
+			{ userId, tenantId },
 			{ _id: session._id },
 		);
 
-		logger.info({ sessionId: session._id, userId }, "Session created");
+		logger.info(
+			{ sessionId: session._id, userId, tenantId },
+			"Session created",
+		);
 
 		return session;
 	} catch (error) {

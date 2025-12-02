@@ -69,9 +69,15 @@ None required (public endpoint)
 | 400 | INVALID_REQUEST | Missing or invalid required fields |
 | 400 | LICENSE_REQUIRED | License number required for HOSPITAL type |
 | 409 | LICENSE_EXISTS | License number already registered |
-| 409 | EMAIL_EXISTS | Admin email already in use |
+| 409 | EMAIL_EXISTS | Admin email already in use (either as organization admin or existing user) |
 
 ### Business Rules
+
+#### Email Uniqueness
+- Admin email must be globally unique across the entire platform
+- If the email exists as another organization's admin, registration fails
+- If the email exists as a user in any tenant, registration fails with guidance to login
+- Error message guides existing users to login and register new organization from their account
 
 #### Hospital Registration
 - License number required and must be unique across the platform

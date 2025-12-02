@@ -25,6 +25,7 @@ export async function meController(req: Request, res: Response) {
 
 		const result = await getCurrentUser({
 			userId: req.user.id,
+			tenantId: req.user.tenantId,
 		});
 
 		const duration = Date.now() - startTime;

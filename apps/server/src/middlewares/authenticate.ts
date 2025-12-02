@@ -197,7 +197,15 @@ async function authenticateAsync(
 		}
 
 		// Get staff record to find tenant and roles
-		const staff = await Staff.findOne({ userId: user._id }).populate("roles");
+		// IMPORTANT: Use session.tenantId to find the correct staff record
+		// when user has multiple staff records across different tenants
+		const staffQuery: { userId: unknown; tenantId?: string } = {
+			userId: user._id,
+		};
+		if (session.tenantId) {
+			staffQuery.tenantId = String(session.tenantId);
+		}
+		const staff = await Staff.findOne(staffQuery).populate("roles");
 
 		if (!staff) {
 			// User exists but not associated with any tenant as staff

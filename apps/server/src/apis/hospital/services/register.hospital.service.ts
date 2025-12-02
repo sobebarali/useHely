@@ -9,6 +9,7 @@ import { ConflictError } from "../../../errors";
 import { setVerificationToken } from "../../../lib/cache/hospital.cache";
 import { sendHospitalVerificationEmail } from "../../../lib/email/hospital-email.service";
 import { createServiceLogger, logError } from "../../../lib/logger";
+import { findUserByEmail } from "../../users/repositories/shared.users.repository";
 import { createHospital } from "../repositories/register.hospital.repository";
 import {
 	findHospitalByAdminEmail,
@@ -65,7 +66,7 @@ export async function registerHospital({
 		logger.debug("License number is unique");
 	}
 
-	// Check for duplicate admin email
+	// Check for duplicate admin email in Organization
 	logger.debug(
 		{ adminEmail: `****@${adminEmail.split("@")[1]}` },
 		"Checking for duplicate admin email",
@@ -81,7 +82,28 @@ export async function registerHospital({
 		);
 		throw new ConflictError("Admin email already in use", "EMAIL_EXISTS");
 	}
-	logger.debug("Admin email is unique");
+	logger.debug("Admin email is unique in Organization");
+
+	// Check for duplicate admin email in User collection (global uniqueness)
+	logger.debug(
+		{ adminEmail: `****@${adminEmail.split("@")[1]}` },
+		"Checking for existing user with admin email",
+	);
+	const existingUser = await findUserByEmail({ email: adminEmail });
+	if (existingUser) {
+		logger.warn(
+			{
+				adminEmail: `****@${adminEmail.split("@")[1]}`,
+				existingUserId: existingUser._id,
+			},
+			"Admin email already exists as a registered user",
+		);
+		throw new ConflictError(
+			"Email already registered in the system. Please login to register a new organization.",
+			"EMAIL_EXISTS",
+		);
+	}
+	logger.debug("Admin email is unique across the system");
 
 	// Generate unique ID - organizationId IS the tenantId
 	const organizationId = uuidv4();

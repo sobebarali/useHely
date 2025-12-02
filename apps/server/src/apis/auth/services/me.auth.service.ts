@@ -2,6 +2,7 @@ import { UnauthorizedError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
+	findStaffByUserAndTenant,
 	findStaffByUserId,
 	findUserById,
 	getDepartmentById,
@@ -16,10 +17,12 @@ const logger = createServiceLogger("meAuth");
  */
 export async function getCurrentUser({
 	userId,
+	tenantId,
 }: {
 	userId: string;
+	tenantId?: string;
 }): Promise<MeOutput> {
-	logger.debug({ userId }, "Getting current user profile");
+	logger.debug({ userId, tenantId }, "Getting current user profile");
 
 	// Find user
 	const user = await findUserById({ userId });
@@ -29,8 +32,10 @@ export async function getCurrentUser({
 		throw new UnauthorizedError("User not found");
 	}
 
-	// Find staff record
-	const staff = await findStaffByUserId({ userId });
+	// Find staff record - use tenantId if provided for multi-tenant context
+	const staff = tenantId
+		? await findStaffByUserAndTenant({ userId, tenantId })
+		: await findStaffByUserId({ userId });
 
 	if (!staff) {
 		// User exists but not associated with any tenant

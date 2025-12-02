@@ -10,6 +10,20 @@ import type { CreateUserInput } from "../validations/create.users.validation";
 const logger = createRepositoryLogger("createUser");
 
 /**
+ * Link existing user input - subset of CreateUserInput with userId
+ */
+export interface LinkExistingUserInput {
+	userId: string;
+	firstName: string;
+	lastName: string;
+	phone?: string;
+	department: string;
+	roles: string[];
+	specialization?: string;
+	shift?: string;
+}
+
+/**
  * Create a new user with associated account and staff record.
  * Uses MongoDB transaction to ensure atomicity - if any creation fails,
  * all changes are rolled back to prevent orphaned records.
@@ -150,5 +164,77 @@ export async function createUser({
 		throw error;
 	} finally {
 		await session.endSession();
+	}
+}
+
+/**
+ * Link an existing user to a new tenant by creating only a Staff record.
+ * Used when adding a user who already exists in the system to another organization.
+ * No User or Account records are created - only the Staff association.
+ */
+export async function linkExistingUserToTenant({
+	tenantId,
+	data,
+	employeeId,
+}: {
+	tenantId: string;
+	data: LinkExistingUserInput;
+	employeeId: string;
+}) {
+	const staffId = uuidv4();
+
+	logger.debug(
+		{ userId: data.userId, tenantId, staffId },
+		"Linking existing user to tenant",
+	);
+
+	try {
+		// Create only staff record - user and account already exist
+		const staffDocs = await Staff.create([
+			{
+				_id: staffId,
+				tenantId,
+				userId: data.userId,
+				employeeId,
+				firstName: data.firstName,
+				lastName: data.lastName,
+				phone: data.phone,
+				departmentId: data.department,
+				roles: data.roles,
+				specialization: data.specialization,
+				shift: data.shift,
+				status: "ACTIVE",
+				// No passwordHistory for linked users - they use their existing credentials
+				passwordHistory: [],
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+		]);
+
+		const staff = staffDocs[0];
+		if (!staff) {
+			throw new Error("Failed to create staff document for linked user");
+		}
+
+		logDatabaseOperation(
+			logger,
+			"create",
+			"staff",
+			{ tenantId, userId: data.userId, linkedUser: true },
+			{ _id: staff._id },
+		);
+
+		logger.info(
+			{ userId: data.userId, staffId, tenantId },
+			"Existing user linked to tenant successfully",
+		);
+
+		return { staff };
+	} catch (error) {
+		logError(logger, error, "Failed to link existing user to tenant", {
+			tenantId,
+			userId: data.userId,
+		});
+		throw error;
 	}
 }

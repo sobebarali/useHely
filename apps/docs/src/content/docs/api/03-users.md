@@ -13,7 +13,7 @@ The User Management API handles user lifecycle operations including creation, up
 
 **POST** `/api/users`
 
-Creates a new user within the hospital tenant.
+Creates a new user within the hospital tenant. If the email already exists in the system (user works at another organization), they are automatically linked to this tenant without creating a duplicate account.
 
 ### Authentication
 
@@ -38,7 +38,7 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | string | User ID |
+| id | string | Staff ID |
 | username | string | Auto-generated: `{firstName}.{lastName}@{hospitalDomain}` |
 | email | string | Email address |
 | firstName | string | First name |
@@ -46,7 +46,14 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 | department | string | Department |
 | roles | array | Assigned roles |
 | status | string | `ACTIVE` |
-| message | string | Welcome email sent notification |
+| message | string | Status message (see below) |
+
+### Response Messages
+
+| Scenario | Message |
+|----------|---------|
+| New user created | "Welcome email sent with temporary credentials" |
+| Existing user linked | "User linked to organization. They can login with their existing credentials." |
 
 ### Errors
 
@@ -56,15 +63,56 @@ Required. Bearer token with `USER:CREATE` permission. `HOSPITAL_ADMIN` role requ
 | 400 | INVALID_ROLE | One or more role IDs are invalid |
 | 401 | UNAUTHORIZED | Missing or invalid token |
 | 403 | FORBIDDEN | Insufficient permissions |
-| 409 | EMAIL_EXISTS | Email already in use within tenant |
+| 409 | EMAIL_EXISTS | Email already in use within this tenant (user is already staff here) |
 
 ### Business Rules
 
+#### New User Creation
 - Username auto-generated: `{firstName}.{lastName}@{hospitalDomain}`
 - System generates temporary password
 - Welcome email sent with temporary credentials
 - User must change password on first login
 - Users can only be created within the admin's tenant
+
+#### Linking Existing Users (Multi-Tenant Support)
+- If email already exists in the User collection but not in current tenant's Staff, the existing user is linked
+- No new User or Account records created - only a Staff association
+- User receives notification email about being added to the new organization
+- User can login to the new organization using their existing credentials
+- One user can work across multiple organizations with the same login
+
+### Multi-Tenant User Flow
+
+```
+Admin adds user with email "doctor@example.com" to Hospital B
+                     │
+                     ▼
+          ┌───────────────────┐
+          │ Check if email    │
+          │ exists in User    │
+          └─────────┬─────────┘
+                    │
+        ┌───────────┴───────────┐
+        ▼                       ▼
+   User exists              User is new
+        │                       │
+        ▼                       ▼
+   ┌──────────────┐      ┌──────────────┐
+   │ Check if     │      │ Create User  │
+   │ Staff in     │      │ + Account    │
+   │ this tenant  │      │ + Staff      │
+   └──────┬───────┘      └──────┬───────┘
+          │                     │
+    ┌─────┴─────┐               ▼
+    ▼           ▼         Send welcome
+Already      Create       email with
+staff        Staff        temp password
+    │        only
+    ▼           │
+  Error         ▼
+EMAIL_EXISTS  Send "linked"
+              notification
+```
 
 ---
 

@@ -7,10 +7,12 @@ import { enableMfaController } from "./controllers/enable-mfa.auth.controller";
 import { hospitalsController } from "./controllers/hospitals.auth.controller";
 import { meController } from "./controllers/me.auth.controller";
 import { revokeController } from "./controllers/revoke.auth.controller";
+import { switchTenantController } from "./controllers/switch-tenant.auth.controller";
 import { tokenController } from "./controllers/token.auth.controller";
 import { verifyMfaController } from "./controllers/verify-mfa.auth.controller";
 import { hospitalsQuerySchema } from "./validations/hospitals.auth.validation";
 import { revokeTokenSchema } from "./validations/revoke.auth.validation";
+import { switchTenantSchema } from "./validations/switch-tenant.auth.validation";
 import { tokenSchema } from "./validations/token.auth.validation";
 import { verifyMfaSchema } from "./validations/verify-mfa.auth.validation";
 
@@ -63,5 +65,16 @@ router.post(
 // Authentication required
 // Removes all MFA configuration
 router.post("/mfa/disable", authenticate, disableMfaController);
+
+// POST /api/auth/switch-tenant - Switch to a different tenant
+// Authentication required
+// Allows users who belong to multiple organizations to switch tenant context
+// Revokes current tokens and issues new tokens scoped to the target tenant
+router.post(
+	"/switch-tenant",
+	authenticate,
+	validate(switchTenantSchema),
+	switchTenantController,
+);
 
 export default router;

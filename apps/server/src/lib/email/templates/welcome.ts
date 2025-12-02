@@ -102,3 +102,87 @@ useHely - Hospital Management System
 Questions? Contact support@usehely.com
 	`.trim();
 }
+
+/**
+ * Email template for users who are linked to a new organization
+ * (already have an account in the system from another organization)
+ */
+export interface LinkedUserEmailData {
+	firstName: string;
+	hospitalName: string;
+	loginUrl: string;
+}
+
+export function getLinkedUserEmailTemplate(data: LinkedUserEmailData): string {
+	const { firstName, hospitalName, loginUrl } = data;
+
+	const content = `
+		<h1 style="${emailStyles.heading}">You've been added to ${hospitalName}</h1>
+
+		<p style="${emailStyles.paragraph}">Hello ${firstName},</p>
+
+		<p style="${emailStyles.paragraph}">Great news! You have been added as a staff member at <strong>${hospitalName}</strong>. Since you already have an account in our system, you can use your existing credentials to login.</p>
+
+		<div style="${emailStyles.card}">
+			<p style="margin: 0 0 16px 0; font-size: 15px; font-weight: 600; color: ${brandColors.textPrimary};">What's Next?</p>
+			<ul style="margin: 0; padding-left: 20px; color: ${brandColors.textSecondary}; font-size: 14px; line-height: 1.8;">
+				<li>Login with your existing email and password</li>
+				<li>Select <strong>${hospitalName}</strong> when prompted to choose an organization</li>
+				<li>Start working in your new organization</li>
+			</ul>
+		</div>
+
+		<table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+			<tr>
+				<td align="center" style="padding: 8px 0 32px 0;">
+					<a href="${loginUrl}" style="${emailStyles.button}">Login to Your Account</a>
+				</td>
+			</tr>
+		</table>
+
+		<div style="background-color: ${brandColors.primaryLight}; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+			<p style="margin: 0; font-size: 14px; color: ${brandColors.primaryDark};">
+				<strong>Tip:</strong> You can now work across multiple organizations using the same login credentials.
+			</p>
+		</div>
+
+		<hr style="${emailStyles.divider}">
+
+		<p style="${emailStyles.paragraphMuted}">If you did not expect this email, please contact your hospital administrator immediately.</p>
+	`;
+
+	return wrapEmailContent({
+		title: `You've been added to ${hospitalName}`,
+		preheader: `You've been added as a staff member at ${hospitalName}`,
+		content,
+	});
+}
+
+export function getLinkedUserEmailText(data: LinkedUserEmailData): string {
+	const { firstName, hospitalName, loginUrl } = data;
+
+	return `
+You've been added to ${hospitalName}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hello ${firstName},
+
+Great news! You have been added as a staff member at ${hospitalName}. Since you already have an account in our system, you can use your existing credentials to login.
+
+WHAT'S NEXT?
+────────────
+• Login with your existing email and password
+• Select ${hospitalName} when prompted to choose an organization
+• Start working in your new organization
+
+Login URL: ${loginUrl}
+
+TIP: You can now work across multiple organizations using the same login credentials.
+
+──────────────────────────────
+If you did not expect this email, please contact your hospital administrator immediately.
+
+useHely - Hospital Management System
+Questions? Contact support@usehely.com
+	`.trim();
+}

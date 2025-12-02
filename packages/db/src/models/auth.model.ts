@@ -37,6 +37,7 @@ const sessionSchema = new Schema(
 		ipAddress: { type: String },
 		userAgent: { type: String },
 		userId: { type: String, ref: "User", required: true },
+		tenantId: { type: String, ref: "Organization" }, // Optional for backward compatibility with existing sessions
 	},
 	{ collection: "session" },
 );

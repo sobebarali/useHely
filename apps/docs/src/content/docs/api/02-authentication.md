@@ -321,6 +321,110 @@ Required. Bearer token.
 
 ---
 
+## Switch Tenant
+
+**POST** `/api/auth/switch-tenant`
+
+Switch to a different tenant/organization without re-entering password. Users who belong to multiple hospitals can seamlessly switch their active context.
+
+### Authentication
+
+Required. Bearer token.
+
+### Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| tenant_id | string | Yes | Target hospital/tenant ID to switch to |
+
+### Response
+
+**Status: 200 OK**
+
+```json
+{
+  "access_token": "new-access-token...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "new-refresh-token...",
+  "refresh_expires_in": 604800,
+  "tenant": {
+    "id": "hospital-uuid",
+    "name": "City General Hospital"
+  }
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| access_token | string | New access token for target tenant |
+| token_type | string | `Bearer` |
+| expires_in | number | Access token expiry in seconds |
+| refresh_token | string | New refresh token for target tenant |
+| refresh_expires_in | number | Refresh token expiry in seconds |
+| tenant.id | string | Target tenant ID |
+| tenant.name | string | Target tenant name |
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | ORGANIZATION_NOT_FOUND | Target tenant does not exist |
+| 400 | VALIDATION_ERROR | Missing tenant_id in request |
+| 401 | UNAUTHORIZED | No valid access token provided |
+| 403 | TENANT_INACTIVE | Target tenant is suspended or inactive |
+| 403 | ACCOUNT_LOCKED | User's Staff record is locked in target tenant |
+| 403 | PASSWORD_EXPIRED | User's password has expired in target tenant |
+
+### Business Rules
+
+- User must have an active Staff record in the target tenant
+- The target tenant must be in ACTIVE or VERIFIED status
+- The Staff record in the target tenant must be ACTIVE
+- The old access token is immediately revoked after successful switch
+- New tokens are scoped to the target tenant with that tenant's roles/permissions
+- Refresh tokens maintain tenant context (important: refreshing a token issued for Hospital A stays in Hospital A context)
+
+### Tenant Switching Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     Multi-Tenant User Session                    │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  1. User logs in to Hospital A                                   │
+│     POST /api/auth/token (tenant_id: hospitalA)                  │
+│     → Receives tokens scoped to Hospital A                       │
+│                                                                  │
+│  2. User switches to Hospital B                                  │
+│     POST /api/auth/switch-tenant (tenant_id: hospitalB)          │
+│     Authorization: Bearer <hospital-A-token>                     │
+│     → Old token revoked                                          │
+│     → New tokens issued for Hospital B                           │
+│                                                                  │
+│  3. User refreshes token (stays in Hospital B)                   │
+│     POST /api/auth/token (grant_type: refresh_token)             │
+│     → New tokens still scoped to Hospital B                      │
+│                                                                  │
+│  4. User can switch back to Hospital A                           │
+│     POST /api/auth/switch-tenant (tenant_id: hospitalA)          │
+│     → Back to Hospital A context                                 │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Session Management
+
+When a user switches tenants:
+
+1. **Validation**: Verify user has Staff record in target tenant
+2. **Token Revocation**: Current access token is revoked in Redis and deleted from DB
+3. **New Session**: New session created with target tenant's context
+4. **Role Loading**: Roles and permissions loaded from target tenant
+5. **Cache Update**: Session cache updated with new tenant context
+
+---
+
 ## Get Current User
 
 **GET** `/api/auth/me`
