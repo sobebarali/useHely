@@ -525,7 +525,11 @@ export async function verifyHospital({
 export async function getHospital(
 	hospitalId: string,
 ): Promise<HospitalDetails> {
-	return authenticatedRequest<HospitalDetails>(`/api/hospitals/${hospitalId}`);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: HospitalDetails;
+	}>(`/api/hospitals/${hospitalId}`);
+	return response.data;
 }
 
 export async function updateHospital({
@@ -535,10 +539,14 @@ export async function updateHospital({
 	hospitalId: string;
 	data: UpdateHospitalInput;
 }): Promise<HospitalDetails> {
-	return authenticatedRequest<HospitalDetails>(`/api/hospitals/${hospitalId}`, {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: HospitalDetails;
+	}>(`/api/hospitals/${hospitalId}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
+	return response.data;
 }
 
 export async function updateHospitalStatus({
@@ -548,13 +556,14 @@ export async function updateHospitalStatus({
 	hospitalId: string;
 	data: UpdateHospitalStatusInput;
 }): Promise<UpdateHospitalStatusResponse> {
-	return authenticatedRequest<UpdateHospitalStatusResponse>(
-		`/api/hospitals/${hospitalId}/status`,
-		{
-			method: "PATCH",
-			body: JSON.stringify(data),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: UpdateHospitalStatusResponse;
+	}>(`/api/hospitals/${hospitalId}/status`, {
+		method: "PATCH",
+		body: JSON.stringify(data),
+	});
+	return response.data;
 }
 
 // Auth client object for compatibility

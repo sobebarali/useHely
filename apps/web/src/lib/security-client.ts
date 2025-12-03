@@ -97,22 +97,42 @@ export async function listSecurityEvents(
 	const queryString = searchParams.toString();
 	const endpoint = `/api/security/events${queryString ? `?${queryString}` : ""}`;
 
-	return authenticatedRequest<ListSecurityEventsResponse>(endpoint);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ListSecurityEventsResponse;
+	}>(endpoint);
+
+	return response.data;
 }
 
 export async function getSecurityEvent(id: string): Promise<SecurityEvent> {
-	return authenticatedRequest<SecurityEvent>(`/api/security/events/${id}`);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: SecurityEvent;
+	}>(`/api/security/events/${id}`);
+
+	return response.data;
 }
 
 // Key Management API
 export async function getKeyStatus(): Promise<KeyStatus> {
-	return authenticatedRequest<KeyStatus>("/api/security/keys/status");
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: KeyStatus;
+	}>("/api/security/keys/status");
+
+	return response.data;
 }
 
 export async function rotateKeys(): Promise<RotateKeysResponse> {
-	return authenticatedRequest<RotateKeysResponse>("/api/security/keys/rotate", {
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: RotateKeysResponse;
+	}>("/api/security/keys/rotate", {
 		method: "POST",
 	});
+
+	return response.data;
 }
 
 // Security client object

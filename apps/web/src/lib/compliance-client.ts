@@ -221,13 +221,14 @@ export interface ProcessRequestResponse {
 export async function requestDataExport(
 	input: RequestDataExportInput = {},
 ): Promise<RequestDataExportResponse> {
-	return authenticatedRequest<RequestDataExportResponse>(
-		"/api/compliance/data-export",
-		{
-			method: "POST",
-			body: JSON.stringify(input),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: RequestDataExportResponse;
+	}>("/api/compliance/data-export", {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
+	return response.data;
 }
 
 /**
@@ -236,9 +237,11 @@ export async function requestDataExport(
 export async function getExportStatus(
 	requestId: string,
 ): Promise<ExportStatusResponse> {
-	return authenticatedRequest<ExportStatusResponse>(
-		`/api/compliance/data-export/${requestId}`,
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ExportStatusResponse;
+	}>(`/api/compliance/data-export/${requestId}`);
+	return response.data;
 }
 
 /**
@@ -288,13 +291,14 @@ export async function downloadExport(requestId: string): Promise<Blob> {
 export async function requestDataDeletion(
 	input: RequestDataDeletionInput,
 ): Promise<RequestDataDeletionResponse> {
-	return authenticatedRequest<RequestDataDeletionResponse>(
-		"/api/compliance/data-deletion",
-		{
-			method: "POST",
-			body: JSON.stringify(input),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: RequestDataDeletionResponse;
+	}>("/api/compliance/data-deletion", {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
+	return response.data;
 }
 
 /**
@@ -308,13 +312,14 @@ export async function verifyDeletion({
 	requestId: string;
 	token: string;
 }): Promise<VerifyDeletionResponse> {
-	return authenticatedRequest<VerifyDeletionResponse>(
-		`/api/compliance/data-deletion/${requestId}/verify`,
-		{
-			method: "POST",
-			body: JSON.stringify({ token }),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: VerifyDeletionResponse;
+	}>(`/api/compliance/data-deletion/${requestId}/verify`, {
+		method: "POST",
+		body: JSON.stringify({ token }),
+	});
+	return response.data;
 }
 
 /**
@@ -323,12 +328,13 @@ export async function verifyDeletion({
 export async function cancelDeletion(
 	requestId: string,
 ): Promise<CancelDeletionResponse> {
-	return authenticatedRequest<CancelDeletionResponse>(
-		`/api/compliance/data-deletion/${requestId}/cancel`,
-		{
-			method: "POST",
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: CancelDeletionResponse;
+	}>(`/api/compliance/data-deletion/${requestId}/cancel`, {
+		method: "POST",
+	});
+	return response.data;
 }
 
 /**
@@ -337,9 +343,11 @@ export async function cancelDeletion(
 export async function getDeletionStatus(
 	requestId: string,
 ): Promise<DeletionStatusResponse> {
-	return authenticatedRequest<DeletionStatusResponse>(
-		`/api/compliance/data-deletion/${requestId}`,
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: DeletionStatusResponse;
+	}>(`/api/compliance/data-deletion/${requestId}`);
+	return response.data;
 }
 
 // ===== Consent Management Functions =====
@@ -348,7 +356,11 @@ export async function getDeletionStatus(
  * List all consent records for the authenticated user
  */
 export async function listConsents(): Promise<ConsentRecord[]> {
-	return authenticatedRequest<ConsentRecord[]>("/api/compliance/consent");
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ConsentRecord[];
+	}>("/api/compliance/consent");
+	return response.data;
 }
 
 /**
@@ -357,13 +369,14 @@ export async function listConsents(): Promise<ConsentRecord[]> {
 export async function recordConsent(
 	input: RecordConsentInput,
 ): Promise<RecordConsentResponse> {
-	return authenticatedRequest<RecordConsentResponse>(
-		"/api/compliance/consent",
-		{
-			method: "POST",
-			body: JSON.stringify(input),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: RecordConsentResponse;
+	}>("/api/compliance/consent", {
+		method: "POST",
+		body: JSON.stringify(input),
+	});
+	return response.data;
 }
 
 /**
@@ -372,12 +385,13 @@ export async function recordConsent(
 export async function withdrawConsent(
 	consentId: string,
 ): Promise<WithdrawConsentResponse> {
-	return authenticatedRequest<WithdrawConsentResponse>(
-		`/api/compliance/consent/${consentId}/withdraw`,
-		{
-			method: "PUT",
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: WithdrawConsentResponse;
+	}>(`/api/compliance/consent/${consentId}/withdraw`, {
+		method: "PUT",
+	});
+	return response.data;
 }
 
 /**
@@ -386,9 +400,11 @@ export async function withdrawConsent(
 export async function getConsentHistory(
 	purpose: ConsentPurpose,
 ): Promise<ConsentHistoryResponse> {
-	return authenticatedRequest<ConsentHistoryResponse>(
-		`/api/compliance/consent/${purpose}/history`,
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ConsentHistoryResponse;
+	}>(`/api/compliance/consent/${purpose}/history`);
+	return response.data;
 }
 
 // ===== Admin Functions =====
@@ -436,13 +452,14 @@ export async function processRequest({
 	requestId: string;
 	data: ProcessRequestInput;
 }): Promise<ProcessRequestResponse> {
-	return authenticatedRequest<ProcessRequestResponse>(
-		`/api/compliance/requests/${requestId}/process`,
-		{
-			method: "PUT",
-			body: JSON.stringify(data),
-		},
-	);
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: ProcessRequestResponse;
+	}>(`/api/compliance/requests/${requestId}/process`, {
+		method: "PUT",
+		body: JSON.stringify(data),
+	});
+	return response.data;
 }
 
 // Compliance client object for convenience

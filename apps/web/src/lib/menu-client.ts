@@ -42,7 +42,11 @@ export interface MenuError {
  * The server filters menu items based on user's permissions
  */
 export async function getMenu(): Promise<GetMenuResponse> {
-	return authenticatedRequest<GetMenuResponse>("/api/menu");
+	const response = await authenticatedRequest<{
+		success: boolean;
+		data: GetMenuResponse;
+	}>("/api/menu");
+	return response.data;
 }
 
 export const menuClient = {
