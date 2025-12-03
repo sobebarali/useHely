@@ -7,7 +7,7 @@
 		"dev": "vite --port=3001",
 		"build": "vite build",
 		"serve": "vite preview",
-		"start": "serve dist -l $PORT",
+		"start": "serve dist -s -l $PORT",
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
