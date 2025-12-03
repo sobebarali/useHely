@@ -11,7 +11,17 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:ui": "vitest --ui",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"seed:organizations": "tsx src/lib/seed/organizations.seed.ts",
+		"seed:medicines": "tsx src/lib/seed/medicines.seed.ts",
+		"seed:patients": "tsx src/lib/seed/patients.seed.ts",
+		"seed:inventory": "tsx src/lib/seed/inventory.seed.ts",
+		"seed:appointments": "tsx src/lib/seed/appointments.seed.ts",
+		"seed:prescriptions": "tsx src/lib/seed/prescriptions.seed.ts",
+		"seed:vitals": "tsx src/lib/seed/vitals.seed.ts",
+		"seed:admissions": "tsx src/lib/seed/admissions.seed.ts",
+		"seed:dispensing": "tsx src/lib/seed/dispensing.seed.ts",
+		"seed:all": "tsx src/lib/seed/seed-all.ts"
 	},
 	"dependencies": {
 		"@dodopayments/express": "^0.2.3",
