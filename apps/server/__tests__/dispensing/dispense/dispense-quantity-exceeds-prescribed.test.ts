@@ -19,6 +19,7 @@ describe("POST /api/dispensing/:prescriptionId/dispense - Quantity exceeds presc
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

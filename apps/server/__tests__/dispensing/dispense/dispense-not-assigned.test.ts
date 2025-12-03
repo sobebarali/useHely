@@ -20,6 +20,7 @@ describe("POST /api/dispensing/:prescriptionId/dispense - Not assigned to pharma
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

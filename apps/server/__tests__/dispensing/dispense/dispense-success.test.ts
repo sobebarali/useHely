@@ -20,6 +20,7 @@ describe("POST /api/dispensing/:prescriptionId/dispense - Dispense success", () 
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE", "DISPENSING:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

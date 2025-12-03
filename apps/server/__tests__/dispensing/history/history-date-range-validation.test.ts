@@ -13,6 +13,7 @@ describe("GET /api/dispensing/history - Date range validation", () => {
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:READ"],
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

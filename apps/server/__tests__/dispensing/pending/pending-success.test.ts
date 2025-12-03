@@ -18,6 +18,7 @@ describe("GET /api/dispensing/pending - List pending prescriptions success", () 
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

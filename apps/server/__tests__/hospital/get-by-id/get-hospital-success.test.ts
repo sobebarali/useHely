@@ -32,22 +32,24 @@ describe("GET /api/hospitals/:id - Successfully retrieve hospital by ID", () => 
 			.set("Authorization", `Bearer ${accessToken}`);
 
 		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("id");
-		expect(response.body.id).toBe(authContext.hospitalId);
-		expect(response.body).toHaveProperty("tenantId");
-		expect(response.body).toHaveProperty("name");
-		expect(response.body.name).toContain("Test Hospital");
-		expect(response.body).toHaveProperty("address");
-		expect(response.body.address).toHaveProperty("street");
-		expect(response.body.address).toHaveProperty("city");
-		expect(response.body).toHaveProperty("contactEmail");
-		expect(response.body).toHaveProperty("contactPhone");
-		expect(response.body).toHaveProperty("status");
-		expect(response.body).toHaveProperty("createdAt");
-		expect(response.body).toHaveProperty("updatedAt");
+		expect(response.body).toHaveProperty("success", true);
+		expect(response.body).toHaveProperty("data");
+		expect(response.body.data).toHaveProperty("id");
+		expect(response.body.data.id).toBe(authContext.hospitalId);
+		expect(response.body.data).toHaveProperty("tenantId");
+		expect(response.body.data).toHaveProperty("name");
+		expect(response.body.data.name).toContain("Test Hospital");
+		expect(response.body.data).toHaveProperty("address");
+		expect(response.body.data.address).toHaveProperty("street");
+		expect(response.body.data.address).toHaveProperty("city");
+		expect(response.body.data).toHaveProperty("contactEmail");
+		expect(response.body.data).toHaveProperty("contactPhone");
+		expect(response.body.data).toHaveProperty("status");
+		expect(response.body.data).toHaveProperty("createdAt");
+		expect(response.body.data).toHaveProperty("updatedAt");
 
 		// Verify the data matches
-		expect(response.body.address.street).toBe("123 Test St");
-		expect(response.body.address.city).toBe("Test City");
+		expect(response.body.data.address.street).toBe("123 Test St");
+		expect(response.body.data.address.city).toBe("Test City");
 	});
 });

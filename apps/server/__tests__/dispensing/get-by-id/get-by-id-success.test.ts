@@ -20,6 +20,7 @@ describe("GET /api/dispensing/:prescriptionId - Get dispensing by ID success", (
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:READ", "DISPENSING:CREATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

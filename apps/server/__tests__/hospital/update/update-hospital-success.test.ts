@@ -48,14 +48,16 @@ describe("PATCH /api/hospitals/:id - Successfully update hospital", () => {
 			.send(updateData);
 
 		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("id");
-		expect(response.body.id).toBe(authContext.hospitalId);
-		expect(response.body.name).toBe(updateData.name);
-		expect(response.body.contactEmail).toBe(updateData.contactEmail);
-		expect(response.body.contactPhone).toBe(updateData.contactPhone);
-		expect(response.body.address.street).toBe(updateData.address.street);
-		expect(response.body.address.city).toBe(updateData.address.city);
-		expect(response.body).toHaveProperty("updatedAt");
+		expect(response.body).toHaveProperty("success", true);
+		expect(response.body).toHaveProperty("data");
+		expect(response.body.data).toHaveProperty("id");
+		expect(response.body.data.id).toBe(authContext.hospitalId);
+		expect(response.body.data.name).toBe(updateData.name);
+		expect(response.body.data.contactEmail).toBe(updateData.contactEmail);
+		expect(response.body.data.contactPhone).toBe(updateData.contactPhone);
+		expect(response.body.data.address.street).toBe(updateData.address.street);
+		expect(response.body.data.address.city).toBe(updateData.address.city);
+		expect(response.body.data).toHaveProperty("updatedAt");
 
 		// Verify database entry
 		const hospital = await Hospital.findById(authContext.hospitalId);

@@ -20,6 +20,7 @@ describe("POST /api/dispensing/:prescriptionId/return - Partially dispensed", ()
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:UPDATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

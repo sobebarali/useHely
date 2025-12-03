@@ -19,6 +19,7 @@ describe("GET /api/dispensing/history - List dispensing history success", () => 
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:READ", "DISPENSING:CREATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

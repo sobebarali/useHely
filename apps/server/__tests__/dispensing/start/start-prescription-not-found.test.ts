@@ -14,6 +14,7 @@ describe("POST /api/dispensing/:prescriptionId/start - Prescription not found", 
 	beforeAll(async () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE"],
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

@@ -19,6 +19,7 @@ describe("POST /api/dispensing/:prescriptionId/dispense - Medicine not in prescr
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

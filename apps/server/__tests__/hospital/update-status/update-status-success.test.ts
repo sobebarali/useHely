@@ -44,10 +44,12 @@ describe("PATCH /api/hospitals/:id/status - Successfully update hospital status 
 			.send(statusUpdate);
 
 		expect(response.status).toBe(200);
-		expect(response.body).toHaveProperty("id");
-		expect(response.body.id).toBe(authContext.hospitalId);
-		expect(response.body.status).toBe("ACTIVE");
-		expect(response.body).toHaveProperty("updatedAt");
+		expect(response.body).toHaveProperty("success", true);
+		expect(response.body).toHaveProperty("data");
+		expect(response.body.data).toHaveProperty("id");
+		expect(response.body.data.id).toBe(authContext.hospitalId);
+		expect(response.body.data.status).toBe("ACTIVE");
+		expect(response.body.data).toHaveProperty("updatedAt");
 
 		// Verify database entry
 		const hospital = await Hospital.findById(authContext.hospitalId);

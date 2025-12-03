@@ -19,6 +19,7 @@ describe("POST /api/dispensing/:prescriptionId/unavailable - Mark unavailable su
 		context = await createAuthTestContext({
 			rolePermissions: ["DISPENSING:CREATE", "DISPENSING:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

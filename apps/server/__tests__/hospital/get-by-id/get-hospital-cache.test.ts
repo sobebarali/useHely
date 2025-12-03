@@ -71,7 +71,9 @@ describe("GET /api/hospitals/:id - Redis caching functionality", () => {
 			.set("Authorization", `Bearer ${accessToken}`);
 
 		expect(response.status).toBe(200);
-		expect(response.body.id).toBe(authContext.hospitalId);
+		expect(response.body).toHaveProperty("success", true);
+		expect(response.body).toHaveProperty("data");
+		expect(response.body.data.id).toBe(authContext.hospitalId);
 	});
 
 	it("should invalidate cache when hospital is updated", async () => {
