@@ -14,6 +14,7 @@ describe("GET /api/inventory - List inventory forbidden", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["PATIENT:READ"], // No INVENTORY permissions
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

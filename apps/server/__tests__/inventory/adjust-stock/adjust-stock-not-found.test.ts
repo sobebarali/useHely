@@ -15,6 +15,7 @@ describe("POST /api/inventory/:id/adjust - Not Found", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:UPDATE", "INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

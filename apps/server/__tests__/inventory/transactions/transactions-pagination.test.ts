@@ -17,6 +17,7 @@ describe("GET /api/inventory/transactions - Pagination", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

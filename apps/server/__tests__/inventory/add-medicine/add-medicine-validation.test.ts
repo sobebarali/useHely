@@ -14,6 +14,7 @@ describe("POST /api/inventory/medicines - Add medicine validation", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:CREATE", "INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

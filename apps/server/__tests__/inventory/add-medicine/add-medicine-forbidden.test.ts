@@ -14,6 +14,7 @@ describe("POST /api/inventory/medicines - Add medicine forbidden", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"], // Only READ, no CREATE
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

@@ -15,6 +15,7 @@ describe("GET /api/inventory/low-stock - Forbidden", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["PATIENTS:READ"], // Different permission
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

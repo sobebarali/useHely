@@ -16,6 +16,7 @@ describe("GET /api/inventory/medicines - List medicines success", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

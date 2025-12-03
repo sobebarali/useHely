@@ -17,6 +17,7 @@ describe("POST /api/inventory/:id/add - Add stock success", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:UPDATE", "INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

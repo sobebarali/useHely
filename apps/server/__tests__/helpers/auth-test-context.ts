@@ -37,6 +37,7 @@ interface CreateAuthTestContextOptions {
 	}>;
 	createStaff?: boolean;
 	password?: string;
+	pricingTier?: "FREE" | "STARTER" | "PROFESSIONAL" | "ENTERPRISE";
 }
 
 export interface AuthTestContext {
@@ -79,6 +80,7 @@ export async function createAuthTestContext(
 		staffOverrides = {},
 		createStaff = true,
 		password = "TestPassword123!",
+		pricingTier = "FREE",
 	} = options;
 
 	const createdRoleIds: string[] = [];
@@ -105,6 +107,7 @@ export async function createAuthTestContext(
 		adminEmail: `admin-${uniqueId}@test.com`,
 		adminPhone: "+0987654321",
 		status: "ACTIVE",
+		pricingTier,
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	});

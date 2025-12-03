@@ -16,6 +16,7 @@ describe("GET /api/users - List users successfully", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["USER:CREATE", "USER:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

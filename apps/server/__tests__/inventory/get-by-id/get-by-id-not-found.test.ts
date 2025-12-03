@@ -15,6 +15,7 @@ describe("GET /api/inventory/:id - Get inventory item not found", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

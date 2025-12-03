@@ -18,6 +18,7 @@ describe("GET /api/inventory/transactions - Filters", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

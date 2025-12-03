@@ -14,6 +14,7 @@ describe("POST /api/inventory/:id/add - Add stock forbidden", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ"], // Only READ, no UPDATE
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;

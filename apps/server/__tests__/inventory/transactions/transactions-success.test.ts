@@ -17,6 +17,7 @@ describe("GET /api/inventory/transactions - Success", () => {
 		context = await createAuthTestContext({
 			rolePermissions: ["INVENTORY:READ", "INVENTORY:UPDATE"],
 			includeDepartment: true,
+			pricingTier: "PROFESSIONAL",
 		});
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
