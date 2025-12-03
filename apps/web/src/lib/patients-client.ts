@@ -233,11 +233,7 @@ export async function listPatients(
  * Get patient by ID
  */
 export async function getPatientById(id: string): Promise<PatientDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: PatientDetails;
-	}>(`/api/patients/${id}`);
-	return response.data;
+	return authenticatedRequest<PatientDetails>(`/api/patients/${id}`);
 }
 
 /**
@@ -246,14 +242,10 @@ export async function getPatientById(id: string): Promise<PatientDetails> {
 export async function registerPatient(
 	input: RegisterPatientInput,
 ): Promise<RegisterPatientResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: RegisterPatientResponse;
-	}>("/api/patients", {
+	return authenticatedRequest<RegisterPatientResponse>("/api/patients", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -266,14 +258,10 @@ export async function updatePatient({
 	id: string;
 	data: UpdatePatientInput;
 }): Promise<UpdatePatientResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdatePatientResponse;
-	}>(`/api/patients/${id}`, {
+	return authenticatedRequest<UpdatePatientResponse>(`/api/patients/${id}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 /**
@@ -291,12 +279,7 @@ export async function searchPatients(
 	const queryString = searchParams.toString();
 	const endpoint = `/api/patients/search?${queryString}`;
 
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: SearchPatientResult[];
-	}>(endpoint);
-
-	return response.data;
+	return authenticatedRequest<SearchPatientResult[]>(endpoint);
 }
 
 /**

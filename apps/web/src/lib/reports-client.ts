@@ -127,14 +127,10 @@ export async function listReportTypes(): Promise<{
 export async function generateReport(
 	input: GenerateReportInput,
 ): Promise<GeneratedReport> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: GeneratedReport;
-	}>("/api/reports/generate", {
+	return authenticatedRequest<GeneratedReport>("/api/reports/generate", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -172,11 +168,9 @@ export async function getReportHistory(
 export async function downloadReport(
 	reportId: string,
 ): Promise<DownloadReportResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DownloadReportResponse;
-	}>(`/api/reports/${reportId}/download`);
-	return response.data;
+	return authenticatedRequest<DownloadReportResponse>(
+		`/api/reports/${reportId}/download`,
+	);
 }
 
 // Reports client object for convenience

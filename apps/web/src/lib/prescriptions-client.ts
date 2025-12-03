@@ -306,11 +306,7 @@ export async function listPrescriptions(
 export async function getPrescriptionById(
 	id: string,
 ): Promise<PrescriptionDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: PrescriptionDetails;
-	}>(`/api/prescriptions/${id}`);
-	return response.data;
+	return authenticatedRequest<PrescriptionDetails>(`/api/prescriptions/${id}`);
 }
 
 /**
@@ -319,14 +315,13 @@ export async function getPrescriptionById(
 export async function createPrescription(
 	input: CreatePrescriptionInput,
 ): Promise<CreatePrescriptionResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreatePrescriptionResponse;
-	}>("/api/prescriptions", {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<CreatePrescriptionResponse>(
+		"/api/prescriptions",
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 /**
@@ -339,14 +334,13 @@ export async function updatePrescription({
 	id: string;
 	data: UpdatePrescriptionInput;
 }): Promise<UpdatePrescriptionResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdatePrescriptionResponse;
-	}>(`/api/prescriptions/${id}`, {
-		method: "PATCH",
-		body: JSON.stringify(data),
-	});
-	return response.data;
+	return authenticatedRequest<UpdatePrescriptionResponse>(
+		`/api/prescriptions/${id}`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(data),
+		},
+	);
 }
 
 /**
@@ -359,14 +353,13 @@ export async function cancelPrescription({
 	id: string;
 	data: CancelPrescriptionInput;
 }): Promise<CancelPrescriptionResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CancelPrescriptionResponse;
-	}>(`/api/prescriptions/${id}/cancel`, {
-		method: "PATCH",
-		body: JSON.stringify(data),
-	});
-	return response.data;
+	return authenticatedRequest<CancelPrescriptionResponse>(
+		`/api/prescriptions/${id}/cancel`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(data),
+		},
+	);
 }
 
 // ===== Template API Functions =====
@@ -401,11 +394,9 @@ export async function listTemplates(
  * Get template by ID
  */
 export async function getTemplateById(id: string): Promise<TemplateDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: TemplateDetails;
-	}>(`/api/prescriptions/templates/${id}`);
-	return response.data;
+	return authenticatedRequest<TemplateDetails>(
+		`/api/prescriptions/templates/${id}`,
+	);
 }
 
 /**
@@ -414,14 +405,13 @@ export async function getTemplateById(id: string): Promise<TemplateDetails> {
 export async function createTemplate(
 	input: CreateTemplateInput,
 ): Promise<CreateTemplateResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreateTemplateResponse;
-	}>("/api/prescriptions/templates", {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<CreateTemplateResponse>(
+		"/api/prescriptions/templates",
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 /**
@@ -434,14 +424,13 @@ export async function updateTemplate({
 	id: string;
 	data: UpdateTemplateInput;
 }): Promise<UpdateTemplateResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateTemplateResponse;
-	}>(`/api/prescriptions/templates/${id}`, {
-		method: "PATCH",
-		body: JSON.stringify(data),
-	});
-	return response.data;
+	return authenticatedRequest<UpdateTemplateResponse>(
+		`/api/prescriptions/templates/${id}`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(data),
+		},
+	);
 }
 
 /**
@@ -450,13 +439,12 @@ export async function updateTemplate({
 export async function deleteTemplate(
 	id: string,
 ): Promise<DeleteTemplateResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DeleteTemplateResponse;
-	}>(`/api/prescriptions/templates/${id}`, {
-		method: "DELETE",
-	});
-	return response.data;
+	return authenticatedRequest<DeleteTemplateResponse>(
+		`/api/prescriptions/templates/${id}`,
+		{
+			method: "DELETE",
+		},
+	);
 }
 
 // Prescriptions client object for convenience

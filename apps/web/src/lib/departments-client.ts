@@ -260,11 +260,7 @@ export async function listDepartments(
 export async function getDepartmentById(
 	id: string,
 ): Promise<DepartmentDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DepartmentDetails;
-	}>(`/api/departments/${id}`);
-	return response.data;
+	return authenticatedRequest<DepartmentDetails>(`/api/departments/${id}`);
 }
 
 /**
@@ -273,14 +269,10 @@ export async function getDepartmentById(
 export async function createDepartment(
 	input: CreateDepartmentInput,
 ): Promise<CreateDepartmentResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreateDepartmentResponse;
-	}>("/api/departments", {
+	return authenticatedRequest<CreateDepartmentResponse>("/api/departments", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -293,14 +285,13 @@ export async function updateDepartment({
 	id: string;
 	data: UpdateDepartmentInput;
 }): Promise<UpdateDepartmentResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateDepartmentResponse;
-	}>(`/api/departments/${id}`, {
-		method: "PATCH",
-		body: JSON.stringify(data),
-	});
-	return response.data;
+	return authenticatedRequest<UpdateDepartmentResponse>(
+		`/api/departments/${id}`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(data),
+		},
+	);
 }
 
 /**
@@ -309,24 +300,19 @@ export async function updateDepartment({
 export async function deleteDepartment(
 	id: string,
 ): Promise<DeleteDepartmentResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DeleteDepartmentResponse;
-	}>(`/api/departments/${id}`, {
-		method: "DELETE",
-	});
-	return response.data;
+	return authenticatedRequest<DeleteDepartmentResponse>(
+		`/api/departments/${id}`,
+		{
+			method: "DELETE",
+		},
+	);
 }
 
 /**
  * Get department hierarchy tree
  */
 export async function getDepartmentTree(): Promise<DepartmentTreeResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DepartmentTreeResponse;
-	}>("/api/departments/tree");
-	return response.data;
+	return authenticatedRequest<DepartmentTreeResponse>("/api/departments/tree");
 }
 
 /**
@@ -368,14 +354,13 @@ export async function assignStaffToDepartment({
 	departmentId: string;
 	userId: string;
 }): Promise<AssignStaffResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AssignStaffResponse;
-	}>(`/api/departments/${departmentId}/staff`, {
-		method: "POST",
-		body: JSON.stringify({ userId }),
-	});
-	return response.data;
+	return authenticatedRequest<AssignStaffResponse>(
+		`/api/departments/${departmentId}/staff`,
+		{
+			method: "POST",
+			body: JSON.stringify({ userId }),
+		},
+	);
 }
 
 /**
@@ -388,13 +373,12 @@ export async function removeStaffFromDepartment({
 	departmentId: string;
 	userId: string;
 }): Promise<RemoveStaffResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: RemoveStaffResponse;
-	}>(`/api/departments/${departmentId}/staff/${userId}`, {
-		method: "DELETE",
-	});
-	return response.data;
+	return authenticatedRequest<RemoveStaffResponse>(
+		`/api/departments/${departmentId}/staff/${userId}`,
+		{
+			method: "DELETE",
+		},
+	);
 }
 
 // Departments client object for convenience

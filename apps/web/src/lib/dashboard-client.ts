@@ -221,37 +221,23 @@ export type RefreshResponse = {
 
 // Dashboard API functions
 export async function getDashboard(): Promise<GetDashboardOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: GetDashboardOutput;
-	}>("/api/dashboard");
-	return response.data;
+	return authenticatedRequest<GetDashboardOutput>("/api/dashboard");
 }
 
 export async function getQuickStats(): Promise<QuickStatsOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: QuickStatsOutput;
-	}>("/api/dashboard/quick-stats");
-	return response.data;
+	return authenticatedRequest<QuickStatsOutput>("/api/dashboard/quick-stats");
 }
 
 export async function getWidget(widgetId: string): Promise<WidgetDataOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: WidgetDataOutput;
-	}>(`/api/dashboard/widgets/${widgetId}`);
-	return response.data;
+	return authenticatedRequest<WidgetDataOutput>(
+		`/api/dashboard/widgets/${widgetId}`,
+	);
 }
 
 export async function refreshDashboard(): Promise<RefreshResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: RefreshResponse;
-	}>("/api/dashboard/refresh", {
+	return authenticatedRequest<RefreshResponse>("/api/dashboard/refresh", {
 		method: "POST",
 	});
-	return response.data;
 }
 
 // Dashboard client object

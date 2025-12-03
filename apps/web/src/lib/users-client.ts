@@ -163,14 +163,13 @@ export interface ResetPasswordResponse {
 export async function changePassword(
 	input: ChangePasswordInput,
 ): Promise<ChangePasswordResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: ChangePasswordResponse;
-	}>("/api/users/change-password", {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<ChangePasswordResponse>(
+		"/api/users/change-password",
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 // ===== Public User Functions (no authentication required) =====
@@ -181,14 +180,10 @@ export async function changePassword(
 export async function forgotPassword(
 	input: ForgotPasswordInput,
 ): Promise<ForgotPasswordResponse> {
-	const response = await apiRequest<{
-		success: boolean;
-		data: ForgotPasswordResponse;
-	}>("/api/users/forgot-password", {
+	return apiRequest<ForgotPasswordResponse>("/api/users/forgot-password", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -197,14 +192,10 @@ export async function forgotPassword(
 export async function resetPassword(
 	input: ResetPasswordInput,
 ): Promise<ResetPasswordResponse> {
-	const response = await apiRequest<{
-		success: boolean;
-		data: ResetPasswordResponse;
-	}>("/api/users/reset-password", {
+	return apiRequest<ResetPasswordResponse>("/api/users/reset-password", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 // ===== Protected User Functions (require authentication) =====
@@ -245,11 +236,7 @@ export async function listUsers(
  * Get user by ID
  */
 export async function getUserById(id: string): Promise<UserDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UserDetails;
-	}>(`/api/users/${id}`);
-	return response.data;
+	return authenticatedRequest<UserDetails>(`/api/users/${id}`);
 }
 
 /**
@@ -258,14 +245,10 @@ export async function getUserById(id: string): Promise<UserDetails> {
 export async function createUser(
 	input: CreateUserInput,
 ): Promise<CreateUserResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreateUserResponse;
-	}>("/api/users", {
+	return authenticatedRequest<CreateUserResponse>("/api/users", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -278,14 +261,10 @@ export async function updateUser({
 	id: string;
 	data: UpdateUserInput;
 }): Promise<UpdateUserResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateUserResponse;
-	}>(`/api/users/${id}`, {
+	return authenticatedRequest<UpdateUserResponse>(`/api/users/${id}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 /**
@@ -294,13 +273,9 @@ export async function updateUser({
 export async function deactivateUser(
 	id: string,
 ): Promise<DeactivateUserResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DeactivateUserResponse;
-	}>(`/api/users/${id}`, {
+	return authenticatedRequest<DeactivateUserResponse>(`/api/users/${id}`, {
 		method: "DELETE",
 	});
-	return response.data;
 }
 
 /**
@@ -309,13 +284,12 @@ export async function deactivateUser(
 export async function forcePasswordChange(
 	id: string,
 ): Promise<ForcePasswordChangeResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: ForcePasswordChangeResponse;
-	}>(`/api/users/${id}/force-password-change`, {
-		method: "POST",
-	});
-	return response.data;
+	return authenticatedRequest<ForcePasswordChangeResponse>(
+		`/api/users/${id}/force-password-change`,
+		{
+			method: "POST",
+		},
+	);
 }
 
 // Users client object for convenience

@@ -279,14 +279,10 @@ export interface TrendsVitalsOutput {
 export async function recordVitals(
 	input: RecordVitalsInput,
 ): Promise<RecordVitalsOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: RecordVitalsOutput;
-	}>("/api/vitals", {
+	return authenticatedRequest<RecordVitalsOutput>("/api/vitals", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -326,11 +322,7 @@ export async function listVitals(
  * Get vitals by ID
  */
 export async function getVitalsById(id: string): Promise<GetVitalsByIdOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: GetVitalsByIdOutput;
-	}>(`/api/vitals/${id}`);
-	return response.data;
+	return authenticatedRequest<GetVitalsByIdOutput>(`/api/vitals/${id}`);
 }
 
 /**
@@ -343,14 +335,10 @@ export async function updateVitals({
 	id: string;
 	data: UpdateVitalsInput;
 }): Promise<UpdateVitalsOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateVitalsOutput;
-	}>(`/api/vitals/${id}`, {
+	return authenticatedRequest<UpdateVitalsOutput>(`/api/vitals/${id}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 /**
@@ -359,11 +347,9 @@ export async function updateVitals({
 export async function getLatestVitals(
 	patientId: string,
 ): Promise<LatestVitalsOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: LatestVitalsOutput;
-	}>(`/api/vitals/patient/${patientId}/latest`);
-	return response.data;
+	return authenticatedRequest<LatestVitalsOutput>(
+		`/api/vitals/patient/${patientId}/latest`,
+	);
 }
 
 /**
@@ -383,12 +369,7 @@ export async function getVitalsTrends(
 	const queryString = searchParams.toString();
 	const endpoint = `/api/vitals/patient/${patientId}/trends?${queryString}`;
 
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: TrendsVitalsOutput;
-	}>(endpoint);
-
-	return response.data;
+	return authenticatedRequest<TrendsVitalsOutput>(endpoint);
 }
 
 // Vitals client object for convenience

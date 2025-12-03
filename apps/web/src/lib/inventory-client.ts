@@ -366,11 +366,7 @@ export async function listInventory(
 export async function getInventoryById(
 	id: string,
 ): Promise<InventoryItemDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: InventoryItemDetails;
-	}>(`/api/inventory/${id}`);
-	return response.data;
+	return authenticatedRequest<InventoryItemDetails>(`/api/inventory/${id}`);
 }
 
 /**
@@ -408,14 +404,10 @@ export async function listMedicines(
 export async function addMedicine(
 	input: AddMedicineInput,
 ): Promise<AddMedicineResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AddMedicineResponse;
-	}>("/api/inventory/medicines", {
+	return authenticatedRequest<AddMedicineResponse>("/api/inventory/medicines", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -517,14 +509,10 @@ export async function addStock({
 	id: string;
 	input: AddStockInput;
 }): Promise<AddStockResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AddStockResponse;
-	}>(`/api/inventory/${id}/add`, {
+	return authenticatedRequest<AddStockResponse>(`/api/inventory/${id}/add`, {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -537,14 +525,13 @@ export async function adjustStock({
 	id: string;
 	input: AdjustStockInput;
 }): Promise<AdjustStockResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AdjustStockResponse;
-	}>(`/api/inventory/${id}/adjust`, {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<AdjustStockResponse>(
+		`/api/inventory/${id}/adjust`,
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 // Export as a client object for consistency with other clients

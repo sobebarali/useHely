@@ -265,11 +265,7 @@ export async function listAppointments(
 export async function getAppointmentById(
 	id: string,
 ): Promise<AppointmentDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AppointmentDetails;
-	}>(`/api/appointments/${id}`);
-	return response.data;
+	return authenticatedRequest<AppointmentDetails>(`/api/appointments/${id}`);
 }
 
 /**
@@ -278,14 +274,10 @@ export async function getAppointmentById(
 export async function createAppointment(
 	input: CreateAppointmentInput,
 ): Promise<CreateAppointmentResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreateAppointmentResponse;
-	}>("/api/appointments", {
+	return authenticatedRequest<CreateAppointmentResponse>("/api/appointments", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -298,14 +290,10 @@ export async function updateAppointment({
 	id: string;
 	data: UpdateAppointmentInput;
 }): Promise<AppointmentDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AppointmentDetails;
-	}>(`/api/appointments/${id}`, {
+	return authenticatedRequest<AppointmentDetails>(`/api/appointments/${id}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 /**
@@ -318,27 +306,22 @@ export async function cancelAppointment({
 	id: string;
 	reason?: string;
 }): Promise<AppointmentDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: AppointmentDetails;
-	}>(`/api/appointments/${id}`, {
+	return authenticatedRequest<AppointmentDetails>(`/api/appointments/${id}`, {
 		method: "DELETE",
 		body: reason ? JSON.stringify({ reason }) : undefined,
 	});
-	return response.data;
 }
 
 /**
  * Check in a patient for their appointment
  */
 export async function checkInAppointment(id: string): Promise<CheckInResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CheckInResponse;
-	}>(`/api/appointments/${id}/check-in`, {
-		method: "POST",
-	});
-	return response.data;
+	return authenticatedRequest<CheckInResponse>(
+		`/api/appointments/${id}/check-in`,
+		{
+			method: "POST",
+		},
+	);
 }
 
 /**
@@ -351,14 +334,13 @@ export async function completeAppointment({
 	id: string;
 	data?: CompleteAppointmentInput;
 }): Promise<CompleteAppointmentResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CompleteAppointmentResponse;
-	}>(`/api/appointments/${id}/complete`, {
-		method: "POST",
-		body: data ? JSON.stringify(data) : undefined,
-	});
-	return response.data;
+	return authenticatedRequest<CompleteAppointmentResponse>(
+		`/api/appointments/${id}/complete`,
+		{
+			method: "POST",
+			body: data ? JSON.stringify(data) : undefined,
+		},
+	);
 }
 
 /**
@@ -374,11 +356,9 @@ export async function getDoctorAvailability({
 	const searchParams = new URLSearchParams();
 	searchParams.set("date", date);
 
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DoctorAvailabilityResponse;
-	}>(`/api/appointments/availability/${doctorId}?${searchParams.toString()}`);
-	return response.data;
+	return authenticatedRequest<DoctorAvailabilityResponse>(
+		`/api/appointments/availability/${doctorId}?${searchParams.toString()}`,
+	);
 }
 
 /**

@@ -500,14 +500,10 @@ export async function switchTenant({
 export async function registerHospital(
 	data: RegisterHospitalInput,
 ): Promise<RegisterHospitalResponse> {
-	const response = await apiRequest<{
-		success: boolean;
-		data: RegisterHospitalResponse;
-	}>("/api/hospitals", {
+	return apiRequest<RegisterHospitalResponse>("/api/hospitals", {
 		method: "POST",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 export async function verifyHospital({
@@ -517,24 +513,19 @@ export async function verifyHospital({
 	hospitalId: string;
 	token: string;
 }): Promise<VerifyHospitalResponse> {
-	const response = await apiRequest<{
-		success: boolean;
-		data: VerifyHospitalResponse;
-	}>(`/api/hospitals/${hospitalId}/verify`, {
-		method: "POST",
-		body: JSON.stringify({ token }),
-	});
-	return response.data;
+	return apiRequest<VerifyHospitalResponse>(
+		`/api/hospitals/${hospitalId}/verify`,
+		{
+			method: "POST",
+			body: JSON.stringify({ token }),
+		},
+	);
 }
 
 export async function getHospital(
 	hospitalId: string,
 ): Promise<HospitalDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: HospitalDetails;
-	}>(`/api/hospitals/${hospitalId}`);
-	return response.data;
+	return authenticatedRequest<HospitalDetails>(`/api/hospitals/${hospitalId}`);
 }
 
 export async function updateHospital({
@@ -544,14 +535,10 @@ export async function updateHospital({
 	hospitalId: string;
 	data: UpdateHospitalInput;
 }): Promise<HospitalDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: HospitalDetails;
-	}>(`/api/hospitals/${hospitalId}`, {
+	return authenticatedRequest<HospitalDetails>(`/api/hospitals/${hospitalId}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 export async function updateHospitalStatus({
@@ -561,14 +548,13 @@ export async function updateHospitalStatus({
 	hospitalId: string;
 	data: UpdateHospitalStatusInput;
 }): Promise<UpdateHospitalStatusResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateHospitalStatusResponse;
-	}>(`/api/hospitals/${hospitalId}/status`, {
-		method: "PATCH",
-		body: JSON.stringify(data),
-	});
-	return response.data;
+	return authenticatedRequest<UpdateHospitalStatusResponse>(
+		`/api/hospitals/${hospitalId}/status`,
+		{
+			method: "PATCH",
+			body: JSON.stringify(data),
+		},
+	);
 }
 
 // Auth client object for compatibility

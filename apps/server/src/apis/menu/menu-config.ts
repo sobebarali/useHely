@@ -380,6 +380,38 @@ export const FULL_MENU_STRUCTURE: MenuItem[] = [
 				permission: "SETTINGS:MANAGE",
 				order: 4,
 			},
+			{
+				id: "settings-privacy",
+				label: "Privacy & Consent",
+				path: "/dashboard/settings/privacy",
+				permission: "COMPLIANCE:READ",
+				order: 5,
+			},
+			{
+				id: "settings-data-export",
+				label: "Data Export",
+				path: "/dashboard/settings/data-export",
+				permission: "COMPLIANCE:READ",
+				order: 6,
+			},
+			{
+				id: "settings-data-deletion",
+				label: "Data Deletion",
+				path: "/dashboard/settings/data-deletion",
+				permission: "COMPLIANCE:READ",
+				order: 7,
+			},
 		],
+	},
+
+	// Admin Compliance - Hospital Admin only
+	{
+		id: "admin-compliance",
+		label: "Compliance",
+		icon: "settings",
+		path: "/dashboard/admin/compliance",
+		permission: "COMPLIANCE:READ",
+		order: 14,
+		visible: true,
 	},
 ];

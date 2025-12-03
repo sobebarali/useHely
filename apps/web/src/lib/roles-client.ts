@@ -135,11 +135,7 @@ export async function listRoles(
  * Get role by ID
  */
 export async function getRoleById(id: string): Promise<RoleDetails> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: RoleDetails;
-	}>(`/api/roles/${id}`);
-	return response.data;
+	return authenticatedRequest<RoleDetails>(`/api/roles/${id}`);
 }
 
 /**
@@ -148,14 +144,10 @@ export async function getRoleById(id: string): Promise<RoleDetails> {
 export async function createRole(
 	input: CreateRoleInput,
 ): Promise<CreateRoleOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CreateRoleOutput;
-	}>("/api/roles", {
+	return authenticatedRequest<CreateRoleOutput>("/api/roles", {
 		method: "POST",
 		body: JSON.stringify(input),
 	});
-	return response.data;
 }
 
 /**
@@ -168,27 +160,19 @@ export async function updateRole({
 	id: string;
 	data: UpdateRoleInput;
 }): Promise<UpdateRoleOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: UpdateRoleOutput;
-	}>(`/api/roles/${id}`, {
+	return authenticatedRequest<UpdateRoleOutput>(`/api/roles/${id}`, {
 		method: "PATCH",
 		body: JSON.stringify(data),
 	});
-	return response.data;
 }
 
 /**
  * Delete (deactivate) a role
  */
 export async function deleteRole(id: string): Promise<DeleteRoleOutput> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DeleteRoleOutput;
-	}>(`/api/roles/${id}`, {
+	return authenticatedRequest<DeleteRoleOutput>(`/api/roles/${id}`, {
 		method: "DELETE",
 	});
-	return response.data;
 }
 
 // Roles client object for convenience

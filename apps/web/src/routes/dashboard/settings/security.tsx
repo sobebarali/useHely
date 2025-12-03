@@ -76,7 +76,7 @@ function SecuritySettingsPage() {
 	});
 
 	return (
-		<div className="space-y-6">
+		<div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
 			<div>
 				<h2 className="font-semibold text-2xl tracking-tight">Security</h2>
 				<p className="text-muted-foreground">

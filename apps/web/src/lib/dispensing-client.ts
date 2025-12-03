@@ -333,11 +333,9 @@ export async function listHistory(
 export async function getById(
 	prescriptionId: string,
 ): Promise<GetDispensingByIdResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: GetDispensingByIdResponse;
-	}>(`/api/dispensing/${prescriptionId}`);
-	return response.data;
+	return authenticatedRequest<GetDispensingByIdResponse>(
+		`/api/dispensing/${prescriptionId}`,
+	);
 }
 
 /**
@@ -346,13 +344,12 @@ export async function getById(
 export async function startDispensing(
 	prescriptionId: string,
 ): Promise<StartDispensingResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: StartDispensingResponse;
-	}>(`/api/dispensing/${prescriptionId}/start`, {
-		method: "POST",
-	});
-	return response.data;
+	return authenticatedRequest<StartDispensingResponse>(
+		`/api/dispensing/${prescriptionId}/start`,
+		{
+			method: "POST",
+		},
+	);
 }
 
 /**
@@ -362,14 +359,13 @@ export async function dispenseMedicines(
 	prescriptionId: string,
 	input: DispenseMedicinesInput,
 ): Promise<DispenseMedicinesResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: DispenseMedicinesResponse;
-	}>(`/api/dispensing/${prescriptionId}/dispense`, {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<DispenseMedicinesResponse>(
+		`/api/dispensing/${prescriptionId}/dispense`,
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 /**
@@ -379,14 +375,13 @@ export async function completeDispensing(
 	prescriptionId: string,
 	input: CompleteDispensingInput = {},
 ): Promise<CompleteDispensingResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: CompleteDispensingResponse;
-	}>(`/api/dispensing/${prescriptionId}/complete`, {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<CompleteDispensingResponse>(
+		`/api/dispensing/${prescriptionId}/complete`,
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 /**
@@ -396,14 +391,13 @@ export async function markUnavailable(
 	prescriptionId: string,
 	input: MarkUnavailableInput,
 ): Promise<MarkUnavailableResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: MarkUnavailableResponse;
-	}>(`/api/dispensing/${prescriptionId}/unavailable`, {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<MarkUnavailableResponse>(
+		`/api/dispensing/${prescriptionId}/unavailable`,
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 /**
@@ -413,14 +407,13 @@ export async function returnToQueue(
 	prescriptionId: string,
 	input: ReturnToQueueInput,
 ): Promise<ReturnToQueueResponse> {
-	const response = await authenticatedRequest<{
-		success: boolean;
-		data: ReturnToQueueResponse;
-	}>(`/api/dispensing/${prescriptionId}/return`, {
-		method: "POST",
-		body: JSON.stringify(input),
-	});
-	return response.data;
+	return authenticatedRequest<ReturnToQueueResponse>(
+		`/api/dispensing/${prescriptionId}/return`,
+		{
+			method: "POST",
+			body: JSON.stringify(input),
+		},
+	);
 }
 
 // Export as a client object for consistency with other clients
