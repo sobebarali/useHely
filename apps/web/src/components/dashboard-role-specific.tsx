@@ -10,8 +10,10 @@ import {
 	AlertTriangle,
 	BedDouble,
 	Calendar,
+	CheckCircle2,
 	ClipboardList,
 	Clock,
+	Package,
 	Phone,
 	Pill,
 	TrendingUp,
@@ -37,6 +39,46 @@ import type {
 	ReceptionistDashboardOutput,
 } from "@/lib/dashboard-client";
 
+// Stat Card Component for role-specific dashboards
+interface RoleStatCardProps {
+	title: string;
+	value: number | string;
+	description?: string;
+	icon: React.ReactNode;
+	iconBgClass: string;
+	iconColorClass: string;
+}
+
+function RoleStatCard({
+	title,
+	value,
+	description,
+	icon,
+	iconBgClass,
+	iconColorClass,
+}: RoleStatCardProps) {
+	return (
+		<Card className="group relative overflow-hidden transition-all hover:shadow-md">
+			<CardHeader className="flex flex-row items-center justify-between pb-2">
+				<CardTitle className="font-medium text-muted-foreground text-sm">
+					{title}
+				</CardTitle>
+				<div
+					className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconBgClass} transition-transform group-hover:scale-110`}
+				>
+					<span className={iconColorClass}>{icon}</span>
+				</div>
+			</CardHeader>
+			<CardContent>
+				<div className="font-bold text-2xl tabular-nums">{value}</div>
+				{description && (
+					<p className="mt-1 text-muted-foreground text-xs">{description}</p>
+				)}
+			</CardContent>
+		</Card>
+	);
+}
+
 // Doctor Dashboard Component
 export function DoctorDashboard() {
 	const { data: dashboardData, isLoading, error } = useDashboard();
@@ -47,122 +89,117 @@ export function DoctorDashboard() {
 	const data = dashboardData as DoctorDashboardOutput;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 px-4 lg:px-6">
 			{/* Today's Overview */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Total Appointments
-						</CardTitle>
-						<Calendar className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.today.totalAppointments}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.today.completed} completed, {data.today.remaining} remaining
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Current Patient
-						</CardTitle>
-						<UserCheck className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.today.currentPatient
-								? data.today.currentPatient.name
-								: "None"}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.today.currentPatient
-								? `ID: ${data.today.currentPatient.patientId}`
-								: "No active consultation"}
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Next Patient</CardTitle>
-						<Clock className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.today.nextPatient ? data.today.nextPatient.name : "None"}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.today.nextPatient
-								? `ID: ${data.today.nextPatient.patientId}`
-								: "No next appointment"}
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Prescriptions Today
-						</CardTitle>
-						<Pill className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.prescriptions.issuedToday}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.prescriptions.pendingDispensing} pending dispensing
-						</p>
-					</CardContent>
-				</Card>
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<RoleStatCard
+					title="Total Appointments"
+					value={data.today.totalAppointments}
+					description={`${data.today.completed} completed, ${data.today.remaining} remaining`}
+					icon={<Calendar className="h-5 w-5" />}
+					iconBgClass="bg-primary/10 dark:bg-primary/20"
+					iconColorClass="text-primary"
+				/>
+				<RoleStatCard
+					title="Current Patient"
+					value={data.today.currentPatient?.name || "None"}
+					description={
+						data.today.currentPatient
+							? `ID: ${data.today.currentPatient.patientId}`
+							: "No active consultation"
+					}
+					icon={<UserCheck className="h-5 w-5" />}
+					iconBgClass="bg-chart-2/10 dark:bg-chart-2/20"
+					iconColorClass="text-chart-2"
+				/>
+				<RoleStatCard
+					title="Next Patient"
+					value={data.today.nextPatient?.name || "None"}
+					description={
+						data.today.nextPatient
+							? `ID: ${data.today.nextPatient.patientId}`
+							: "No next appointment"
+					}
+					icon={<Clock className="h-5 w-5" />}
+					iconBgClass="bg-chart-3/10 dark:bg-chart-3/20"
+					iconColorClass="text-chart-3"
+				/>
+				<RoleStatCard
+					title="Prescriptions Today"
+					value={data.prescriptions.issuedToday}
+					description={`${data.prescriptions.pendingDispensing} pending dispensing`}
+					icon={<Pill className="h-5 w-5" />}
+					iconBgClass="bg-chart-4/10 dark:bg-chart-4/20"
+					iconColorClass="text-chart-4"
+				/>
 			</div>
 
 			{/* Queue Status */}
 			<Card>
-				<CardHeader>
-					<CardTitle>Queue Status</CardTitle>
-					<CardDescription>Current patient queue</CardDescription>
+				<CardHeader className="pb-3">
+					<div className="flex items-center gap-2">
+						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+							<Users className="h-4 w-4 text-primary" />
+						</div>
+						<div>
+							<CardTitle className="text-base">Queue Status</CardTitle>
+							<CardDescription className="text-xs">
+								Current patient queue
+							</CardDescription>
+						</div>
+					</div>
 				</CardHeader>
 				<CardContent>
 					<div className="space-y-4">
-						<div className="flex items-center justify-between">
-							<span className="font-medium text-sm">Waiting Patients</span>
-							<Badge variant="secondary">{data.queue.waiting}</Badge>
-						</div>
-						<div className="flex items-center justify-between">
-							<span className="font-medium text-sm">Average Wait Time</span>
-							<Badge variant="outline">{data.queue.averageWait} min</Badge>
+						<div className="grid grid-cols-2 gap-4">
+							<div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
+								<span className="text-muted-foreground text-sm">
+									Waiting Patients
+								</span>
+								<Badge variant="secondary" className="font-semibold">
+									{data.queue.waiting}
+								</Badge>
+							</div>
+							<div className="flex items-center justify-between rounded-lg bg-muted/50 px-4 py-3">
+								<span className="text-muted-foreground text-sm">
+									Average Wait Time
+								</span>
+								<Badge variant="outline" className="font-semibold">
+									{data.queue.averageWait} min
+								</Badge>
+							</div>
 						</div>
 						{data.queue.current.length > 0 && (
 							<div className="space-y-2">
 								<span className="font-medium text-sm">
-									Currently Being Seen:
+									Currently Being Seen
 								</span>
-								{data.queue.current.map((patient) => (
-									<div
-										key={`queue-${patient.queueNumber}`}
-										className="flex items-center justify-between rounded bg-muted p-2"
-									>
-										<span className="text-sm">
-											#{patient.queueNumber} {patient.patientName}
-										</span>
-										<Badge
-											variant={
-												patient.status === "IN_PROGRESS"
-													? "default"
-													: "secondary"
-											}
+								<div className="space-y-2">
+									{data.queue.current.map((patient) => (
+										<div
+											key={`queue-${patient.queueNumber}`}
+											className="flex items-center justify-between rounded-lg border bg-card p-3"
 										>
-											{patient.status}
-										</Badge>
-									</div>
-								))}
+											<div className="flex items-center gap-3">
+												<div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-sm">
+													#{patient.queueNumber}
+												</div>
+												<span className="font-medium text-sm">
+													{patient.patientName}
+												</span>
+											</div>
+											<Badge
+												variant={
+													patient.status === "IN_PROGRESS"
+														? "default"
+														: "secondary"
+												}
+											>
+												{patient.status}
+											</Badge>
+										</div>
+									))}
+								</div>
 							</div>
 						)}
 					</div>
@@ -172,30 +209,36 @@ export function DoctorDashboard() {
 			{/* Today's Schedule */}
 			{data.appointments.todaySchedule.length > 0 && (
 				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Calendar className="h-5 w-5" />
-							Today's Schedule
-						</CardTitle>
-						<CardDescription>
-							{data.appointments.todaySchedule.length} appointments scheduled
-							for today
-						</CardDescription>
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chart-2/10">
+								<Calendar className="h-4 w-4 text-chart-2" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Today's Schedule</CardTitle>
+								<CardDescription className="text-xs">
+									{data.appointments.todaySchedule.length} appointments
+									scheduled
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.appointments.todaySchedule.map((appointment) => (
 								<div
 									key={appointment.id}
-									className="flex items-center justify-between rounded border p-3"
+									className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
 								>
 									<div className="flex items-center gap-3">
-										<div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-											<Clock className="h-4 w-4" />
+										<div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+											<Clock className="h-4 w-4 text-muted-foreground" />
 										</div>
 										<div>
-											<p className="font-medium">{appointment.patientName}</p>
-											<p className="text-muted-foreground text-sm">
+											<p className="font-medium text-sm">
+												{appointment.patientName}
+											</p>
+											<p className="text-muted-foreground text-xs">
 												{new Date(appointment.time).toLocaleTimeString([], {
 													hour: "2-digit",
 													minute: "2-digit",
@@ -225,20 +268,29 @@ export function DoctorDashboard() {
 
 			{/* Recent Patients */}
 			<Card>
-				<CardHeader>
-					<CardTitle>Recent Patients</CardTitle>
-					<CardDescription>Patients you've seen recently</CardDescription>
+				<CardHeader className="pb-3">
+					<div className="flex items-center gap-2">
+						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chart-3/10">
+							<Users className="h-4 w-4 text-chart-3" />
+						</div>
+						<div>
+							<CardTitle className="text-base">Recent Patients</CardTitle>
+							<CardDescription className="text-xs">
+								Patients you've seen recently
+							</CardDescription>
+						</div>
+					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-3">
+					<div className="space-y-2">
 						{data.patients.recentPatients.map((patient) => (
 							<div
 								key={patient.id}
-								className="flex items-center justify-between"
+								className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
 							>
 								<div>
-									<p className="font-medium">{patient.name}</p>
-									<p className="text-muted-foreground text-sm">
+									<p className="font-medium text-sm">{patient.name}</p>
+									<p className="text-muted-foreground text-xs">
 										Last visit:{" "}
 										{new Date(patient.lastVisit).toLocaleDateString()}
 									</p>
@@ -270,89 +322,72 @@ export function NurseDashboard() {
 	const data = dashboardData as NurseDashboardOutput;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 px-4 lg:px-6">
 			{/* Ward Overview */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Ward: {data.ward.name}
-						</CardTitle>
-						<BedDouble className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.ward.occupiedBeds}/{data.ward.totalBeds}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.ward.availableBeds} beds available
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Assigned Patients
-						</CardTitle>
-						<Users className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.patients.assigned}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.patients.critical} critical
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Vitals Today</CardTitle>
-						<Activity className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.vitals.recordedToday}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.vitals.pendingRecording} pending recording
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Pending Tasks</CardTitle>
-						<ClipboardList className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.tasks.pending}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.tasks.medicationDue.length} medications due
-						</p>
-					</CardContent>
-				</Card>
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<RoleStatCard
+					title={`Ward: ${data.ward.name}`}
+					value={`${data.ward.occupiedBeds}/${data.ward.totalBeds}`}
+					description={`${data.ward.availableBeds} beds available`}
+					icon={<BedDouble className="h-5 w-5" />}
+					iconBgClass="bg-primary/10 dark:bg-primary/20"
+					iconColorClass="text-primary"
+				/>
+				<RoleStatCard
+					title="Assigned Patients"
+					value={data.patients.assigned}
+					description={`${data.patients.critical} critical`}
+					icon={<Users className="h-5 w-5" />}
+					iconBgClass="bg-chart-2/10 dark:bg-chart-2/20"
+					iconColorClass="text-chart-2"
+				/>
+				<RoleStatCard
+					title="Vitals Today"
+					value={data.vitals.recordedToday}
+					description={`${data.vitals.pendingRecording} pending recording`}
+					icon={<Activity className="h-5 w-5" />}
+					iconBgClass="bg-chart-3/10 dark:bg-chart-3/20"
+					iconColorClass="text-chart-3"
+				/>
+				<RoleStatCard
+					title="Pending Tasks"
+					value={data.tasks.pending}
+					description={`${data.tasks.medicationDue.length} medications due`}
+					icon={<ClipboardList className="h-5 w-5" />}
+					iconBgClass="bg-chart-4/10 dark:bg-chart-4/20"
+					iconColorClass="text-chart-4"
+				/>
 			</div>
 
 			{/* Critical Patients */}
 			{data.patients.needsAttention.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<AlertTriangle className="h-5 w-5 text-destructive" />
-							Patients Needing Attention
-						</CardTitle>
+				<Card className="border-destructive/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10">
+								<AlertTriangle className="h-4 w-4 text-destructive" />
+							</div>
+							<div>
+								<CardTitle className="text-base">
+									Patients Needing Attention
+								</CardTitle>
+								<CardDescription className="text-xs">
+									{data.patients.needsAttention.length} patients require
+									immediate attention
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.patients.needsAttention.map((patient) => (
 								<div
 									key={patient.patientId}
-									className="flex items-center justify-between rounded border border-destructive/20 bg-destructive/10 p-3"
+									className="flex items-center justify-between rounded-lg border border-destructive/20 bg-destructive/5 p-3 dark:bg-destructive/10"
 								>
 									<div>
-										<p className="font-medium">{patient.patientName}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="font-medium text-sm">{patient.patientName}</p>
+										<p className="text-muted-foreground text-xs">
 											{patient.reason}
 										</p>
 									</div>
@@ -373,24 +408,39 @@ export function NurseDashboard() {
 
 			{/* Abnormal Vitals */}
 			{data.vitals.abnormal.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Abnormal Vitals</CardTitle>
+				<Card className="border-amber-500/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+								<Activity className="h-4 w-4 text-amber-500" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Abnormal Vitals</CardTitle>
+								<CardDescription className="text-xs">
+									Patients with abnormal vital signs
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.vitals.abnormal.map((vital) => (
 								<div
 									key={`${vital.patientId}-${vital.parameter}`}
-									className="flex items-center justify-between rounded border border-orange-200 bg-orange-50 p-3"
+									className="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 dark:bg-amber-500/10"
 								>
 									<div>
-										<p className="font-medium">{vital.patientName}</p>
-										<p className="text-muted-foreground text-sm">
-											{vital.parameter}: {vital.value} ({vital.severity})
+										<p className="font-medium text-sm">{vital.patientName}</p>
+										<p className="text-muted-foreground text-xs">
+											{vital.parameter}: {vital.value}
 										</p>
 									</div>
-									<Badge variant="destructive">{vital.severity}</Badge>
+									<Badge
+										variant="outline"
+										className="border-amber-500/50 text-amber-600 dark:text-amber-400"
+									>
+										{vital.severity}
+									</Badge>
 								</div>
 							))}
 						</div>
@@ -401,40 +451,46 @@ export function NurseDashboard() {
 			{/* Patient Alerts */}
 			{data.alerts.length > 0 && (
 				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<AlertTriangle className="h-5 w-5 text-orange-500" />
-							Patient Alerts
-						</CardTitle>
-						<CardDescription>
-							{data.alerts.length} active alerts requiring attention
-						</CardDescription>
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+								<AlertTriangle className="h-4 w-4 text-amber-500" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Patient Alerts</CardTitle>
+								<CardDescription className="text-xs">
+									{data.alerts.length} active alerts requiring attention
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.alerts.map((alert, index) => (
 								<div
 									key={`alert-${alert.patientId}-${index}`}
-									className={`flex items-center justify-between rounded border p-3 ${
+									className={`flex items-center justify-between rounded-lg border p-3 ${
 										alert.severity === "CRITICAL"
-											? "border-red-200 bg-red-50 dark:border-red-900 dark:bg-red-950"
+											? "border-red-500/30 bg-red-500/5 dark:bg-red-500/10"
 											: alert.severity === "HIGH"
-												? "border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950"
-												: "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
+												? "border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10"
+												: "border-yellow-500/30 bg-yellow-500/5 dark:bg-yellow-500/10"
 									}`}
 								>
 									<div>
-										<p className="font-medium">{alert.patientName}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="font-medium text-sm">{alert.patientName}</p>
+										<p className="text-muted-foreground text-xs">
 											{alert.type}: {alert.message}
 										</p>
-										<p className="text-muted-foreground text-xs">
+										<p className="text-muted-foreground/70 text-xs">
 											{new Date(alert.createdAt).toLocaleString()}
 										</p>
 									</div>
 									<Badge
 										variant={
-											alert.severity === "CRITICAL" ? "destructive" : "default"
+											alert.severity === "CRITICAL"
+												? "destructive"
+												: "secondary"
 										}
 									>
 										{alert.severity}
@@ -459,84 +515,70 @@ export function PharmacistDashboard() {
 	const data = dashboardData as PharmacistDashboardOutput;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 px-4 lg:px-6">
 			{/* Queue Overview */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Pending Prescriptions
-						</CardTitle>
-						<Pill className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.queue.pending}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.queue.urgent} urgent
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">In Progress</CardTitle>
-						<Activity className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.queue.inProgress}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.queue.averageWait} min avg wait
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Completed Today
-						</CardTitle>
-						<TrendingUp className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.dispensing.completedToday}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.dispensing.totalToday} total today
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Out of Stock</CardTitle>
-						<AlertTriangle className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.inventory.outOfStock}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.inventory.lowStock.length} low stock items
-						</p>
-					</CardContent>
-				</Card>
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<RoleStatCard
+					title="Pending Prescriptions"
+					value={data.queue.pending}
+					description={`${data.queue.urgent} urgent`}
+					icon={<Pill className="h-5 w-5" />}
+					iconBgClass="bg-primary/10 dark:bg-primary/20"
+					iconColorClass="text-primary"
+				/>
+				<RoleStatCard
+					title="In Progress"
+					value={data.queue.inProgress}
+					description={`${data.queue.averageWait} min avg wait`}
+					icon={<Activity className="h-5 w-5" />}
+					iconBgClass="bg-chart-2/10 dark:bg-chart-2/20"
+					iconColorClass="text-chart-2"
+				/>
+				<RoleStatCard
+					title="Completed Today"
+					value={data.dispensing.completedToday}
+					description={`${data.dispensing.totalToday} total today`}
+					icon={<TrendingUp className="h-5 w-5" />}
+					iconBgClass="bg-chart-3/10 dark:bg-chart-3/20"
+					iconColorClass="text-chart-3"
+				/>
+				<RoleStatCard
+					title="Out of Stock"
+					value={data.inventory.outOfStock}
+					description={`${data.inventory.lowStock.length} low stock items`}
+					icon={<Package className="h-5 w-5" />}
+					iconBgClass="bg-destructive/10 dark:bg-destructive/20"
+					iconColorClass="text-destructive"
+				/>
 			</div>
 
 			{/* Next Prescription */}
 			{data.queue.nextPrescription && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Next Prescription</CardTitle>
+				<Card className="border-primary/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+								<Pill className="h-4 w-4 text-primary" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Next Prescription</CardTitle>
+								<CardDescription className="text-xs">
+									Ready to dispense
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="flex items-center justify-between">
+						<div className="flex items-center justify-between rounded-lg border bg-primary/5 p-4 dark:bg-primary/10">
 							<div>
 								<p className="font-medium">
 									{data.queue.nextPrescription.patientName}
 								</p>
 								<p className="text-muted-foreground text-sm">
-									Priority: {data.queue.nextPrescription.priority}
+									Priority:{" "}
+									<Badge variant="outline" className="ml-1">
+										{data.queue.nextPrescription.priority}
+									</Badge>
 								</p>
 							</div>
 							<Button asChild>
@@ -554,20 +596,30 @@ export function PharmacistDashboard() {
 
 			{/* Low Stock Alerts */}
 			{data.inventory.lowStock.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Low Stock Alerts</CardTitle>
+				<Card className="border-amber-500/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
+								<AlertTriangle className="h-4 w-4 text-amber-500" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Low Stock Alerts</CardTitle>
+								<CardDescription className="text-xs">
+									{data.inventory.lowStock.length} items below reorder level
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.inventory.lowStock.map((item) => (
 								<div
 									key={item.medicineId}
-									className="flex items-center justify-between rounded border border-orange-200 bg-orange-50 p-3 dark:border-orange-900 dark:bg-orange-950"
+									className="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 dark:bg-amber-500/10"
 								>
 									<div>
-										<p className="font-medium">{item.name}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="font-medium text-sm">{item.name}</p>
+										<p className="text-muted-foreground text-xs">
 											Current: {item.currentStock} | Reorder at:{" "}
 											{item.reorderLevel}
 										</p>
@@ -584,26 +636,33 @@ export function PharmacistDashboard() {
 
 			{/* Expiring Soon */}
 			{data.inventory.expiringSoon.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2">
-							<Clock className="h-5 w-5 text-orange-500" />
-							Medicines Expiring Soon
-						</CardTitle>
-						<CardDescription>
-							{data.inventory.expiringSoon.length} items expiring within 90 days
-						</CardDescription>
+				<Card className="border-red-500/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
+								<Clock className="h-4 w-4 text-red-500" />
+							</div>
+							<div>
+								<CardTitle className="text-base">
+									Medicines Expiring Soon
+								</CardTitle>
+								<CardDescription className="text-xs">
+									{data.inventory.expiringSoon.length} items expiring within 90
+									days
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.inventory.expiringSoon.map((item) => (
 								<div
 									key={`${item.medicineId}-${item.expiryDate}`}
-									className="flex items-center justify-between rounded border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950"
+									className="flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/5 p-3 dark:bg-red-500/10"
 								>
 									<div>
-										<p className="font-medium">{item.name}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="font-medium text-sm">{item.name}</p>
+										<p className="text-muted-foreground text-xs">
 											Expires: {new Date(item.expiryDate).toLocaleDateString()}{" "}
 											| Qty: {item.quantity}
 										</p>
@@ -635,86 +694,79 @@ export function ReceptionistDashboard() {
 	const data = dashboardData as ReceptionistDashboardOutput;
 
 	return (
-		<div className="space-y-6">
+		<div className="space-y-6 px-4 lg:px-6">
 			{/* Today's Overview */}
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">
-							Registrations Today
-						</CardTitle>
-						<UserPlus className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.registrations.today}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.registrations.pending} pending
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Appointments</CardTitle>
-						<Calendar className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.appointments.todayTotal}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.appointments.checkedIn} checked in
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Queue Status</CardTitle>
-						<Users className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">{data.queue.totalWaiting}</div>
-						<p className="text-muted-foreground text-xs">
-							{data.queue.averageWait} min avg wait
-						</p>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="font-medium text-sm">Check-ins</CardTitle>
-						<Phone className="h-4 w-4 text-muted-foreground" />
-					</CardHeader>
-					<CardContent>
-						<div className="font-bold text-2xl">
-							{data.checkIns.completedToday}
-						</div>
-						<p className="text-muted-foreground text-xs">
-							{data.checkIns.pending.length} pending
-						</p>
-					</CardContent>
-				</Card>
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<RoleStatCard
+					title="Registrations Today"
+					value={data.registrations.today}
+					description={`${data.registrations.pending} pending`}
+					icon={<UserPlus className="h-5 w-5" />}
+					iconBgClass="bg-primary/10 dark:bg-primary/20"
+					iconColorClass="text-primary"
+				/>
+				<RoleStatCard
+					title="Appointments"
+					value={data.appointments.todayTotal}
+					description={`${data.appointments.checkedIn} checked in`}
+					icon={<Calendar className="h-5 w-5" />}
+					iconBgClass="bg-chart-2/10 dark:bg-chart-2/20"
+					iconColorClass="text-chart-2"
+				/>
+				<RoleStatCard
+					title="Queue Status"
+					value={data.queue.totalWaiting}
+					description={`${data.queue.averageWait} min avg wait`}
+					icon={<Users className="h-5 w-5" />}
+					iconBgClass="bg-chart-3/10 dark:bg-chart-3/20"
+					iconColorClass="text-chart-3"
+				/>
+				<RoleStatCard
+					title="Check-ins"
+					value={data.checkIns.completedToday}
+					description={`${data.checkIns.pending.length} pending`}
+					icon={<CheckCircle2 className="h-5 w-5" />}
+					iconBgClass="bg-chart-4/10 dark:bg-chart-4/20"
+					iconColorClass="text-chart-4"
+				/>
 			</div>
 
 			{/* Pending Check-ins */}
 			{data.checkIns.pending.length > 0 && (
-				<Card>
-					<CardHeader>
-						<CardTitle>Pending Check-ins</CardTitle>
+				<Card className="border-primary/30">
+					<CardHeader className="pb-3">
+						<div className="flex items-center gap-2">
+							<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+								<Phone className="h-4 w-4 text-primary" />
+							</div>
+							<div>
+								<CardTitle className="text-base">Pending Check-ins</CardTitle>
+								<CardDescription className="text-xs">
+									{data.checkIns.pending.length} patients waiting to check in
+								</CardDescription>
+							</div>
+						</div>
 					</CardHeader>
 					<CardContent>
-						<div className="space-y-3">
+						<div className="space-y-2">
 							{data.checkIns.pending.map((appointment) => (
 								<div
 									key={appointment.id}
-									className="flex items-center justify-between"
+									className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
 								>
 									<div>
-										<p className="font-medium">{appointment.patientName}</p>
-										<p className="text-muted-foreground text-sm">
+										<p className="font-medium text-sm">
+											{appointment.patientName}
+										</p>
+										<p className="text-muted-foreground text-xs">
 											Scheduled:{" "}
-											{new Date(appointment.scheduledTime).toLocaleTimeString()}
+											{new Date(appointment.scheduledTime).toLocaleTimeString(
+												[],
+												{
+													hour: "2-digit",
+													minute: "2-digit",
+												},
+											)}
 										</p>
 									</div>
 									<Button size="sm" asChild>
@@ -734,21 +786,36 @@ export function ReceptionistDashboard() {
 
 			{/* Upcoming Appointments */}
 			<Card>
-				<CardHeader>
-					<CardTitle>Upcoming Appointments</CardTitle>
+				<CardHeader className="pb-3">
+					<div className="flex items-center gap-2">
+						<div className="flex h-8 w-8 items-center justify-center rounded-lg bg-chart-2/10">
+							<Calendar className="h-4 w-4 text-chart-2" />
+						</div>
+						<div>
+							<CardTitle className="text-base">Upcoming Appointments</CardTitle>
+							<CardDescription className="text-xs">
+								Next scheduled appointments
+							</CardDescription>
+						</div>
+					</div>
 				</CardHeader>
 				<CardContent>
-					<div className="space-y-3">
+					<div className="space-y-2">
 						{data.appointments.upcoming.map((appointment) => (
 							<div
 								key={appointment.id}
-								className="flex items-center justify-between"
+								className="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
 							>
 								<div>
-									<p className="font-medium">{appointment.patientName}</p>
-									<p className="text-muted-foreground text-sm">
+									<p className="font-medium text-sm">
+										{appointment.patientName}
+									</p>
+									<p className="text-muted-foreground text-xs">
 										Dr. {appointment.doctorName} •{" "}
-										{new Date(appointment.time).toLocaleTimeString()}
+										{new Date(appointment.time).toLocaleTimeString([], {
+											hour: "2-digit",
+											minute: "2-digit",
+										})}
 									</p>
 								</div>
 								<Button variant="outline" size="sm" asChild>
@@ -771,50 +838,55 @@ export function ReceptionistDashboard() {
 // Error Component
 function DashboardError() {
 	return (
+		<div className="px-4 lg:px-6">
+			<Card>
+				<CardContent className="flex h-32 flex-col items-center justify-center gap-2">
+					<AlertTriangle className="h-8 w-8 text-muted-foreground/50" />
+					<p className="text-muted-foreground">Failed to load dashboard data</p>
+				</CardContent>
+			</Card>
+		</div>
+	);
+}
+
+// Skeleton Components
+function StatCardSkeleton() {
+	return (
 		<Card>
-			<CardContent className="flex h-32 items-center justify-center">
-				<p className="text-muted-foreground">Failed to load dashboard data</p>
+			<CardHeader className="flex flex-row items-center justify-between pb-2">
+				<Skeleton className="h-4 w-24" />
+				<Skeleton className="h-9 w-9 rounded-lg" />
+			</CardHeader>
+			<CardContent>
+				<Skeleton className="h-7 w-16" />
+				<Skeleton className="mt-2 h-3 w-28" />
 			</CardContent>
 		</Card>
 	);
 }
 
-// Skeleton Components
 function DoctorDashboardSkeleton() {
-	const statCards = [
-		"total-appointments-skeleton",
-		"completed-skeleton",
-		"remaining-skeleton",
-		"pending-followups-skeleton",
-	];
-	const contentCards = ["current-patient-skeleton", "today-schedule-skeleton"];
-
 	return (
-		<div className="space-y-6">
-			<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-				{statCards.map((key) => (
-					<Card key={key}>
-						<CardHeader className="pb-2">
-							<Skeleton className="h-4 w-20" />
-						</CardHeader>
-						<CardContent>
-							<Skeleton className="mb-2 h-8 w-16" />
-							<Skeleton className="h-3 w-24" />
-						</CardContent>
-					</Card>
+		<div className="space-y-6 px-4 lg:px-6">
+			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				{[1, 2, 3, 4].map((key) => (
+					<StatCardSkeleton key={key} />
 				))}
 			</div>
-			{contentCards.map((key) => (
-				<Card key={key}>
-					<CardHeader>
-						<Skeleton className="h-5 w-32" />
-						<Skeleton className="h-4 w-48" />
-					</CardHeader>
-					<CardContent>
-						<Skeleton className="h-20 w-full" />
-					</CardContent>
-				</Card>
-			))}
+			<Card>
+				<CardHeader className="pb-3">
+					<div className="flex items-center gap-2">
+						<Skeleton className="h-8 w-8 rounded-lg" />
+						<div>
+							<Skeleton className="h-5 w-24" />
+							<Skeleton className="mt-1 h-3 w-32" />
+						</div>
+					</div>
+				</CardHeader>
+				<CardContent>
+					<Skeleton className="h-24 w-full rounded-lg" />
+				</CardContent>
+			</Card>
 		</div>
 	);
 }

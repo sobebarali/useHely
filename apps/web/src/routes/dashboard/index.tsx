@@ -54,13 +54,14 @@ function DashboardHomePage() {
 	};
 
 	return (
-		<div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+		<div className="flex flex-col gap-6 py-6">
+			{/* Header */}
 			<div className="flex items-center justify-between px-4 lg:px-6">
 				<div>
-					<h1 className="font-bold text-3xl tracking-tight">
+					<h1 className="font-bold text-2xl tracking-tight md:text-3xl">
 						{terminology.dashboardTitle}
 					</h1>
-					<p className="text-muted-foreground">
+					<p className="mt-1 text-muted-foreground text-sm">
 						Welcome back! Here's an overview of your{" "}
 						{terminology.organization.toLowerCase()}.
 					</p>
@@ -70,26 +71,33 @@ function DashboardHomePage() {
 					disabled={refreshMutation.isPending}
 					variant="outline"
 					size="sm"
+					className="gap-2"
 				>
 					<RefreshCw
-						className={`mr-2 h-4 w-4 ${refreshMutation.isPending ? "animate-spin" : ""}`}
+						className={`h-4 w-4 ${refreshMutation.isPending ? "animate-spin" : ""}`}
 					/>
-					Refresh
+					<span className="hidden sm:inline">Refresh</span>
 				</Button>
 			</div>
 
 			{/* Show default dashboard for hospital admin or when role is not specific */}
 			{(!dashboardType || dashboardType === "hospital_admin") && (
 				<>
+					{/* Stats Cards */}
 					<SectionCards />
+
+					{/* Trends Chart */}
 					<div className="px-4 lg:px-6">
 						<ChartAreaInteractive />
 					</div>
-					{/* Additional Widgets */}
-					<div className="grid gap-4 px-4 md:grid-cols-2 lg:px-6">
+
+					{/* Widgets Row */}
+					<div className="grid gap-6 px-4 md:grid-cols-2 lg:px-6">
 						<DepartmentLoadWidget />
 						<BedOccupancyWidget />
 					</div>
+
+					{/* Staff Attendance - Full Width */}
 					<div className="px-4 lg:px-6">
 						<StaffAttendanceWidget />
 					</div>
