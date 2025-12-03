@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
 	Activity,
+	ArrowLeft,
 	Calendar,
 	FileText,
 	Lock,
@@ -11,6 +12,7 @@ import { useState } from "react";
 import { UseHelyLogo } from "@/components/icons";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/login")({
 	component: LoginPage,
@@ -44,12 +46,20 @@ function LoginPage() {
 
 					{/* Content overlay */}
 					<div className="relative flex h-full flex-col justify-center p-12">
-						<Link to="/" className="mb-8 flex items-center gap-3">
+						<Link
+							to="/"
+							className="mb-8 flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+						>
+							<ArrowLeft className="h-4 w-4" />
+							Back to Home
+						</Link>
+
+						<div className="mb-8 flex items-center gap-3">
 							<div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 backdrop-blur-sm">
 								<UseHelyLogo className="h-6 w-6 text-primary" />
 							</div>
 							<span className="font-bold text-xl">useHely</span>
-						</Link>
+						</div>
 
 						<h1 className="mb-4 font-bold text-4xl leading-tight">
 							Welcome back to your dashboard
@@ -93,14 +103,20 @@ function LoginPage() {
 
 				{/* Right Column - Login Form */}
 				<div className="flex flex-col justify-center px-4 py-8 lg:px-12">
-					{/* Mobile logo */}
+					{/* Mobile header */}
 					<div className="mb-8 lg:hidden">
-						<Link to="/" className="flex items-center gap-2">
+						<Button variant="ghost" size="sm" asChild className="mb-4">
+							<Link to="/">
+								<ArrowLeft className="mr-2 h-4 w-4" />
+								Back to Home
+							</Link>
+						</Button>
+						<div className="flex items-center gap-2">
 							<div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
 								<UseHelyLogo className="h-5 w-5 text-primary" />
 							</div>
 							<span className="font-bold text-lg">useHely</span>
-						</Link>
+						</div>
 					</div>
 
 					{/* Form container */}

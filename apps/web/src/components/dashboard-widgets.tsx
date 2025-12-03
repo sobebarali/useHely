@@ -27,11 +27,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useWidget } from "@/hooks/use-dashboard";
 
 const COLORS = [
-	"hsl(var(--chart-1))",
-	"hsl(var(--chart-2))",
-	"hsl(var(--chart-3))",
-	"hsl(var(--chart-4))",
-	"hsl(var(--chart-5))",
+	"var(--chart-1)",
+	"var(--chart-2)",
+	"var(--chart-3)",
+	"var(--chart-4)",
+	"var(--chart-5)",
 ];
 
 interface CustomBarTooltipProps {
@@ -173,21 +173,21 @@ export function DepartmentLoadWidget() {
 					>
 						<XAxis
 							type="number"
-							tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+							tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 							tickLine={false}
-							axisLine={{ stroke: "hsl(var(--border))" }}
+							axisLine={{ stroke: "var(--border)" }}
 						/>
 						<YAxis
 							dataKey="name"
 							type="category"
 							width={90}
-							tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+							tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 							tickLine={false}
 							axisLine={false}
 						/>
 						<Tooltip
 							content={<CustomBarTooltip />}
-							cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }}
+							cursor={{ fill: "var(--muted)", opacity: 0.3 }}
 						/>
 						<Bar dataKey="load" radius={[0, 4, 4, 0]} maxBarSize={28}>
 							{data.map((_, index) => (
@@ -325,8 +325,8 @@ export function BedOccupancyWidget() {
 	}
 
 	const chartData = [
-		{ name: "Occupied", value: data.occupied, color: "hsl(var(--chart-1))" },
-		{ name: "Available", value: data.available, color: "hsl(var(--chart-2))" },
+		{ name: "Occupied", value: data.occupied, color: "var(--chart-1)" },
+		{ name: "Available", value: data.available, color: "var(--chart-2)" },
 	];
 
 	// Determine occupancy status for color coding
@@ -389,7 +389,7 @@ export function BedOccupancyWidget() {
 							<div className="flex items-center gap-2">
 								<div
 									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: "hsl(var(--chart-1))" }}
+									style={{ backgroundColor: "var(--chart-1)" }}
 								/>
 								<span className="text-muted-foreground text-sm">Occupied</span>
 							</div>
@@ -399,7 +399,7 @@ export function BedOccupancyWidget() {
 							<div className="flex items-center gap-2">
 								<div
 									className="h-3 w-3 rounded-full"
-									style={{ backgroundColor: "hsl(var(--chart-2))" }}
+									style={{ backgroundColor: "var(--chart-2)" }}
 								/>
 								<span className="text-muted-foreground text-sm">Available</span>
 							</div>

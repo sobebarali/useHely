@@ -207,12 +207,12 @@ export function ChartAreaInteractive() {
 							<linearGradient id="colorPatients" x1="0" y1="0" x2="0" y2="1">
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-1))"
+									stopColor="var(--chart-1)"
 									stopOpacity={0.4}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-1))"
+									stopColor="var(--chart-1)"
 									stopOpacity={0.05}
 								/>
 							</linearGradient>
@@ -225,27 +225,27 @@ export function ChartAreaInteractive() {
 							>
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-2))"
+									stopColor="var(--chart-2)"
 									stopOpacity={0.4}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-2))"
+									stopColor="var(--chart-2)"
 									stopOpacity={0.05}
 								/>
 							</linearGradient>
 						</defs>
 						<CartesianGrid
 							strokeDasharray="3 3"
-							stroke="hsl(var(--border))"
+							stroke="var(--border)"
 							strokeOpacity={0.5}
 							vertical={false}
 						/>
 						<XAxis
 							dataKey="date"
-							tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+							tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 							tickLine={false}
-							axisLine={{ stroke: "hsl(var(--border))" }}
+							axisLine={{ stroke: "var(--border)" }}
 							tickFormatter={(value) => {
 								const date = new Date(value);
 								return date.toLocaleDateString("en-US", {
@@ -256,7 +256,7 @@ export function ChartAreaInteractive() {
 							dy={10}
 						/>
 						<YAxis
-							tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+							tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
 							tickLine={false}
 							axisLine={false}
 							tickFormatter={(value) => value.toLocaleString()}
@@ -267,30 +267,30 @@ export function ChartAreaInteractive() {
 						<Area
 							type="monotone"
 							dataKey="patients"
-							stroke="hsl(var(--chart-1))"
+							stroke="var(--chart-1)"
 							strokeWidth={2}
 							fillOpacity={1}
 							fill="url(#colorPatients)"
 							dot={false}
 							activeDot={{
 								r: 5,
-								fill: "hsl(var(--chart-1))",
-								stroke: "hsl(var(--background))",
+								fill: "var(--chart-1)",
+								stroke: "var(--background)",
 								strokeWidth: 2,
 							}}
 						/>
 						<Area
 							type="monotone"
 							dataKey="appointments"
-							stroke="hsl(var(--chart-2))"
+							stroke="var(--chart-2)"
 							strokeWidth={2}
 							fillOpacity={1}
 							fill="url(#colorAppointments)"
 							dot={false}
 							activeDot={{
 								r: 5,
-								fill: "hsl(var(--chart-2))",
-								stroke: "hsl(var(--background))",
+								fill: "var(--chart-2)",
+								stroke: "var(--background)",
 								strokeWidth: 2,
 							}}
 						/>
