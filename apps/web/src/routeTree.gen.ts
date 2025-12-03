@@ -37,7 +37,10 @@ import { Route as DashboardStaffRolesRouteImport } from './routes/dashboard/staf
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
 import { Route as DashboardSettingsSecurityRouteImport } from './routes/dashboard/settings/security'
 import { Route as DashboardSettingsProfileRouteImport } from './routes/dashboard/settings/profile'
+import { Route as DashboardSettingsPrivacyRouteImport } from './routes/dashboard/settings/privacy'
 import { Route as DashboardSettingsGeneralRouteImport } from './routes/dashboard/settings/general'
+import { Route as DashboardSettingsDataExportRouteImport } from './routes/dashboard/settings/data-export'
+import { Route as DashboardSettingsDataDeletionRouteImport } from './routes/dashboard/settings/data-deletion'
 import { Route as DashboardReportsGenerateRouteImport } from './routes/dashboard/reports/generate'
 import { Route as DashboardReportsIdRouteImport } from './routes/dashboard/reports/$id'
 import { Route as DashboardPrescriptionsCreateRouteImport } from './routes/dashboard/prescriptions/create'
@@ -56,6 +59,7 @@ import { Route as DashboardDepartmentsIdRouteImport } from './routes/dashboard/d
 import { Route as DashboardAppointmentsScheduleRouteImport } from './routes/dashboard/appointments/schedule'
 import { Route as DashboardAppointmentsIdRouteImport } from './routes/dashboard/appointments/$id'
 import { Route as DashboardAdminSecurityRouteImport } from './routes/dashboard/admin/security'
+import { Route as DashboardAdminComplianceRouteImport } from './routes/dashboard/admin/compliance'
 import { Route as DashboardPrescriptionsTemplatesIndexRouteImport } from './routes/dashboard/prescriptions/templates/index'
 import { Route as DashboardAdminSecurityIndexRouteImport } from './routes/dashboard/admin/security/index'
 import { Route as DashboardPrescriptionsTemplatesCreateRouteImport } from './routes/dashboard/prescriptions/templates/create'
@@ -209,10 +213,28 @@ const DashboardSettingsProfileRoute =
     path: '/profile',
     getParentRoute: () => DashboardSettingsRoute,
   } as any)
+const DashboardSettingsPrivacyRoute =
+  DashboardSettingsPrivacyRouteImport.update({
+    id: '/privacy',
+    path: '/privacy',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
 const DashboardSettingsGeneralRoute =
   DashboardSettingsGeneralRouteImport.update({
     id: '/general',
     path: '/general',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsDataExportRoute =
+  DashboardSettingsDataExportRouteImport.update({
+    id: '/data-export',
+    path: '/data-export',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
+const DashboardSettingsDataDeletionRoute =
+  DashboardSettingsDataDeletionRouteImport.update({
+    id: '/data-deletion',
+    path: '/data-deletion',
     getParentRoute: () => DashboardSettingsRoute,
   } as any)
 const DashboardReportsGenerateRoute =
@@ -315,6 +337,12 @@ const DashboardAdminSecurityRoute = DashboardAdminSecurityRouteImport.update({
   path: '/security',
   getParentRoute: () => DashboardAdminRoute,
 } as any)
+const DashboardAdminComplianceRoute =
+  DashboardAdminComplianceRouteImport.update({
+    id: '/compliance',
+    path: '/compliance',
+    getParentRoute: () => DashboardAdminRoute,
+  } as any)
 const DashboardPrescriptionsTemplatesIndexRoute =
   DashboardPrescriptionsTemplatesIndexRouteImport.update({
     id: '/prescriptions/templates/',
@@ -364,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
@@ -382,7 +411,10 @@ export interface FileRoutesByFullPath {
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
+  '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
@@ -417,6 +449,7 @@ export interface FileRoutesByTo {
   '/verify-hospital': typeof VerifyHospitalRoute
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
+  '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/departments/$id': typeof DashboardDepartmentsIdRoute
@@ -434,7 +467,10 @@ export interface FileRoutesByTo {
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
+  '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
@@ -472,6 +508,7 @@ export interface FileRoutesById {
   '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard/settings': typeof DashboardSettingsRouteWithChildren
   '/dashboard/': typeof DashboardIndexRoute
+  '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
@@ -490,7 +527,10 @@ export interface FileRoutesById {
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
+  '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
@@ -529,6 +569,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/settings'
     | '/dashboard/'
+    | '/dashboard/admin/compliance'
     | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
@@ -547,7 +588,10 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
     | '/dashboard/reports/generate'
+    | '/dashboard/settings/data-deletion'
+    | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
@@ -582,6 +626,7 @@ export interface FileRouteTypes {
     | '/verify-hospital'
     | '/dashboard/admin'
     | '/dashboard'
+    | '/dashboard/admin/compliance'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
     | '/dashboard/departments/$id'
@@ -599,7 +644,10 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
     | '/dashboard/reports/generate'
+    | '/dashboard/settings/data-deletion'
+    | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
@@ -636,6 +684,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/settings'
     | '/dashboard/'
+    | '/dashboard/admin/compliance'
     | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
     | '/dashboard/appointments/schedule'
@@ -654,7 +703,10 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
     | '/dashboard/reports/generate'
+    | '/dashboard/settings/data-deletion'
+    | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
@@ -889,11 +941,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsProfileRouteImport
       parentRoute: typeof DashboardSettingsRoute
     }
+    '/dashboard/settings/privacy': {
+      id: '/dashboard/settings/privacy'
+      path: '/privacy'
+      fullPath: '/dashboard/settings/privacy'
+      preLoaderRoute: typeof DashboardSettingsPrivacyRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
     '/dashboard/settings/general': {
       id: '/dashboard/settings/general'
       path: '/general'
       fullPath: '/dashboard/settings/general'
       preLoaderRoute: typeof DashboardSettingsGeneralRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/settings/data-export': {
+      id: '/dashboard/settings/data-export'
+      path: '/data-export'
+      fullPath: '/dashboard/settings/data-export'
+      preLoaderRoute: typeof DashboardSettingsDataExportRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
+    '/dashboard/settings/data-deletion': {
+      id: '/dashboard/settings/data-deletion'
+      path: '/data-deletion'
+      fullPath: '/dashboard/settings/data-deletion'
+      preLoaderRoute: typeof DashboardSettingsDataDeletionRouteImport
       parentRoute: typeof DashboardSettingsRoute
     }
     '/dashboard/reports/generate': {
@@ -1022,6 +1095,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAdminSecurityRouteImport
       parentRoute: typeof DashboardAdminRoute
     }
+    '/dashboard/admin/compliance': {
+      id: '/dashboard/admin/compliance'
+      path: '/compliance'
+      fullPath: '/dashboard/admin/compliance'
+      preLoaderRoute: typeof DashboardAdminComplianceRouteImport
+      parentRoute: typeof DashboardAdminRoute
+    }
     '/dashboard/prescriptions/templates/': {
       id: '/dashboard/prescriptions/templates/'
       path: '/prescriptions/templates'
@@ -1086,10 +1166,12 @@ const DashboardAdminSecurityRouteWithChildren =
   )
 
 interface DashboardAdminRouteChildren {
+  DashboardAdminComplianceRoute: typeof DashboardAdminComplianceRoute
   DashboardAdminSecurityRoute: typeof DashboardAdminSecurityRouteWithChildren
 }
 
 const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
+  DashboardAdminComplianceRoute: DashboardAdminComplianceRoute,
   DashboardAdminSecurityRoute: DashboardAdminSecurityRouteWithChildren,
 }
 
@@ -1098,14 +1180,20 @@ const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(
 )
 
 interface DashboardSettingsRouteChildren {
+  DashboardSettingsDataDeletionRoute: typeof DashboardSettingsDataDeletionRoute
+  DashboardSettingsDataExportRoute: typeof DashboardSettingsDataExportRoute
   DashboardSettingsGeneralRoute: typeof DashboardSettingsGeneralRoute
+  DashboardSettingsPrivacyRoute: typeof DashboardSettingsPrivacyRoute
   DashboardSettingsProfileRoute: typeof DashboardSettingsProfileRoute
   DashboardSettingsSecurityRoute: typeof DashboardSettingsSecurityRoute
   DashboardSettingsIndexRoute: typeof DashboardSettingsIndexRoute
 }
 
 const DashboardSettingsRouteChildren: DashboardSettingsRouteChildren = {
+  DashboardSettingsDataDeletionRoute: DashboardSettingsDataDeletionRoute,
+  DashboardSettingsDataExportRoute: DashboardSettingsDataExportRoute,
   DashboardSettingsGeneralRoute: DashboardSettingsGeneralRoute,
+  DashboardSettingsPrivacyRoute: DashboardSettingsPrivacyRoute,
   DashboardSettingsProfileRoute: DashboardSettingsProfileRoute,
   DashboardSettingsSecurityRoute: DashboardSettingsSecurityRoute,
   DashboardSettingsIndexRoute: DashboardSettingsIndexRoute,
