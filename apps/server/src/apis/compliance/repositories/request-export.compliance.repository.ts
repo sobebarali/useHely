@@ -2,6 +2,7 @@
  * Request Export Repository
  *
  * Database operations for creating data export requests
+ * Export files are stored in R2, only metadata is stored in MongoDB
  */
 
 import {
@@ -71,29 +72,32 @@ export async function createExportRequest({
 }
 
 /**
- * Update export request with export data
+ * Update export request with R2 download URL and storage key
  */
-export async function updateExportWithData({
+export async function updateExportWithDownloadUrl({
 	requestId,
 	tenantId,
-	exportData,
+	downloadUrl,
+	storageKey,
 	downloadExpiry,
 }: {
 	requestId: string;
 	tenantId: string;
-	exportData: Record<string, unknown>;
+	downloadUrl: string;
+	storageKey: string;
 	downloadExpiry: Date;
 }): Promise<DataSubjectRequestDocument | null> {
 	const now = new Date();
 
-	logger.debug({ requestId, tenantId }, "Updating export with data");
+	logger.debug({ requestId, tenantId }, "Updating export with download URL");
 
 	const updated = await DataSubjectRequest.findOneAndUpdate(
 		{ _id: requestId, tenantId },
 		{
 			$set: {
 				status: DataSubjectRequestStatus.COMPLETED,
-				exportData,
+				downloadUrl,
+				metadata: { storageKey },
 				completedAt: now,
 				downloadExpiry,
 				updatedAt: now,
@@ -108,7 +112,7 @@ export async function updateExportWithData({
 			"update",
 			"data_subject_request",
 			{ requestId },
-			{ status: "COMPLETED" },
+			{ status: "COMPLETED", hasDownloadUrl: true },
 		);
 	}
 

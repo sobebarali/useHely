@@ -365,3 +365,35 @@ export async function countAuditLogsForExport({
 
 	return AuditLog.countDocuments(filter);
 }
+
+/**
+ * Fetch audit logs for export (streaming approach for large datasets)
+ */
+export async function fetchAuditLogsForExport({
+	tenantId,
+	startDate,
+	endDate,
+	categories,
+}: {
+	tenantId: string;
+	startDate: Date;
+	endDate: Date;
+	categories?: string[];
+}): Promise<AuditLogDocument[]> {
+	const filter: Record<string, unknown> = {
+		tenantId,
+		timestamp: { $gte: startDate, $lte: endDate },
+	};
+
+	if (categories && categories.length > 0) {
+		filter.category = { $in: categories };
+	}
+
+	logDatabaseOperation(logger, "find", "audit_log", { filter, limit: "all" });
+
+	const logs = await AuditLog.find(filter)
+		.sort({ timestamp: -1 })
+		.lean<AuditLogDocument[]>();
+
+	return logs;
+}

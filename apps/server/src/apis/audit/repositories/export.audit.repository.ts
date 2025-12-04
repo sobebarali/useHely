@@ -24,6 +24,7 @@ export type ExportDocument = {
 	estimatedRecords: number;
 	processedRecords: number;
 	downloadUrl?: string | null;
+	storageKey?: string | null;
 	errorMessage?: string | null;
 	requestedBy: string;
 	completedAt?: Date | null;
@@ -101,6 +102,7 @@ export async function updateExportStatus({
 	tenantId,
 	status,
 	downloadUrl,
+	storageKey,
 	errorMessage,
 	processedRecords,
 }: {
@@ -108,6 +110,7 @@ export async function updateExportStatus({
 	tenantId: string;
 	status: string;
 	downloadUrl?: string;
+	storageKey?: string;
 	errorMessage?: string;
 	processedRecords?: number;
 }): Promise<ExportDocument | null> {
@@ -116,6 +119,9 @@ export async function updateExportStatus({
 
 	if (downloadUrl) {
 		update.downloadUrl = downloadUrl;
+	}
+	if (storageKey) {
+		update.storageKey = storageKey;
 	}
 	if (errorMessage) {
 		update.errorMessage = errorMessage;

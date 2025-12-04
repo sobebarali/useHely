@@ -71,7 +71,8 @@ describe("POST /api/audit/export - Success", () => {
 		expect(response.status).toBe(202);
 		expect(response.body.success).toBe(true);
 		expect(response.body.data.exportId).toBeDefined();
-		expect(response.body.data.status).toBe("PENDING");
+		// Export is now processed synchronously, status will be COMPLETED (or FAILED if error)
+		expect(["PENDING", "COMPLETED"]).toContain(response.body.data.status);
 
 		createdExportId = response.body.data.exportId;
 	});

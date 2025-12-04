@@ -1,5 +1,6 @@
 import { BadRequestError, ConflictError } from "../../../errors";
 import { createServiceLogger } from "../../../lib/logger";
+import { uploadPatientPhoto } from "../../../lib/storage";
 import { findDepartmentById } from "../../users/repositories/shared.users.repository";
 import { createPatient } from "../repositories/register.patients.repository";
 import {
@@ -83,12 +84,28 @@ export async function registerPatientService({
 	// Generate patient ID
 	const patientId = await generatePatientId({ tenantId });
 
-	// Handle photo upload (in production, would upload to S3/cloud storage)
+	// Handle photo upload to R2 storage
 	let photoUrl: string | undefined;
 	if (photo) {
-		// For now, we'll skip actual upload - in production this would go to cloud storage
-		// photoUrl = await uploadPatientPhoto({ tenantId, patientId, photo });
-		logger.debug({ patientId }, "Photo upload skipped - would upload to cloud");
+		try {
+			const uploadedUrl = await uploadPatientPhoto({
+				tenantId,
+				patientId,
+				base64Data: photo,
+			});
+			if (uploadedUrl) {
+				photoUrl = uploadedUrl;
+				logger.info({ patientId }, "Patient photo uploaded successfully");
+			} else {
+				logger.warn(
+					{ patientId },
+					"Photo upload skipped - storage not configured",
+				);
+			}
+		} catch (error) {
+			logger.error({ patientId, error }, "Failed to upload patient photo");
+			// Continue without photo - non-critical failure
+		}
 	}
 
 	// Create patient record

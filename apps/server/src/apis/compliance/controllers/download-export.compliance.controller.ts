@@ -39,6 +39,11 @@ export const downloadExportController = authenticatedHandler(
 			duration,
 		);
 
+		// If we have a download URL (R2 storage), redirect to it
+		if (result.downloadUrl) {
+			return res.redirect(result.downloadUrl);
+		}
+
 		// Set appropriate headers based on format
 		if (result.format === "csv") {
 			res.setHeader("Content-Type", "text/csv");

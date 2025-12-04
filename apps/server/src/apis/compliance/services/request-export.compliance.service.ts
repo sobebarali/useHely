@@ -2,11 +2,13 @@
  * Request Export Service
  *
  * Business logic for requesting data export
+ * Uses Cloudflare R2 for file storage
  */
 
 import { DataExportFormat, DataSubjectRequestType } from "@hms/db";
-import { ConflictError } from "@/errors";
+import { BadRequestError, ConflictError } from "@/errors";
 import { createServiceLogger, logSuccess } from "@/lib/logger";
+import { isR2Configured, uploadExportFile } from "@/lib/storage";
 import {
 	ComplianceErrorCodes,
 	ComplianceMessages,
@@ -16,7 +18,7 @@ import {
 import {
 	createExportRequest,
 	markExportFailed,
-	updateExportWithData,
+	updateExportWithDownloadUrl,
 } from "../repositories/request-export.compliance.repository";
 import { findPendingRequestByUser } from "../repositories/shared.compliance.repository";
 import type {
@@ -47,6 +49,14 @@ export async function requestExportService({
 } & RequestExportInput): Promise<RequestExportOutput> {
 	logger.info({ tenantId, userId, format }, "Processing data export request");
 
+	// Check if R2 storage is configured
+	if (!isR2Configured) {
+		throw new BadRequestError(
+			"Storage service is not configured. Please contact your administrator.",
+			"STORAGE_NOT_CONFIGURED",
+		);
+	}
+
 	// Check for existing pending request
 	const existingRequest = await findPendingRequestByUser({
 		tenantId,
@@ -75,8 +85,8 @@ export async function requestExportService({
 	// Track final status for response
 	let finalStatus = request.status;
 
-	// For simplicity, process export synchronously
-	// In production, this would be a background job
+	// Process export synchronously
+	// In production, this would be a background job for large exports
 	try {
 		const collectedData = await collectUserData({
 			tenantId,
@@ -84,31 +94,50 @@ export async function requestExportService({
 			includeAuditLog,
 		});
 
-		// Prepare export data based on format
-		let exportData: Record<string, unknown>;
-		if (format === DataExportFormat.CSV) {
-			exportData = {
-				format: "csv",
-				content: convertToCSV(collectedData),
-			};
-		} else {
-			exportData = {
-				format: "json",
-				content: collectedData,
-			};
-		}
-
 		// Calculate download expiry
 		const downloadExpiry = new Date();
 		downloadExpiry.setDate(
 			downloadExpiry.getDate() + EXPORT_DOWNLOAD_EXPIRY_DAYS,
 		);
 
-		// Update request with export data
-		const updated = await updateExportWithData({
+		// Prepare export content based on format
+		let exportContent: string;
+		const formatType = format === DataExportFormat.CSV ? "csv" : "json";
+
+		if (format === DataExportFormat.CSV) {
+			exportContent = convertToCSV(collectedData);
+		} else {
+			exportContent = JSON.stringify(
+				{
+					requestId: request._id,
+					userId,
+					exportedAt: new Date().toISOString(),
+					data: collectedData,
+				},
+				null,
+				2,
+			);
+		}
+
+		// Upload to R2
+		const uploadResult = await uploadExportFile({
+			tenantId,
+			exportId: request._id,
+			type: "compliance",
+			format: formatType,
+			data: exportContent,
+		});
+
+		if (!uploadResult?.downloadUrl) {
+			throw new Error("Failed to upload export file to storage");
+		}
+
+		// Update request with download URL
+		const updated = await updateExportWithDownloadUrl({
 			requestId: request._id,
 			tenantId,
-			exportData,
+			downloadUrl: uploadResult.downloadUrl,
+			storageKey: uploadResult.key,
 			downloadExpiry,
 		});
 
