@@ -1,6 +1,5 @@
-import { getPasswordResetEmailTemplate } from "../../../lib/email/templates/password-reset";
 import { createServiceLogger } from "../../../lib/logger";
-import { sendEmail } from "../../../lib/mailer";
+import { enqueuePasswordResetEmail } from "../../../lib/queue";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import { createResetToken } from "../repositories/forgot-password.users.repository";
 import {
@@ -74,21 +73,20 @@ export async function forgotPasswordService({
 		const baseUrl = process.env.CORS_ORIGIN || "";
 		const resetUrl = `${baseUrl}/reset-password?token=${token}`;
 
-		// Send email
-		await sendEmail({
+		// Queue password reset email
+		enqueuePasswordResetEmail({
 			to: email,
-			subject: `Password Reset Request - ${hospital.name}`,
-			html: getPasswordResetEmailTemplate({
-				firstName: staff.firstName || "User",
-				hospitalName: hospital.name,
-				resetUrl,
-			}),
-			category: "PasswordReset",
+			name: staff.firstName || "User",
+			resetToken: token,
+			resetUrl,
+			expiresInMinutes: 60, // 1 hour
+		}).catch((error) => {
+			logger.error({ error }, "Failed to queue password reset email");
 		});
 
 		logger.info(
 			{ email: `****@${email.split("@")[1]}` },
-			"Password reset email sent",
+			"Password reset email queued",
 		);
 	} catch (error) {
 		// Log error but don't expose to user

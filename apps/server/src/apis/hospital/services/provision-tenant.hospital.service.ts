@@ -1,9 +1,8 @@
 import { mongoose, OrganizationType } from "@hms/db";
 import { RoleNames } from "../../../constants";
 import { InternalError } from "../../../errors";
-import { getWelcomeEmailTemplate } from "../../../lib/email/templates/welcome";
 import { createServiceLogger, logError } from "../../../lib/logger";
-import { sendEmail } from "../../../lib/mailer";
+import { enqueueWelcomeEmail } from "../../../lib/queue";
 import { seedSystemRoles } from "../../../lib/seed/system-roles.seed";
 import { generateTemporaryPassword, hashPassword } from "../../../utils/crypto";
 import { findRoleByName } from "../../roles/repositories/shared.roles.repository";
@@ -153,27 +152,19 @@ export async function provisionTenant({
 			);
 		});
 
-		// Step 5: Send welcome email with credentials (outside transaction - non-critical)
-		try {
-			await sendEmail({
-				to: adminEmail,
-				subject: `Welcome to ${hospitalName} - Your Admin Account Has Been Created`,
-				html: getWelcomeEmailTemplate({
-					firstName: displayName.split(" ")[0] || "Admin",
-					hospitalName,
-					username: adminEmail,
-					temporaryPassword,
-					loginUrl: process.env.CORS_ORIGIN || "",
-				}),
-				category: "Welcome",
-			});
-			logger.info({ adminEmail }, "Welcome email sent to admin");
-		} catch (emailError) {
-			// Log error but don't fail provisioning if email fails
-			logError(logger, emailError, "Failed to send welcome email", {
+		// Step 5: Queue welcome email with credentials (outside transaction - non-critical)
+		enqueueWelcomeEmail({
+			to: adminEmail,
+			name: displayName.split(" ")[0] || "Admin",
+			temporaryPassword,
+			hospitalName,
+			loginUrl: process.env.CORS_ORIGIN || "",
+		}).catch((emailError) => {
+			// Log error but don't fail provisioning if email queueing fails
+			logError(logger, emailError, "Failed to queue welcome email", {
 				adminEmail,
 			});
-		}
+		});
 
 		logger.info(
 			{ tenantId, adminEmail },

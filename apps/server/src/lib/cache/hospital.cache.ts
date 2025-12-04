@@ -18,7 +18,8 @@ export async function getCachedHospital(id: string): Promise<unknown | null> {
 	try {
 		const key = `${HOSPITAL_CACHE_KEYS.HOSPITAL}${id}`;
 		const cached = await redis.get(key);
-		return cached;
+		if (!cached) return null;
+		return JSON.parse(cached);
 	} catch (error) {
 		console.error("Redis get error:", error);
 		return null; // Fail silently, fall back to database
@@ -85,7 +86,7 @@ export async function getVerificationToken(
 	try {
 		const key = `${HOSPITAL_CACHE_KEYS.VERIFICATION_TOKEN}${hospitalId}`;
 		const token = await redis.get(key);
-		return token as string | null;
+		return token;
 	} catch (error) {
 		console.error("Redis get verification token error:", error);
 		return null; // Fall back to database

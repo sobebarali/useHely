@@ -21,6 +21,7 @@ import securityRoutes from "./apis/security/security.routes";
 import usersRoutes from "./apis/users/users.routes";
 import vitalsRoutes from "./apis/vitals/vitals.routes";
 import { logger } from "./lib/logger";
+import { closeQueues, startWorkers, stopWorkers } from "./lib/queue";
 import { errorHandler } from "./middlewares/error-handler";
 import { requestContext } from "./middlewares/request-context";
 import { requestLogger } from "./middlewares/request-logger";
@@ -118,7 +119,42 @@ app.use(errorHandler);
 // Only start server if not in test environment
 if (process.env.NODE_ENV !== "test") {
 	const port = process.env.PORT || 3000;
-	app.listen(port, () => {
+
+	// Start background workers
+	startWorkers();
+
+	const server = app.listen(port, () => {
 		logger.info({ port }, `Server is running on port ${port}`);
 	});
+
+	// Graceful shutdown
+	const gracefulShutdown = async (signal: string) => {
+		logger.info(
+			{ signal },
+			"Received shutdown signal, starting graceful shutdown...",
+		);
+
+		server.close(async () => {
+			logger.info("HTTP server closed");
+
+			try {
+				await stopWorkers();
+				await closeQueues();
+				logger.info("Background workers and queues stopped");
+				process.exit(0);
+			} catch (error) {
+				logger.error({ error }, "Error during shutdown");
+				process.exit(1);
+			}
+		});
+
+		// Force shutdown after 30 seconds
+		setTimeout(() => {
+			logger.error("Forced shutdown after timeout");
+			process.exit(1);
+		}, 30000);
+	};
+
+	process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+	process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 }

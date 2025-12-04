@@ -2,7 +2,7 @@
  * Cloudflare R2 Storage Client
  *
  * S3-compatible storage client using AWS SDK v3
- * Follows the same pattern as redis.ts for graceful fallback
+ * Uses lazy initialization to ensure environment variables are loaded
  */
 
 import {
@@ -17,33 +17,51 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// R2 Configuration from environment
-const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
-const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
-const R2_SECRET_ACCESS_KEY = process.env.R2_SECRET_ACCESS_KEY;
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME || "usehely-media";
+// R2 Configuration - lazy loaded from environment
+const getR2Config = () => ({
+	accountId: process.env.R2_ACCOUNT_ID,
+	accessKeyId: process.env.R2_ACCESS_KEY_ID,
+	secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+	bucketName: process.env.R2_BUCKET_NAME || "usehely-media",
+});
 
-const isR2Configured = Boolean(
-	R2_ACCOUNT_ID && R2_ACCESS_KEY_ID && R2_SECRET_ACCESS_KEY,
-);
+// Getter for bucket name (lazy evaluated)
+const getBucketName = () => process.env.R2_BUCKET_NAME || "usehely-media";
 
-// Create S3 client for R2
-const createR2Client = (): S3Client | null => {
-	if (!isR2Configured) {
+// Check if R2 is configured (lazy evaluated)
+const checkR2Configured = (): boolean => {
+	const config = getR2Config();
+	return Boolean(
+		config.accountId && config.accessKeyId && config.secretAccessKey,
+	);
+};
+
+// Lazy-initialized S3 client
+let r2ClientInstance: S3Client | null = null;
+
+const getR2Client = (): S3Client | null => {
+	// Check config each time to handle late env loading in tests
+	if (!checkR2Configured()) {
 		return null;
 	}
 
-	return new S3Client({
+	if (r2ClientInstance) {
+		return r2ClientInstance;
+	}
+
+	const config = getR2Config();
+
+	r2ClientInstance = new S3Client({
 		region: "auto",
-		endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+		endpoint: `https://${config.accountId}.r2.cloudflarestorage.com`,
 		credentials: {
-			accessKeyId: R2_ACCESS_KEY_ID!,
-			secretAccessKey: R2_SECRET_ACCESS_KEY!,
+			accessKeyId: config.accessKeyId!,
+			secretAccessKey: config.secretAccessKey!,
 		},
 	});
-};
 
-const r2Client = createR2Client();
+	return r2ClientInstance;
+};
 
 /**
  * Upload a file to R2 storage
@@ -53,7 +71,7 @@ export async function uploadFile({
 	body,
 	contentType,
 	metadata,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 }: {
 	key: string;
 	body: Buffer | Uint8Array | string;
@@ -61,13 +79,16 @@ export async function uploadFile({
 	metadata?: Record<string, string>;
 	bucket?: string;
 }): Promise<{ key: string; bucket: string } | null> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		console.warn("[R2] Storage not configured, skipping upload");
 		return null;
 	}
 
 	const params: PutObjectCommandInput = {
-		Bucket: bucket,
+		Bucket: bucketName,
 		Key: key,
 		Body: body,
 		ContentType: contentType,
@@ -76,7 +97,7 @@ export async function uploadFile({
 
 	await r2Client.send(new PutObjectCommand(params));
 
-	return { key, bucket };
+	return { key, bucket: bucketName };
 }
 
 /**
@@ -84,18 +105,21 @@ export async function uploadFile({
  */
 export async function getFile({
 	key,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 }: {
 	key: string;
 	bucket?: string;
 }): Promise<{ body: Uint8Array; contentType: string | undefined } | null> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		console.warn("[R2] Storage not configured, cannot retrieve file");
 		return null;
 	}
 
 	const params: GetObjectCommandInput = {
-		Bucket: bucket,
+		Bucket: bucketName,
 		Key: key,
 	};
 
@@ -118,18 +142,21 @@ export async function getFile({
  */
 export async function deleteFile({
 	key,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 }: {
 	key: string;
 	bucket?: string;
 }): Promise<boolean> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		console.warn("[R2] Storage not configured, cannot delete file");
 		return false;
 	}
 
 	const params: DeleteObjectCommandInput = {
-		Bucket: bucket,
+		Bucket: bucketName,
 		Key: key,
 	};
 
@@ -143,11 +170,14 @@ export async function deleteFile({
  */
 export async function fileExists({
 	key,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 }: {
 	key: string;
 	bucket?: string;
 }): Promise<boolean> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		return false;
 	}
@@ -155,7 +185,7 @@ export async function fileExists({
 	try {
 		await r2Client.send(
 			new HeadObjectCommand({
-				Bucket: bucket,
+				Bucket: bucketName,
 				Key: key,
 			}),
 		);
@@ -170,20 +200,23 @@ export async function fileExists({
  */
 export async function getSignedDownloadUrl({
 	key,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 	expiresIn = 3600,
 }: {
 	key: string;
 	bucket?: string;
 	expiresIn?: number;
 }): Promise<string | null> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		console.warn("[R2] Storage not configured, cannot generate download URL");
 		return null;
 	}
 
 	const command = new GetObjectCommand({
-		Bucket: bucket,
+		Bucket: bucketName,
 		Key: key,
 	});
 
@@ -196,7 +229,7 @@ export async function getSignedDownloadUrl({
 export async function getSignedUploadUrl({
 	key,
 	contentType,
-	bucket = R2_BUCKET_NAME,
+	bucket,
 	expiresIn = 3600,
 }: {
 	key: string;
@@ -204,13 +237,16 @@ export async function getSignedUploadUrl({
 	bucket?: string;
 	expiresIn?: number;
 }): Promise<string | null> {
+	const r2Client = getR2Client();
+	const bucketName = bucket || getBucketName();
+
 	if (!r2Client) {
 		console.warn("[R2] Storage not configured, cannot generate upload URL");
 		return null;
 	}
 
 	const command = new PutObjectCommand({
-		Bucket: bucket,
+		Bucket: bucketName,
 		Key: key,
 		ContentType: contentType,
 	});
@@ -229,7 +265,9 @@ export function getPublicUrl({
 	key: string;
 	customDomain?: string;
 }): string | null {
-	if (!isR2Configured) {
+	const config = getR2Config();
+
+	if (!checkR2Configured()) {
 		return null;
 	}
 
@@ -238,7 +276,12 @@ export function getPublicUrl({
 	}
 
 	// Default R2.dev public URL format (requires public access enabled)
-	return `https://pub-${R2_ACCOUNT_ID}.r2.dev/${key}`;
+	return `https://pub-${config.accountId}.r2.dev/${key}`;
 }
 
-export { isR2Configured, R2_BUCKET_NAME };
+// Export lazy-evaluated getters
+export const isR2Configured = checkR2Configured();
+export const R2_BUCKET_NAME = getBucketName();
+
+// Re-export the check function for runtime evaluation
+export { checkR2Configured };

@@ -2,33 +2,25 @@
  * Request Export Service
  *
  * Business logic for requesting data export
- * Uses Cloudflare R2 for file storage
+ * Uses BullMQ for background processing and Cloudflare R2 for file storage
  */
 
 import { DataExportFormat, DataSubjectRequestType } from "@hms/db";
 import { BadRequestError, ConflictError } from "@/errors";
 import { createServiceLogger, logSuccess } from "@/lib/logger";
-import { isR2Configured, uploadExportFile } from "@/lib/storage";
+import { enqueueComplianceExport } from "@/lib/queue";
+import { isR2Configured } from "@/lib/storage";
 import {
 	ComplianceErrorCodes,
 	ComplianceMessages,
-	EXPORT_DOWNLOAD_EXPIRY_DAYS,
 	EXPORT_MAX_PROCESSING_HOURS,
 } from "../compliance.constants";
-import {
-	createExportRequest,
-	markExportFailed,
-	updateExportWithDownloadUrl,
-} from "../repositories/request-export.compliance.repository";
+import { createExportRequest } from "../repositories/request-export.compliance.repository";
 import { findPendingRequestByUser } from "../repositories/shared.compliance.repository";
 import type {
 	RequestExportInput,
 	RequestExportOutput,
 } from "../validations/request-export.compliance.validation";
-import {
-	collectUserData,
-	convertToCSV,
-} from "./data-collector.compliance.service";
 
 const logger = createServiceLogger("requestExport");
 
@@ -50,7 +42,7 @@ export async function requestExportService({
 	logger.info({ tenantId, userId, format }, "Processing data export request");
 
 	// Check if R2 storage is configured
-	if (!isR2Configured) {
+	if (!isR2Configured()) {
 		throw new BadRequestError(
 			"Storage service is not configured. Please contact your administrator.",
 			"STORAGE_NOT_CONFIGURED",
@@ -82,91 +74,16 @@ export async function requestExportService({
 		userAgent,
 	});
 
-	// Track final status for response
-	let finalStatus = request.status;
-
-	// Process export synchronously
-	// In production, this would be a background job for large exports
-	try {
-		const collectedData = await collectUserData({
-			tenantId,
-			userId,
-			includeAuditLog,
-		});
-
-		// Calculate download expiry
-		const downloadExpiry = new Date();
-		downloadExpiry.setDate(
-			downloadExpiry.getDate() + EXPORT_DOWNLOAD_EXPIRY_DAYS,
-		);
-
-		// Prepare export content based on format
-		let exportContent: string;
-		const formatType = format === DataExportFormat.CSV ? "csv" : "json";
-
-		if (format === DataExportFormat.CSV) {
-			exportContent = convertToCSV(collectedData);
-		} else {
-			exportContent = JSON.stringify(
-				{
-					requestId: request._id,
-					userId,
-					exportedAt: new Date().toISOString(),
-					data: collectedData,
-				},
-				null,
-				2,
-			);
-		}
-
-		// Upload to R2
-		const uploadResult = await uploadExportFile({
-			tenantId,
-			exportId: request._id,
-			type: "compliance",
-			format: formatType,
-			data: exportContent,
-		});
-
-		if (!uploadResult?.downloadUrl) {
-			throw new Error("Failed to upload export file to storage");
-		}
-
-		// Update request with download URL
-		const updated = await updateExportWithDownloadUrl({
-			requestId: request._id,
-			tenantId,
-			downloadUrl: uploadResult.downloadUrl,
-			storageKey: uploadResult.key,
-			downloadExpiry,
-		});
-
-		if (updated) {
-			finalStatus = updated.status;
-		}
-
-		logger.info(
-			{ requestId: request._id, format },
-			"Data export completed successfully",
-		);
-	} catch (error) {
-		// Mark export as failed and log error
-		const errorMessage =
-			error instanceof Error ? error.message : "Unknown error during export";
-
-		await markExportFailed({
-			requestId: request._id,
-			tenantId,
-			errorMessage,
-		});
-
-		finalStatus = "FAILED";
-
-		logger.error(
-			{ error, requestId: request._id, errorMessage },
-			"Error processing export - marked as FAILED",
-		);
-	}
+	// Enqueue background job for processing
+	const formatType = format === DataExportFormat.CSV ? "csv" : "json";
+	await enqueueComplianceExport({
+		requestId: request._id,
+		tenantId,
+		userId,
+		userEmail,
+		format: formatType,
+		includeAuditLog: includeAuditLog ?? false,
+	});
 
 	// Calculate estimated completion
 	const estimatedCompletion = new Date();
@@ -174,20 +91,22 @@ export async function requestExportService({
 		estimatedCompletion.getHours() + EXPORT_MAX_PROCESSING_HOURS,
 	);
 
-	const result: RequestExportOutput = {
-		requestId: request._id,
-		type: request.type,
-		status: finalStatus,
-		format: request.format || DataExportFormat.JSON,
-		createdAt: request.createdAt.toISOString(),
-		estimatedCompletion: estimatedCompletion.toISOString(),
-	};
-
 	logSuccess(
 		logger,
 		{ requestId: request._id },
 		ComplianceMessages.EXPORT_REQUESTED,
 	);
+
+	// Return immediately with PENDING status
+	// Client should poll for completion
+	const result: RequestExportOutput = {
+		requestId: request._id,
+		type: request.type,
+		status: request.status,
+		format: request.format || DataExportFormat.JSON,
+		createdAt: request.createdAt.toISOString(),
+		estimatedCompletion: estimatedCompletion.toISOString(),
+	};
 
 	return result;
 }

@@ -118,8 +118,8 @@ async function authenticateAsync(
 			// Use cached session data
 			req.user = {
 				id: cachedSession.userId,
-				email: "", // Not cached, can be fetched if needed
-				name: "",
+				email: cachedSession.email,
+				name: cachedSession.name,
 				tenantId: cachedSession.tenantId,
 				roles: cachedSession.roles,
 				permissions: cachedSession.permissions,

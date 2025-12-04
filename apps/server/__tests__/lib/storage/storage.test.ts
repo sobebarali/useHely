@@ -25,8 +25,12 @@ import {
 
 describe("Storage Service", () => {
 	describe("Configuration", () => {
-		it("should export isR2Configured flag", () => {
-			expect(typeof isR2Configured).toBe("boolean");
+		it("should export isR2Configured as a function", () => {
+			expect(typeof isR2Configured).toBe("function");
+		});
+
+		it("should return boolean from isR2Configured", () => {
+			expect(typeof isR2Configured()).toBe("boolean");
 		});
 
 		it("should export storage prefixes", () => {
@@ -97,7 +101,7 @@ describe("Storage Service", () => {
 		// They should pass regardless of R2 configuration
 
 		it("should return null when uploading without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				// Skip this test if R2 is configured
 				return;
 			}
@@ -112,7 +116,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return null when getting file without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -121,7 +125,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return false when checking file exists without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -130,7 +134,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return false when deleting without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -139,7 +143,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return null for signed download URL without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -148,7 +152,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return null for signed upload URL without R2 configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -162,7 +166,7 @@ describe("Storage Service", () => {
 
 	describe("Patient Photo Upload", () => {
 		it("should reject invalid base64 format", async () => {
-			if (!isR2Configured) {
+			if (!isR2Configured()) {
 				// When R2 is not configured, upload returns null without throwing
 				const result = await uploadPatientPhoto({
 					tenantId: "tenant-123",
@@ -184,7 +188,7 @@ describe("Storage Service", () => {
 		});
 
 		it("should return null when R2 not configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -200,7 +204,7 @@ describe("Storage Service", () => {
 
 	describe("Export File Upload", () => {
 		it("should return null when R2 not configured", async () => {
-			if (isR2Configured) {
+			if (isR2Configured()) {
 				return;
 			}
 
@@ -224,13 +228,13 @@ describe("Storage Integration Tests (requires R2)", () => {
 	const testContent = "Integration test content";
 
 	beforeAll(() => {
-		if (!isR2Configured) {
+		if (!isR2Configured()) {
 			console.log("Skipping R2 integration tests - R2 not configured");
 		}
 	});
 
 	it("should upload, verify, download, and delete a file", async () => {
-		if (!isR2Configured) {
+		if (!isR2Configured()) {
 			return;
 		}
 
@@ -278,7 +282,7 @@ describe("Storage Integration Tests (requires R2)", () => {
 	});
 
 	it("should upload and download export file", async () => {
-		if (!isR2Configured) {
+		if (!isR2Configured()) {
 			return;
 		}
 

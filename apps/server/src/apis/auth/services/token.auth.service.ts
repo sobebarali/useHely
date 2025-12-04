@@ -289,6 +289,8 @@ async function handlePasswordGrant({
 	await cacheSession({
 		sessionId: accessToken,
 		userId: String(user._id),
+		email: user.email,
+		name: user.name,
 		tenantId: tenant_id,
 		roles: roleNames,
 		permissions: uniquePermissions,
@@ -525,6 +527,8 @@ async function handleMfaGrant({
 	await cacheSession({
 		sessionId: accessToken,
 		userId,
+		email: user.email,
+		name: user.name,
 		tenantId,
 		roles: roleNames,
 		permissions: uniquePermissions,
@@ -653,6 +657,13 @@ async function handleRefreshTokenGrant({
 	const permissions = roles.flatMap((r) => r.permissions || []);
 	const uniquePermissions = [...new Set(permissions)];
 
+	// Fetch user for email and name to cache in session
+	const user = await findUserById({ userId });
+	if (!user) {
+		logger.warn({ userId }, "User not found for refresh token grant");
+		throw new InvalidTokenError("User not found");
+	}
+
 	// Generate new access token
 	const accessToken = randomBytes(32).toString("hex");
 	const accessExpiresAt = new Date(
@@ -673,6 +684,8 @@ async function handleRefreshTokenGrant({
 	await cacheSession({
 		sessionId: accessToken,
 		userId,
+		email: user.email,
+		name: user.name,
 		tenantId,
 		roles: roleNames,
 		permissions: uniquePermissions,

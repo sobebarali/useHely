@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { User } from "@hms/db";
 import { TOKEN_CONFIG } from "../../../constants";
 import {
 	AccountLockedError,
@@ -123,6 +124,13 @@ export async function switchTenant({
 	const permissions = roles.flatMap((r) => r.permissions || []);
 	const uniquePermissions = [...new Set(permissions)];
 
+	// Fetch user for email and name to cache in session
+	const user = await User.findById(userId).lean();
+	if (!user) {
+		logger.warn({ userId }, "User not found for tenant switch");
+		throw new BadRequestError("User not found", "USER_NOT_FOUND");
+	}
+
 	// Revoke current access token
 	await revokeToken({ token: currentToken });
 	await deleteSessionByToken({ token: currentToken });
@@ -163,6 +171,8 @@ export async function switchTenant({
 	await cacheSession({
 		sessionId: accessToken,
 		userId,
+		email: user.email,
+		name: user.name,
 		tenantId: targetTenantId,
 		roles: roleNames,
 		permissions: uniquePermissions,

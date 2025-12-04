@@ -35,15 +35,16 @@ describe("MFA Challenge Cache Functions", () => {
 
 			// Verify the challenge exists in Redis
 			const key = `${AUTH_CACHE_KEYS.MFA_CHALLENGE}${challengeToken}`;
-			const data = await redis.get<{
-				userId: string;
-				tenantId: string;
-				createdAt: number;
-			}>(key);
+			const rawData = await redis.get(key);
 
-			expect(data).not.toBeNull();
+			expect(rawData).not.toBeNull();
 
-			if (data) {
+			if (rawData) {
+				const data = JSON.parse(rawData) as {
+					userId: string;
+					tenantId: string;
+					createdAt: number;
+				};
 				expect(data.userId).toBe(userId);
 				expect(data.tenantId).toBe(tenantId);
 				expect(data.createdAt).toBeDefined();

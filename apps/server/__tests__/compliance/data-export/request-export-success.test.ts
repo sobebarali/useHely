@@ -38,6 +38,11 @@ describe("POST /api/compliance/data-export - Request export success", () => {
 			.set("Authorization", `Bearer ${accessToken}`)
 			.send(payload);
 
+		// Debug: log response if not 202
+		if (response.status !== 202) {
+			console.error("Request failed:", response.status, response.body);
+		}
+
 		expect(response.status).toBe(202);
 		expect(response.body.success).toBe(true);
 		expect(response.body.data).toHaveProperty("requestId");
@@ -55,10 +60,9 @@ describe("POST /api/compliance/data-export - Request export success", () => {
 		expect(req?.userId).toBe(context.userId);
 	});
 
-	it("allows new export request after previous completes", async () => {
-		// Note: In our implementation, exports are processed synchronously for simplicity
-		// The previous request completed immediately, so a new request is allowed
-		// In production with async processing, this would reject with 409 EXPORT_PENDING
+	it("rejects new export request while previous is pending", async () => {
+		// With async BullMQ processing, the previous request stays in PENDING status
+		// until the worker processes it. A new request should be rejected.
 		const payload = {
 			format: "csv", // Different format to distinguish
 			includeAuditLog: false,
@@ -69,11 +73,11 @@ describe("POST /api/compliance/data-export - Request export success", () => {
 			.set("Authorization", `Bearer ${accessToken}`)
 			.send(payload);
 
-		expect(response.status).toBe(202);
-		expect(response.body.success).toBe(true);
-		expect(response.body.data.format).toBe("csv");
-
-		// Cleanup the second request
-		await DataSubjectRequest.deleteOne({ _id: response.body.data.requestId });
+		// Should reject with 409 because previous request is still pending
+		expect(response.status).toBe(409);
+		expect(response.body.code).toBe("EXPORT_PENDING");
+		expect(response.body.message).toBe(
+			"A data export request is already pending",
+		);
 	});
 });

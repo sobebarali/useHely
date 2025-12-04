@@ -38,7 +38,7 @@ export async function refreshDashboardService({
 	}
 
 	// Set cooldown
-	await redis.set(cooldownKey, "1", { ex: REFRESH_COOLDOWN_SECONDS });
+	await redis.setex(cooldownKey, REFRESH_COOLDOWN_SECONDS, "1");
 
 	logger.info({ tenantId, userId }, "Dashboard refresh completed");
 

@@ -1,5 +1,10 @@
-import { DataSubjectRequest } from "@hms/db";
+import {
+	DataSubjectRequest,
+	DataSubjectRequestStatus,
+	DataSubjectRequestType,
+} from "@hms/db";
 import request from "supertest";
+import { v4 as uuidv4 } from "uuid";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { app } from "../../../src/index";
 import {
@@ -19,16 +24,27 @@ describe("GET /api/compliance/data-export/:requestId/download - Success", () => 
 		const tokens = await context.issuePasswordTokens();
 		accessToken = tokens.accessToken;
 
-		// Create an export request (processed synchronously)
-		const exportResponse = await request(app)
-			.post("/api/compliance/data-export")
-			.set("Authorization", `Bearer ${accessToken}`)
-			.send({
-				format: "json",
-				includeAuditLog: true,
-			});
+		// Create a completed export request directly in DB
+		// (Since exports are processed async via BullMQ, we simulate a completed export)
+		const downloadExpiry = new Date();
+		downloadExpiry.setDate(downloadExpiry.getDate() + 30);
 
-		exportRequestId = exportResponse.body.data.requestId;
+		exportRequestId = uuidv4();
+
+		await DataSubjectRequest.create({
+			_id: exportRequestId,
+			tenantId: context.hospitalId,
+			userId: context.userId,
+			userEmail: context.email,
+			type: DataSubjectRequestType.EXPORT,
+			status: DataSubjectRequestStatus.COMPLETED,
+			format: "json",
+			includeAuditLog: true,
+			downloadUrl:
+				"https://example.r2.cloudflarestorage.com/exports/test-export.json",
+			downloadExpiry,
+			completedAt: new Date(),
+		});
 	}, 30000);
 
 	afterAll(async () => {
@@ -41,11 +57,12 @@ describe("GET /api/compliance/data-export/:requestId/download - Success", () => 
 	it("downloads completed JSON export successfully", async () => {
 		const response = await request(app)
 			.get(`/api/compliance/data-export/${exportRequestId}/download`)
-			.set("Authorization", `Bearer ${accessToken}`);
+			.set("Authorization", `Bearer ${accessToken}`)
+			.redirects(0); // Don't follow redirects
 
-		expect(response.status).toBe(200);
-		// Download endpoint returns raw content directly (not wrapped in success/data)
-		expect(response.headers["content-type"]).toMatch(/application\/json/);
-		expect(response.headers["content-disposition"]).toMatch(/attachment/);
+		// When R2 is configured, the endpoint redirects to a presigned URL
+		expect(response.status).toBe(302);
+		expect(response.headers.location).toBeDefined();
+		expect(response.headers.location).toMatch(/r2\.cloudflarestorage\.com/);
 	});
 });

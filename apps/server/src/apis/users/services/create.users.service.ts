@@ -3,12 +3,11 @@ import {
 	ConflictError,
 	ForbiddenError,
 } from "../../../errors";
-import {
-	getLinkedUserEmailTemplate,
-	getWelcomeEmailTemplate,
-} from "../../../lib/email/templates/welcome";
 import { createServiceLogger } from "../../../lib/logger";
-import { sendEmail } from "../../../lib/mailer";
+import {
+	enqueueLinkedUserEmail,
+	enqueueWelcomeEmail,
+} from "../../../lib/queue";
 import { generateTemporaryPassword, hashPassword } from "../../../utils/crypto";
 import { findHospitalById } from "../../hospital/repositories/shared.hospital.repository";
 import {
@@ -147,23 +146,17 @@ export async function createUserService({
 		});
 		staff = result.staff;
 
-		// Send notification email for linked user (no password - use existing credentials)
-		try {
-			await sendEmail({
-				to: email,
-				subject: `You've been added to ${hospital.name}`,
-				html: getLinkedUserEmailTemplate({
-					firstName,
-					hospitalName: hospital.name,
-					loginUrl: process.env.CORS_ORIGIN || "",
-				}),
-				category: "Welcome",
-			});
-			logger.info({ email }, "Linked user notification email sent");
-		} catch (emailError) {
-			logger.error({ error: emailError }, "Failed to send linked user email");
-			// Don't fail the request if email fails
-		}
+		// Queue notification email for linked user (no password - use existing credentials)
+		enqueueLinkedUserEmail({
+			to: email,
+			name: firstName,
+			linkedByName: hospital.name,
+			hospitalName: hospital.name,
+			temporaryPassword: "", // Not used for linked users
+			loginUrl: process.env.CORS_ORIGIN || "",
+		}).catch((error) => {
+			logger.error({ error }, "Failed to queue linked user email");
+		});
 
 		logger.info(
 			{
@@ -205,25 +198,16 @@ export async function createUserService({
 	});
 	staff = result.staff;
 
-	// Send welcome email with temporary credentials
-	try {
-		await sendEmail({
-			to: email,
-			subject: `Welcome to ${hospital.name} - Your Account Has Been Created`,
-			html: getWelcomeEmailTemplate({
-				firstName,
-				hospitalName: hospital.name,
-				username: email, // Use email as username for login
-				temporaryPassword,
-				loginUrl: process.env.CORS_ORIGIN || "",
-			}),
-			category: "Welcome",
-		});
-		logger.info({ email }, "Welcome email sent");
-	} catch (emailError) {
-		logger.error({ error: emailError }, "Failed to send welcome email");
-		// Don't fail the request if email fails
-	}
+	// Queue welcome email with temporary credentials
+	enqueueWelcomeEmail({
+		to: email,
+		name: firstName,
+		temporaryPassword,
+		hospitalName: hospital.name,
+		loginUrl: process.env.CORS_ORIGIN || "",
+	}).catch((error) => {
+		logger.error({ error }, "Failed to queue welcome email");
+	});
 
 	logger.info(
 		{
@@ -246,6 +230,6 @@ export async function createUserService({
 			name: r.name,
 		})),
 		status: staff.status || "ACTIVE",
-		message: "Welcome email sent with temporary credentials",
+		message: "Welcome email queued with temporary credentials",
 	};
 }

@@ -7,17 +7,21 @@
 
 import { createServiceLogger } from "../logger";
 import {
+	checkR2Configured,
 	deleteFile,
 	fileExists,
 	getFile,
 	getSignedDownloadUrl,
 	getSignedUploadUrl,
-	isR2Configured,
 	R2_BUCKET_NAME,
 	uploadFile,
 } from "./r2";
 
 const logger = createServiceLogger("storage");
+
+// Export checkR2Configured as isR2Configured for backward compatibility
+// This is a function that checks at runtime, not a static value
+export { checkR2Configured as isR2Configured };
 
 /**
  * Storage key prefixes for different resource types
@@ -115,7 +119,7 @@ export async function uploadPatientPhoto({
 	patientId: string;
 	base64Data: string;
 }): Promise<string | null> {
-	if (!isR2Configured) {
+	if (!checkR2Configured()) {
 		logger.warn(
 			{ tenantId, patientId },
 			"R2 not configured, skipping photo upload",
@@ -222,7 +226,7 @@ export async function uploadExportFile({
 	format: "json" | "csv" | "pdf" | "xlsx" | "parquet";
 	data: Buffer | string;
 }): Promise<{ key: string; downloadUrl: string | null } | null> {
-	if (!isR2Configured) {
+	if (!checkR2Configured()) {
 		logger.warn(
 			{ tenantId, exportId, type },
 			"R2 not configured, skipping export upload",
@@ -339,6 +343,5 @@ export {
 	getSignedDownloadUrl,
 	getSignedUploadUrl,
 	fileExists,
-	isR2Configured,
 	R2_BUCKET_NAME,
 };

@@ -7,8 +7,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { ConflictError } from "../../../errors";
 import { setVerificationToken } from "../../../lib/cache/hospital.cache";
-import { sendHospitalVerificationEmail } from "../../../lib/email/hospital-email.service";
 import { createServiceLogger, logError } from "../../../lib/logger";
+import { enqueueHospitalVerificationEmail } from "../../../lib/queue";
 import { findUserByEmail } from "../../users/repositories/shared.users.repository";
 import { createHospital } from "../repositories/register.hospital.repository";
 import {
@@ -334,31 +334,31 @@ async function registerHospitalWithVerification({
 			"Verification token stored in Redis with 24h TTL",
 		);
 
-		// Send verification email
+		// Queue verification email
 		try {
-			logger.info({ adminEmail }, "Sending verification email");
+			logger.info({ adminEmail }, "Queueing verification email");
 			const verificationUrl = `${process.env.CORS_ORIGIN}/verify-hospital?hospitalId=${organizationId}&token=${verificationToken}`;
 
-			await sendHospitalVerificationEmail({
+			enqueueHospitalVerificationEmail({
 				to: adminEmail,
-				data: {
-					hospitalName: name,
-					licenseNumber,
-					adminEmail,
-					verificationUrl,
-					supportEmail: contactEmail,
-				},
+				hospitalName: name,
+				verificationToken,
+				verificationUrl,
+				licenseNumber,
+				adminEmail,
+			}).catch((error) => {
+				logger.error({ error }, "Failed to queue hospital verification email");
 			});
 
-			logger.info({ adminEmail }, "Verification email sent successfully");
+			logger.info({ adminEmail }, "Verification email queued successfully");
 		} catch (emailError) {
-			logError(logger, emailError, "Failed to send verification email", {
+			logError(logger, emailError, "Failed to queue verification email", {
 				organizationId,
 				adminEmail,
 			});
 			// Don't throw - organization was created successfully, email failure shouldn't block registration
 			logger.warn(
-				"Organization registration completed but verification email failed to send",
+				"Organization registration completed but verification email failed to queue",
 			);
 		}
 

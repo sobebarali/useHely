@@ -30,6 +30,8 @@ function hashToken(token: string): string {
 export async function cacheSession({
 	sessionId,
 	userId,
+	email,
+	name,
 	tenantId,
 	roles,
 	permissions,
@@ -37,6 +39,8 @@ export async function cacheSession({
 }: {
 	sessionId: string;
 	userId: string;
+	email: string;
+	name: string;
 	tenantId: string;
 	roles: string[];
 	permissions: string[];
@@ -44,7 +48,7 @@ export async function cacheSession({
 }): Promise<void> {
 	// Store session-to-tenant mapping for tenant discovery
 	const mappingKey = `${AUTH_CACHE_KEYS.SESSION_TENANT_MAP}${sessionId}`;
-	await redis.set(mappingKey, tenantId, { ex: expiresIn });
+	await redis.setex(mappingKey, expiresIn, tenantId);
 
 	// Store full session data with tenant-scoped key
 	const key = tenantCacheKey({
@@ -54,13 +58,15 @@ export async function cacheSession({
 	});
 	const data = JSON.stringify({
 		userId,
+		email,
+		name,
 		tenantId,
 		roles,
 		permissions,
 		cachedAt: Date.now(),
 	});
 
-	await redis.set(key, data, { ex: expiresIn });
+	await redis.setex(key, expiresIn, data);
 	logger.debug(
 		{ sessionId, userId, tenantId },
 		"Session cached with tenant scoping",
@@ -79,13 +85,15 @@ export async function getCachedSession({
 	sessionId: string;
 }): Promise<{
 	userId: string;
+	email: string;
+	name: string;
 	tenantId: string;
 	roles: string[];
 	permissions: string[];
 } | null> {
 	// First, get the tenant ID for this session
 	const mappingKey = `${AUTH_CACHE_KEYS.SESSION_TENANT_MAP}${sessionId}`;
-	const tenantId = await redis.get<string>(mappingKey);
+	const tenantId = await redis.get(mappingKey);
 
 	if (!tenantId) {
 		// Session mapping not found in cache
@@ -98,7 +106,7 @@ export async function getCachedSession({
 		prefix: AUTH_CACHE_KEYS.SESSION,
 		identifier: sessionId,
 	});
-	const data = await redis.get<string>(key);
+	const data = await redis.get(key);
 
 	if (!data) {
 		logger.warn(
@@ -128,7 +136,7 @@ export async function invalidateSession({
 }): Promise<void> {
 	// First, get the tenant ID so we can delete the tenant-scoped session
 	const mappingKey = `${AUTH_CACHE_KEYS.SESSION_TENANT_MAP}${sessionId}`;
-	const tenantId = await redis.get<string>(mappingKey);
+	const tenantId = await redis.get(mappingKey);
 
 	if (tenantId) {
 		// Delete tenant-scoped session data
@@ -160,7 +168,7 @@ export async function revokeToken({
 	const tokenHash = hashToken(token);
 	const key = `${AUTH_CACHE_KEYS.REVOKED_TOKEN}${tokenHash}`;
 
-	await redis.set(key, "1", { ex: expiresIn });
+	await redis.setex(key, expiresIn, "1");
 	logger.debug("Token revoked and cached");
 }
 
@@ -299,9 +307,7 @@ export async function lockAccount({
 	identifier: string;
 }): Promise<void> {
 	const key = `${AUTH_CACHE_KEYS.ACCOUNT_LOCKED}${identifier}`;
-	await redis.set(key, Date.now().toString(), {
-		ex: AUTH_CACHE_TTL.ACCOUNT_LOCK,
-	});
+	await redis.setex(key, AUTH_CACHE_TTL.ACCOUNT_LOCK, Date.now().toString());
 
 	// Persist LOCKED status to database for durability and queryability
 	try {
@@ -403,7 +409,7 @@ export async function createMfaChallenge({
 		createdAt: Date.now(),
 	});
 
-	await redis.set(key, data, { ex: expiresIn });
+	await redis.setex(key, expiresIn, data);
 	logger.debug({ userId }, "MFA challenge created");
 }
 
@@ -426,20 +432,25 @@ export async function getMfaChallenge({
 	tenantId: string;
 } | null> {
 	const key = `${AUTH_CACHE_KEYS.MFA_CHALLENGE}${challengeToken}`;
-	const data = await redis.get<{
-		userId: string;
-		tenantId: string;
-		createdAt: number;
-	}>(key);
+	const data = await redis.get(key);
 
 	if (!data) {
 		return null;
 	}
 
-	return {
-		userId: data.userId,
-		tenantId: data.tenantId,
-	};
+	try {
+		const parsed = JSON.parse(data) as {
+			userId: string;
+			tenantId: string;
+			createdAt: number;
+		};
+		return {
+			userId: parsed.userId,
+			tenantId: parsed.tenantId,
+		};
+	} catch {
+		return null;
+	}
 }
 
 /**
