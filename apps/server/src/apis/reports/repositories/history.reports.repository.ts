@@ -15,6 +15,7 @@ export async function getReportHistory({
 	page = 1,
 	limit = 20,
 	reportType,
+	status,
 	startDate,
 	endDate,
 }: HistoryReportsInput) {
@@ -28,6 +29,10 @@ export async function getReportHistory({
 
 	if (reportType) {
 		query.reportType = reportType;
+	}
+
+	if (status) {
+		query.status = status;
 	}
 
 	if (startDate || endDate) {

@@ -67,6 +67,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	type AppointmentListItem,
 	type AppointmentStatus,
@@ -160,6 +161,7 @@ function AppointmentsListPage() {
 	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 	const [appointmentToCancel, setAppointmentToCancel] =
 		useState<AppointmentListItem | null>(null);
+	const [cancelReason, setCancelReason] = useState("");
 
 	const { data: appointmentsData, isLoading: appointmentsLoading } =
 		useAppointments({
@@ -222,16 +224,21 @@ function AppointmentsListPage() {
 
 	const handleCancelClick = (appointment: AppointmentListItem) => {
 		setAppointmentToCancel(appointment);
+		setCancelReason("");
 		setCancelDialogOpen(true);
 	};
 
 	const handleCancelConfirm = async () => {
 		if (!appointmentToCancel) return;
 		try {
-			await cancelMutation.mutateAsync({ id: appointmentToCancel.id });
+			await cancelMutation.mutateAsync({
+				id: appointmentToCancel.id,
+				reason: cancelReason || undefined,
+			});
 			toast.success("Appointment cancelled successfully");
 			setCancelDialogOpen(false);
 			setAppointmentToCancel(null);
+			setCancelReason("");
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error(apiError.message || "Failed to cancel appointment");
@@ -693,6 +700,19 @@ function AppointmentsListPage() {
 							? This action cannot be undone.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
+					<div className="py-4">
+						<Label htmlFor="cancel-reason" className="font-medium text-sm">
+							Reason for cancellation (optional)
+						</Label>
+						<Textarea
+							id="cancel-reason"
+							placeholder="Enter the reason for cancellation..."
+							value={cancelReason}
+							onChange={(e) => setCancelReason(e.target.value)}
+							className="mt-2"
+							rows={3}
+						/>
+					</div>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Keep Appointment</AlertDialogCancel>
 						<AlertDialogAction

@@ -35,4 +35,5 @@ export interface MeOutput {
 	roles: RoleOutput[];
 	permissions: string[];
 	attributes: UserAttributes;
+	mfaEnabled: boolean;
 }

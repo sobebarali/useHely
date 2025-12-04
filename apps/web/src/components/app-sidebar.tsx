@@ -1,5 +1,6 @@
 import {
 	Activity,
+	BadgeCheck,
 	Building2,
 	Calendar,
 	FileBarChart,
@@ -9,6 +10,8 @@ import {
 	Package,
 	Pill,
 	Settings2,
+	Shield,
+	ShieldCheck,
 	Stethoscope,
 	Users,
 } from "lucide-react";
@@ -29,6 +32,7 @@ import { useMenu } from "@/hooks/use-menu";
 const iconMap: Record<string, LucideIcon> = {
 	dashboard: LayoutDashboard,
 	people: Users,
+	badge: BadgeCheck,
 	medical_services: Stethoscope,
 	medication: Pill,
 	schedule: Calendar,
@@ -40,6 +44,8 @@ const iconMap: Record<string, LucideIcon> = {
 	assignment: FileText,
 	settings: Settings2,
 	reports: FileBarChart,
+	shield_check: ShieldCheck,
+	security: Shield,
 };
 
 // Convert server menu items to NavMain format

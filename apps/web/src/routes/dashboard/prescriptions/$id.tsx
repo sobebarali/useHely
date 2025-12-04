@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import {
 	ArrowLeft,
+	Ban,
 	Calendar,
 	Check,
 	Clock,
@@ -23,6 +24,16 @@ import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -54,6 +65,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
 	type MedicineInput,
 	type PrescriptionStatus,
+	useCancelPrescription,
 	usePrescription,
 	useUpdatePrescription,
 } from "@/hooks/use-prescriptions";
@@ -149,9 +161,12 @@ function PrescriptionDetailPage() {
 	const { data: prescription, isLoading: prescriptionLoading } =
 		usePrescription(id);
 	const updatePrescriptionMutation = useUpdatePrescription();
+	const cancelPrescriptionMutation = useCancelPrescription();
 
 	const [isEditing, setIsEditing] = useState(false);
 	const [medicines, setMedicines] = useState<MedicineWithId[]>([]);
+	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+	const [cancellationReason, setCancellationReason] = useState("");
 
 	// Initialize medicines when prescription data loads
 	if (
@@ -275,6 +290,21 @@ function PrescriptionDetailPage() {
 		setIsEditing(false);
 	};
 
+	const handleCancelPrescription = async () => {
+		try {
+			await cancelPrescriptionMutation.mutateAsync({
+				id,
+				data: { reason: cancellationReason || undefined },
+			});
+			toast.success("Prescription cancelled successfully");
+			setCancelDialogOpen(false);
+			setCancellationReason("");
+		} catch (error) {
+			const apiError = error as ApiError;
+			toast.error(apiError.message || "Failed to cancel prescription");
+		}
+	};
+
 	const formatDate = (dateString: string) => {
 		return new Date(dateString).toLocaleDateString("en-US", {
 			year: "numeric",
@@ -342,7 +372,19 @@ function PrescriptionDetailPage() {
 					</div>
 				</div>
 				{canEdit && !isEditing && (
-					<Button onClick={() => setIsEditing(true)}>Edit Prescription</Button>
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+							onClick={() => setCancelDialogOpen(true)}
+						>
+							<Ban className="mr-2 h-4 w-4" />
+							Cancel Prescription
+						</Button>
+						<Button onClick={() => setIsEditing(true)}>
+							Edit Prescription
+						</Button>
+					</div>
 				)}
 			</div>
 
@@ -851,6 +893,57 @@ function PrescriptionDetailPage() {
 					</Card>
 				</div>
 			</div>
+
+			{/* Cancel Prescription Dialog */}
+			<AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Cancel Prescription</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to cancel this prescription? This action
+							cannot be undone and will prevent dispensing of any remaining
+							medications.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<div className="py-4">
+						<Label
+							htmlFor="cancellation-reason"
+							className="font-medium text-sm"
+						>
+							Reason for cancellation (optional)
+						</Label>
+						<Textarea
+							id="cancellation-reason"
+							placeholder="Enter reason for cancellation..."
+							value={cancellationReason}
+							onChange={(e) => setCancellationReason(e.target.value)}
+							className="mt-2"
+							rows={3}
+						/>
+					</div>
+					<AlertDialogFooter>
+						<AlertDialogCancel
+							onClick={() => {
+								setCancellationReason("");
+							}}
+						>
+							Keep Prescription
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={handleCancelPrescription}
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							disabled={cancelPrescriptionMutation.isPending}
+						>
+							{cancelPrescriptionMutation.isPending ? (
+								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+							) : (
+								<Ban className="mr-2 h-4 w-4" />
+							)}
+							Cancel Prescription
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	);
 }

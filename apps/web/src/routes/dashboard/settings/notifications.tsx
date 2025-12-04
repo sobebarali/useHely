@@ -1,7 +1,14 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Bell, Mail, MessageSquare, Smartphone } from "lucide-react";
+import {
+	Bell,
+	Construction,
+	Mail,
+	MessageSquare,
+	Smartphone,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -220,6 +227,16 @@ function NotificationSettingsPage() {
 					{isSaving ? "Saving..." : "Save Preferences"}
 				</Button>
 			</div>
+
+			{/* Coming Soon Notice */}
+			<Alert>
+				<Construction className="h-4 w-4" />
+				<AlertTitle>Preview Mode</AlertTitle>
+				<AlertDescription>
+					Notification preferences are not yet connected to the backend. Changes
+					made here will not persist after page refresh.
+				</AlertDescription>
+			</Alert>
 
 			{/* Summary Card */}
 			<Card>

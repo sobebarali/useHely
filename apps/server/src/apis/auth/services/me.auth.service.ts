@@ -32,6 +32,9 @@ export async function getCurrentUser({
 		throw new UnauthorizedError("User not found");
 	}
 
+	// Check MFA status from user record
+	const mfaEnabled = user.mfaConfig?.enabled === true;
+
 	// Find staff record - use tenantId if provided for multi-tenant context
 	const staff = tenantId
 		? await findStaffByUserAndTenant({ userId, tenantId })
@@ -56,6 +59,7 @@ export async function getCurrentUser({
 			roles: [],
 			permissions: [],
 			attributes: {},
+			mfaEnabled,
 		};
 	}
 
@@ -125,5 +129,6 @@ export async function getCurrentUser({
 			specialization: staff.specialization || undefined,
 			shift: staff.shift || undefined,
 		},
+		mfaEnabled,
 	};
 }

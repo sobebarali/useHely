@@ -19,12 +19,14 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useDepartments } from "@/hooks/use-departments";
 import type { ApiError } from "@/hooks/use-reports";
 import {
 	type ReportType,
 	useGenerateReport,
 	useReportTypes,
 } from "@/hooks/use-reports";
+import { useUsers } from "@/hooks/use-users";
 import { authClient } from "@/lib/auth-client";
 import { normalizeSelectValue, SELECT_ALL_VALUE } from "@/lib/utils";
 
@@ -50,6 +52,10 @@ function GenerateReportPage() {
 	const { data: reportTypesData, isLoading: reportTypesLoading } =
 		useReportTypes();
 	const generateMutation = useGenerateReport();
+
+	// Fetch departments and doctors for dropdowns
+	const { data: departmentsData } = useDepartments({ status: "ACTIVE" });
+	const { data: doctorsData } = useUsers({ role: "DOCTOR", status: "ACTIVE" });
 
 	const selectedReportType = reportTypesData?.reports.find(
 		(r) => r.id === reportType,
@@ -275,7 +281,11 @@ function GenerateReportPage() {
 												<SelectItem value={SELECT_ALL_VALUE}>
 													All departments
 												</SelectItem>
-												{/* TODO: Fetch departments from API */}
+												{departmentsData?.data.map((dept) => (
+													<SelectItem key={dept.id} value={dept.id}>
+														{dept.name}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 									</div>
@@ -294,7 +304,11 @@ function GenerateReportPage() {
 												<SelectItem value={SELECT_ALL_VALUE}>
 													All doctors
 												</SelectItem>
-												{/* TODO: Fetch doctors from API */}
+												{doctorsData?.data.map((doctor) => (
+													<SelectItem key={doctor.id} value={doctor.id}>
+														Dr. {doctor.firstName} {doctor.lastName}
+													</SelectItem>
+												))}
 											</SelectContent>
 										</Select>
 									</div>

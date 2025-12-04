@@ -11,7 +11,7 @@ import {
 	User,
 } from "lucide-react";
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { PatientSearch } from "@/components/patients";
@@ -45,8 +45,13 @@ import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/prescriptions-client";
 import { SELECT_NONE_VALUE } from "@/lib/utils";
 
+const searchSchema = z.object({
+	templateId: z.string().optional(),
+});
+
 export const Route = createFileRoute("/dashboard/prescriptions/create")({
 	component: CreatePrescriptionPage,
+	validateSearch: searchSchema,
 	beforeLoad: async () => {
 		if (!authClient.isAuthenticated()) {
 			throw redirect({ to: "/login" });
@@ -107,15 +112,41 @@ function createEmptyMedicine(): MedicineWithId {
 
 function CreatePrescriptionPage() {
 	const navigate = useNavigate();
+	const { templateId: urlTemplateId } = Route.useSearch();
 	const [selectedPatient, setSelectedPatient] =
 		useState<SearchPatientResult | null>(null);
 	const [medicines, setMedicines] = useState<MedicineWithId[]>([
 		createEmptyMedicine(),
 	]);
 	const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+	const [templateApplied, setTemplateApplied] = useState(false);
 
 	const createPrescriptionMutation = useCreatePrescription();
 	const { data: templatesData } = useTemplates();
+
+	// Auto-select template from URL param
+	useEffect(() => {
+		if (urlTemplateId && templatesData?.data && !templateApplied) {
+			const template = templatesData.data.find((t) => t.id === urlTemplateId);
+			if (template) {
+				setSelectedTemplateId(urlTemplateId);
+				const templateMedicines: MedicineWithId[] = template.medicines.map(
+					(m) => ({
+						_id: generateMedicineId(),
+						name: m.name,
+						dosage: m.dosage || "",
+						frequency: m.frequency || "",
+						duration: m.duration || "",
+						instructions: m.instructions || "",
+						route: m.route || "",
+						quantity: undefined,
+					}),
+				);
+				setMedicines([...templateMedicines, createEmptyMedicine()]);
+				setTemplateApplied(true);
+			}
+		}
+	}, [urlTemplateId, templatesData?.data, templateApplied]);
 
 	const form = useForm({
 		defaultValues: {
@@ -187,7 +218,8 @@ function CreatePrescriptionPage() {
 
 	const handleTemplateSelect = (templateId: string) => {
 		setSelectedTemplateId(templateId);
-		if (templateId && templatesData?.data) {
+		setTemplateApplied(true);
+		if (templateId && templateId !== SELECT_NONE_VALUE && templatesData?.data) {
 			const template = templatesData.data.find((t) => t.id === templateId);
 			if (template) {
 				const templateMedicines: MedicineWithId[] = template.medicines.map(

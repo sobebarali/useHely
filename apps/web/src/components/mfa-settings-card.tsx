@@ -25,13 +25,12 @@ import {
 } from "./ui/card";
 
 export default function MfaSettingsCard() {
-	const { refetch } = useSession();
+	const { data: session, refetch } = useSession();
 	const [setupDialogOpen, setSetupDialogOpen] = useState(false);
 	const disableMfa = useDisableMfa();
 
-	// Check if MFA is enabled - this would need to be added to the session response
-	// For now, we'll assume it's in the session data
-	const isMfaEnabled = false; // TODO: Get from session when available
+	// Get MFA status from session
+	const isMfaEnabled = session?.mfaEnabled ?? false;
 
 	const handleDisableMfa = async () => {
 		try {

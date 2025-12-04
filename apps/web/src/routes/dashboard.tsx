@@ -7,8 +7,16 @@ import { authClient } from "@/lib/auth-client";
 export const Route = createFileRoute("/dashboard")({
 	component: DashboardLayoutRoute,
 	beforeLoad: async () => {
-		// Check if user is authenticated
+		// Check if user is authenticated (valid access token)
 		if (!authClient.isAuthenticated()) {
+			// If access token expired but refresh token exists, try to refresh
+			if (authClient.hasRefreshToken()) {
+				const refreshed = await authClient.refreshTokens();
+				if (refreshed) {
+					return; // Successfully refreshed, continue to dashboard
+				}
+			}
+			// No valid tokens, redirect to login
 			throw redirect({
 				to: "/login",
 			});

@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { UseHelyLogo } from "@/components/icons";
 import { Button } from "@/components/ui/button";
+import { useIsAuthenticated } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -12,6 +13,7 @@ const navLinks = [
 
 export function Header() {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const isAuthenticated = useIsAuthenticated();
 
 	return (
 		<header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -38,12 +40,20 @@ export function Header() {
 
 					{/* Desktop CTA */}
 					<div className="hidden items-center gap-3 md:flex">
-						<Button variant="ghost" asChild>
-							<Link to="/login">Log In</Link>
-						</Button>
-						<Button asChild>
-							<Link to="/register-hospital">Register Hospital</Link>
-						</Button>
+						{isAuthenticated ? (
+							<Button asChild>
+								<Link to="/dashboard">Go to Dashboard</Link>
+							</Button>
+						) : (
+							<>
+								<Button variant="ghost" asChild>
+									<Link to="/login">Log In</Link>
+								</Button>
+								<Button asChild>
+									<Link to="/register-hospital">Register Hospital</Link>
+								</Button>
+							</>
+						)}
 					</div>
 
 					{/* Mobile menu button */}
@@ -80,12 +90,20 @@ export function Header() {
 						</a>
 					))}
 					<div className="mt-4 flex flex-col gap-2 pt-4">
-						<Button variant="outline" asChild>
-							<Link to="/login">Log In</Link>
-						</Button>
-						<Button asChild>
-							<Link to="/register-hospital">Register Hospital</Link>
-						</Button>
+						{isAuthenticated ? (
+							<Button asChild>
+								<Link to="/dashboard">Go to Dashboard</Link>
+							</Button>
+						) : (
+							<>
+								<Button variant="outline" asChild>
+									<Link to="/login">Log In</Link>
+								</Button>
+								<Button asChild>
+									<Link to="/register-hospital">Register Hospital</Link>
+								</Button>
+							</>
+						)}
 					</div>
 				</div>
 			</div>

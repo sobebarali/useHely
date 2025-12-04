@@ -31,6 +31,7 @@ import { Route as DashboardDoctorsIndexRouteImport } from './routes/dashboard/do
 import { Route as DashboardDispensingIndexRouteImport } from './routes/dashboard/dispensing/index'
 import { Route as DashboardDepartmentsIndexRouteImport } from './routes/dashboard/departments/index'
 import { Route as DashboardAppointmentsIndexRouteImport } from './routes/dashboard/appointments/index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as DashboardVitalsRecordRouteImport } from './routes/dashboard/vitals/record'
 import { Route as DashboardVitalsHistoryRouteImport } from './routes/dashboard/vitals/history'
 import { Route as DashboardVitalsIdRouteImport } from './routes/dashboard/vitals/$id'
@@ -189,6 +190,11 @@ const DashboardAppointmentsIndexRoute =
     path: '/appointments/',
     getParentRoute: () => DashboardRoute,
   } as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardAdminRoute,
+} as any)
 const DashboardVitalsRecordRoute = DashboardVitalsRecordRouteImport.update({
   id: '/vitals/record',
   path: '/vitals/record',
@@ -482,6 +488,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing': typeof DashboardDispensingIndexRoute
@@ -508,7 +515,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/success': typeof SuccessRoute
   '/verify-hospital': typeof VerifyHospitalRoute
-  '/dashboard/admin': typeof DashboardAdminRouteWithChildren
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
@@ -546,6 +552,7 @@ export interface FileRoutesByTo {
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
+  '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing': typeof DashboardDispensingIndexRoute
@@ -614,6 +621,7 @@ export interface FileRoutesById {
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
   '/dashboard/vitals/record': typeof DashboardVitalsRecordRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/dashboard/appointments/': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments/': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing/': typeof DashboardDispensingIndexRoute
@@ -683,6 +691,7 @@ export interface FileRouteTypes {
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
+    | '/dashboard/admin/'
     | '/dashboard/appointments'
     | '/dashboard/departments'
     | '/dashboard/dispensing'
@@ -709,7 +718,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/success'
     | '/verify-hospital'
-    | '/dashboard/admin'
     | '/dashboard'
     | '/dashboard/admin/compliance'
     | '/dashboard/appointments/$id'
@@ -747,6 +755,7 @@ export interface FileRouteTypes {
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
+    | '/dashboard/admin'
     | '/dashboard/appointments'
     | '/dashboard/departments'
     | '/dashboard/dispensing'
@@ -814,6 +823,7 @@ export interface FileRouteTypes {
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
     | '/dashboard/vitals/record'
+    | '/dashboard/admin/'
     | '/dashboard/appointments/'
     | '/dashboard/departments/'
     | '/dashboard/dispensing/'
@@ -999,6 +1009,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard/appointments'
       preLoaderRoute: typeof DashboardAppointmentsIndexRouteImport
       parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/admin/': {
+      id: '/dashboard/admin/'
+      path: '/'
+      fullPath: '/dashboard/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof DashboardAdminRoute
     }
     '/dashboard/vitals/record': {
       id: '/dashboard/vitals/record'
@@ -1325,11 +1342,13 @@ const DashboardAdminSecurityRouteWithChildren =
 interface DashboardAdminRouteChildren {
   DashboardAdminComplianceRoute: typeof DashboardAdminComplianceRoute
   DashboardAdminSecurityRoute: typeof DashboardAdminSecurityRouteWithChildren
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
 }
 
 const DashboardAdminRouteChildren: DashboardAdminRouteChildren = {
   DashboardAdminComplianceRoute: DashboardAdminComplianceRoute,
   DashboardAdminSecurityRoute: DashboardAdminSecurityRouteWithChildren,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
 }
 
 const DashboardAdminRouteWithChildren = DashboardAdminRoute._addFileChildren(

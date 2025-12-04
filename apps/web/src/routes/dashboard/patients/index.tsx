@@ -14,16 +14,20 @@ import {
 } from "@tanstack/react-table";
 import {
 	ArrowUpDown,
+	Building2,
 	Calendar,
 	ChevronLeft,
 	ChevronRight,
 	ChevronsLeft,
 	ChevronsRight,
 	Download,
+	Filter,
 	Loader2,
 	MoreHorizontal,
 	Search,
+	Stethoscope,
 	UserPlus,
+	X,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,6 +44,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -62,12 +71,14 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useDepartments } from "@/hooks/use-departments";
 import {
 	type PatientListItem,
 	useExportPatients,
 	usePatients,
 	useRegisterPatient,
 } from "@/hooks/use-patients";
+import { useUsers } from "@/hooks/use-users";
 import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/patients-client";
 
@@ -85,13 +96,36 @@ function PatientsListPage() {
 	const [search, setSearch] = useState("");
 	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [typeFilter, setTypeFilter] = useState<string>("");
+	const [departmentFilter, setDepartmentFilter] = useState<string>("");
+	const [doctorFilter, setDoctorFilter] = useState<string>("");
+	const [startDate, setStartDate] = useState<string>("");
+	const [endDate, setEndDate] = useState<string>("");
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = useState({});
+	const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
 
 	// Add patient sheet
 	const [addPatientSheetOpen, setAddPatientSheetOpen] = useState(false);
+
+	// Fetch departments for filters and registration form
+	const { data: departmentsData } = useDepartments({
+		status: "ACTIVE",
+		limit: 100,
+	});
+
+	// Fetch doctors for filters and registration form
+	const { data: doctorsData } = useUsers({
+		role: "DOCTOR",
+		status: "ACTIVE",
+		limit: 100,
+	});
+
+	// Map sorting state to API parameters
+	const sortBy = sorting.length > 0 ? sorting[0].id : undefined;
+	const sortOrder =
+		sorting.length > 0 ? (sorting[0].desc ? "desc" : "asc") : undefined;
 
 	const { data: patientsData, isLoading: patientsLoading } = usePatients({
 		page,
@@ -105,10 +139,37 @@ function PatientsListPage() {
 			typeFilter && typeFilter !== "ALL"
 				? (typeFilter as "OPD" | "IPD")
 				: undefined,
+		department:
+			departmentFilter && departmentFilter !== "ALL"
+				? departmentFilter
+				: undefined,
+		assignedDoctor:
+			doctorFilter && doctorFilter !== "ALL" ? doctorFilter : undefined,
+		startDate: startDate || undefined,
+		endDate: endDate || undefined,
+		sortBy,
+		sortOrder,
 	});
 
 	const registerPatientMutation = useRegisterPatient();
 	const exportPatientsMutation = useExportPatients();
+
+	// Count active filters for badge
+	const activeFilterCount = [
+		departmentFilter && departmentFilter !== "ALL",
+		doctorFilter && doctorFilter !== "ALL",
+		startDate,
+		endDate,
+	].filter(Boolean).length;
+
+	// Clear all advanced filters
+	const clearAdvancedFilters = () => {
+		setDepartmentFilter("");
+		setDoctorFilter("");
+		setStartDate("");
+		setEndDate("");
+		setPage(1);
+	};
 
 	// Add Patient Form
 	const addPatientForm = useForm({
@@ -121,6 +182,8 @@ function PatientsListPage() {
 			phone: "",
 			email: "",
 			patientType: "",
+			department: "",
+			assignedDoctor: "",
 			// Address
 			street: "",
 			city: "",
@@ -153,6 +216,8 @@ function PatientsListPage() {
 					phone: value.phone,
 					email: value.email || undefined,
 					patientType: value.patientType as "OPD" | "IPD",
+					department: value.department || undefined,
+					assignedDoctor: value.assignedDoctor || undefined,
 					address: {
 						street: value.street,
 						city: value.city,
@@ -184,6 +249,8 @@ function PatientsListPage() {
 				phone: z.string().min(1, "Phone number is required"),
 				email: z.string(),
 				patientType: z.string().min(1, "Patient type is required"),
+				department: z.string(),
+				assignedDoctor: z.string(),
 				street: z.string().min(1, "Street is required"),
 				city: z.string().min(1, "City is required"),
 				state: z.string().min(1, "State is required"),
@@ -214,6 +281,12 @@ function PatientsListPage() {
 					typeFilter && typeFilter !== "ALL"
 						? (typeFilter as "OPD" | "IPD")
 						: undefined,
+				department:
+					departmentFilter && departmentFilter !== "ALL"
+						? departmentFilter
+						: undefined,
+				startDate: startDate || undefined,
+				endDate: endDate || undefined,
 			});
 			toast.success(`Patients exported to ${format.toUpperCase()}`);
 		} catch (error) {
@@ -341,7 +414,10 @@ function PatientsListPage() {
 	const table = useReactTable({
 		data: patientsData?.data ?? [],
 		columns,
-		onSortingChange: setSorting,
+		onSortingChange: (updater) => {
+			setSorting(updater);
+			setPage(1); // Reset to first page when sorting changes
+		},
 		onColumnFiltersChange: setColumnFilters,
 		getCoreRowModel: getCoreRowModel(),
 		getPaginationRowModel: getPaginationRowModel(),
@@ -356,6 +432,7 @@ function PatientsListPage() {
 			rowSelection,
 		},
 		manualPagination: true,
+		manualSorting: true,
 		pageCount: patientsData?.pagination.totalPages ?? 0,
 	});
 
@@ -408,7 +485,7 @@ function PatientsListPage() {
 							className="pl-9"
 						/>
 					</div>
-					<div className="flex gap-2">
+					<div className="flex flex-wrap gap-2">
 						<div className="w-32">
 							<Label htmlFor="type-filter" className="sr-only">
 								Type
@@ -453,6 +530,145 @@ function PatientsListPage() {
 								</SelectContent>
 							</Select>
 						</div>
+						{/* More Filters Popover */}
+						<Popover open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
+							<PopoverTrigger asChild>
+								<Button variant="outline" className="relative">
+									<Filter className="mr-2 h-4 w-4" />
+									More Filters
+									{activeFilterCount > 0 && (
+										<Badge
+											variant="secondary"
+											className="ml-2 h-5 w-5 rounded-full p-0 text-xs"
+										>
+											{activeFilterCount}
+										</Badge>
+									)}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="w-80" align="end">
+								<div className="grid gap-4">
+									<div className="space-y-2">
+										<h4 className="font-medium leading-none">
+											Advanced Filters
+										</h4>
+										<p className="text-muted-foreground text-sm">
+											Filter patients by department, doctor, or date range.
+										</p>
+									</div>
+									<div className="grid gap-3">
+										{/* Department Filter */}
+										<div className="space-y-2">
+											<Label
+												htmlFor="department-filter"
+												className="flex items-center gap-2 text-sm"
+											>
+												<Building2 className="h-4 w-4" />
+												Department
+											</Label>
+											<Select
+												value={departmentFilter}
+												onValueChange={(value) => {
+													setDepartmentFilter(value);
+													setPage(1);
+												}}
+											>
+												<SelectTrigger id="department-filter">
+													<SelectValue placeholder="All departments" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="ALL">All departments</SelectItem>
+													{departmentsData?.data.map((dept) => (
+														<SelectItem key={dept.id} value={dept.id}>
+															{dept.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										{/* Assigned Doctor Filter */}
+										<div className="space-y-2">
+											<Label
+												htmlFor="doctor-filter"
+												className="flex items-center gap-2 text-sm"
+											>
+												<Stethoscope className="h-4 w-4" />
+												Assigned Doctor
+											</Label>
+											<Select
+												value={doctorFilter}
+												onValueChange={(value) => {
+													setDoctorFilter(value);
+													setPage(1);
+												}}
+											>
+												<SelectTrigger id="doctor-filter">
+													<SelectValue placeholder="All doctors" />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="ALL">All doctors</SelectItem>
+													{doctorsData?.data.map((doc) => (
+														<SelectItem key={doc.id} value={doc.id}>
+															Dr. {doc.firstName} {doc.lastName}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+										{/* Date Range */}
+										<div className="space-y-2">
+											<Label className="flex items-center gap-2 text-sm">
+												<Calendar className="h-4 w-4" />
+												Registration Date Range
+											</Label>
+											<div className="grid grid-cols-2 gap-2">
+												<div>
+													<Label htmlFor="start-date" className="sr-only">
+														From
+													</Label>
+													<Input
+														id="start-date"
+														type="date"
+														placeholder="From"
+														value={startDate}
+														onChange={(e) => {
+															setStartDate(e.target.value);
+															setPage(1);
+														}}
+													/>
+												</div>
+												<div>
+													<Label htmlFor="end-date" className="sr-only">
+														To
+													</Label>
+													<Input
+														id="end-date"
+														type="date"
+														placeholder="To"
+														value={endDate}
+														onChange={(e) => {
+															setEndDate(e.target.value);
+															setPage(1);
+														}}
+													/>
+												</div>
+											</div>
+										</div>
+									</div>
+									{activeFilterCount > 0 && (
+										<Button
+											variant="ghost"
+											size="sm"
+											className="w-full"
+											onClick={clearAdvancedFilters}
+										>
+											<X className="mr-2 h-4 w-4" />
+											Clear Advanced Filters
+										</Button>
+									)}
+								</div>
+							</PopoverContent>
+						</Popover>
 					</div>
 				</div>
 
@@ -731,6 +947,70 @@ function PatientsListPage() {
 													{String(error)}
 												</p>
 											))}
+										</div>
+									)}
+								</addPatientForm.Field>
+							</div>
+						</div>
+
+						{/* Assignment (Optional) */}
+						<div className="space-y-4">
+							<h3 className="font-medium text-sm">Assignment (Optional)</h3>
+							<div className="grid gap-4 sm:grid-cols-2">
+								<addPatientForm.Field name="department">
+									{(field) => (
+										<div className="space-y-2">
+											<Label
+												htmlFor={field.name}
+												className="flex items-center gap-2"
+											>
+												<Building2 className="h-4 w-4" />
+												Department
+											</Label>
+											<Select
+												value={field.state.value}
+												onValueChange={field.handleChange}
+											>
+												<SelectTrigger id={field.name}>
+													<SelectValue placeholder="Select department" />
+												</SelectTrigger>
+												<SelectContent>
+													{departmentsData?.data.map((dept) => (
+														<SelectItem key={dept.id} value={dept.id}>
+															{dept.name}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
+										</div>
+									)}
+								</addPatientForm.Field>
+
+								<addPatientForm.Field name="assignedDoctor">
+									{(field) => (
+										<div className="space-y-2">
+											<Label
+												htmlFor={field.name}
+												className="flex items-center gap-2"
+											>
+												<Stethoscope className="h-4 w-4" />
+												Assigned Doctor
+											</Label>
+											<Select
+												value={field.state.value}
+												onValueChange={field.handleChange}
+											>
+												<SelectTrigger id={field.name}>
+													<SelectValue placeholder="Select doctor" />
+												</SelectTrigger>
+												<SelectContent>
+													{doctorsData?.data.map((doc) => (
+														<SelectItem key={doc.id} value={doc.id}>
+															Dr. {doc.firstName} {doc.lastName}
+														</SelectItem>
+													))}
+												</SelectContent>
+											</Select>
 										</div>
 									)}
 								</addPatientForm.Field>

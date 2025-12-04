@@ -79,6 +79,7 @@ export interface AuthUser {
 		specialization?: string;
 		shift?: string;
 	};
+	mfaEnabled: boolean;
 }
 
 export interface Hospital {
@@ -428,6 +429,11 @@ export function isAuthenticated(): boolean {
 	return !!accessToken && !isTokenExpired();
 }
 
+export function hasRefreshToken(): boolean {
+	const { refreshToken } = getStoredTokens();
+	return !!refreshToken;
+}
+
 export function getAccessToken(): string | null {
 	return getStoredTokens().accessToken;
 }
@@ -574,6 +580,7 @@ export const authClient = {
 	getSession,
 	getHospitalsForEmail,
 	isAuthenticated,
+	hasRefreshToken,
 	getAccessToken,
 	clearTokens,
 	// MFA functions

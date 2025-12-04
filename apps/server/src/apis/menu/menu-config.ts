@@ -23,7 +23,7 @@ export const FULL_MENU_STRUCTURE: MenuItem[] = [
 	{
 		id: "users",
 		label: "Staff",
-		icon: "people",
+		icon: "badge",
 		permission: "USER:READ",
 		order: 2,
 		visible: true,
@@ -408,10 +408,43 @@ export const FULL_MENU_STRUCTURE: MenuItem[] = [
 	{
 		id: "admin-compliance",
 		label: "Compliance",
-		icon: "settings",
+		icon: "shield_check",
 		path: "/dashboard/admin/compliance",
-		permission: "COMPLIANCE:READ",
+		permission: "COMPLIANCE:MANAGE",
 		order: 14,
 		visible: true,
+	},
+
+	// Admin Security - Hospital Admin only
+	{
+		id: "admin-security",
+		label: "Security Admin",
+		icon: "security",
+		permission: "SECURITY:READ",
+		order: 15,
+		visible: true,
+		children: [
+			{
+				id: "admin-security-overview",
+				label: "Overview",
+				path: "/dashboard/admin/security",
+				permission: "SECURITY:READ",
+				order: 1,
+			},
+			{
+				id: "admin-security-events",
+				label: "Security Events",
+				path: "/dashboard/admin/security/events",
+				permission: "SECURITY:READ",
+				order: 2,
+			},
+			{
+				id: "admin-security-keys",
+				label: "Encryption Keys",
+				path: "/dashboard/admin/security/keys",
+				permission: "SECURITY:MANAGE",
+				order: 3,
+			},
+		],
 	},
 ];

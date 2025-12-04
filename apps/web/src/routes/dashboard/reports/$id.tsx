@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import type { ApiError } from "@/hooks/use-reports";
 import {
+	downloadReportAsFile,
 	type ReportStatus,
 	useReport,
 	useReportHistory,
@@ -63,8 +64,8 @@ function ReportDetailPage() {
 
 		setIsDownloading(true);
 		try {
-			// For now, just show a toast. In a real implementation, you'd download the file
-			toast.success(`Downloading ${reportData.reportType} report...`);
+			await downloadReportAsFile(id);
+			toast.success("Report downloaded successfully");
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error(apiError.message || "Failed to download report");

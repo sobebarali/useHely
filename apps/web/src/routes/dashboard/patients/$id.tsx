@@ -7,12 +7,14 @@ import {
 } from "@tanstack/react-router";
 import {
 	ArrowLeft,
+	Building2,
 	Calendar,
 	Droplets,
 	Loader2,
 	MapPin,
 	Phone,
 	Save,
+	Stethoscope,
 	User,
 	Users,
 } from "lucide-react";
@@ -37,7 +39,9 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useDepartments } from "@/hooks/use-departments";
 import { usePatient, useUpdatePatient } from "@/hooks/use-patients";
+import { useUsers } from "@/hooks/use-users";
 import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/patients-client";
 
@@ -57,11 +61,33 @@ function PatientDetailPage() {
 
 	const updatePatientMutation = useUpdatePatient();
 
+	// Fetch departments and doctors for editing
+	const { data: departmentsData } = useDepartments({
+		status: "ACTIVE",
+		limit: 100,
+	});
+
+	const { data: doctorsData } = useUsers({
+		role: "DOCTOR",
+		status: "ACTIVE",
+		limit: 100,
+	});
+
+	// Find the current department ID from the patient data
+	const currentDepartmentId = departmentsData?.data.find(
+		(dept) => dept.name === patient?.department,
+	)?.id;
+
+	// Find the current doctor ID from the patient data
+	const currentDoctorId = patient?.assignedDoctor?.id;
+
 	const form = useForm({
 		defaultValues: {
 			phone: patient?.phone || "",
 			email: patient?.email || "",
 			patientType: patient?.patientType || "",
+			department: currentDepartmentId || "",
+			assignedDoctor: currentDoctorId || "",
 			// Address
 			street: patient?.address?.street || "",
 			city: patient?.address?.city || "",
@@ -81,6 +107,8 @@ function PatientDetailPage() {
 						phone: value.phone,
 						email: value.email || undefined,
 						patientType: value.patientType as "OPD" | "IPD",
+						department: value.department || undefined,
+						assignedDoctor: value.assignedDoctor || undefined,
 						address: {
 							street: value.street,
 							city: value.city,
@@ -106,6 +134,8 @@ function PatientDetailPage() {
 				phone: z.string().min(1, "Phone number is required"),
 				email: z.string(),
 				patientType: z.string().min(1, "Patient type is required"),
+				department: z.string(),
+				assignedDoctor: z.string(),
 				street: z.string().min(1, "Street is required"),
 				city: z.string().min(1, "City is required"),
 				state: z.string().min(1, "State is required"),
@@ -126,6 +156,8 @@ function PatientDetailPage() {
 			phone: patient.phone,
 			email: patient.email || "",
 			patientType: patient.patientType,
+			department: currentDepartmentId || "",
+			assignedDoctor: currentDoctorId || "",
 			street: patient.address?.street || "",
 			city: patient.address?.city || "",
 			state: patient.address?.state || "",
@@ -303,6 +335,74 @@ function PatientDetailPage() {
 										</div>
 									)}
 								</form.Field>
+							</div>
+
+							<Separator />
+
+							{/* Assignment */}
+							<div className="space-y-4">
+								<h3 className="font-medium text-sm">Assignment</h3>
+								<div className="grid gap-4 sm:grid-cols-2">
+									<form.Field name="department">
+										{(field) => (
+											<div className="space-y-2">
+												<Label
+													htmlFor={field.name}
+													className="flex items-center gap-2"
+												>
+													<Building2 className="h-4 w-4" />
+													Department
+												</Label>
+												<Select
+													value={field.state.value}
+													onValueChange={field.handleChange}
+												>
+													<SelectTrigger id={field.name}>
+														<SelectValue placeholder="Select department" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="">No department</SelectItem>
+														{departmentsData?.data.map((dept) => (
+															<SelectItem key={dept.id} value={dept.id}>
+																{dept.name}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+										)}
+									</form.Field>
+
+									<form.Field name="assignedDoctor">
+										{(field) => (
+											<div className="space-y-2">
+												<Label
+													htmlFor={field.name}
+													className="flex items-center gap-2"
+												>
+													<Stethoscope className="h-4 w-4" />
+													Assigned Doctor
+												</Label>
+												<Select
+													value={field.state.value}
+													onValueChange={field.handleChange}
+												>
+													<SelectTrigger id={field.name}>
+														<SelectValue placeholder="Select doctor" />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="">No doctor assigned</SelectItem>
+														{doctorsData?.data.map((doc) => (
+															<SelectItem key={doc.id} value={doc.id}>
+																Dr. {doc.firstName} {doc.lastName}
+															</SelectItem>
+														))}
+													</SelectContent>
+												</Select>
+											</div>
+										)}
+									</form.Field>
+								</div>
 							</div>
 
 							<Separator />

@@ -15,8 +15,20 @@ import {
 	MoreHorizontal,
 	Plus,
 	Search,
+	Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +36,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -43,8 +56,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { type TemplateListItem, useTemplates } from "@/hooks/use-prescriptions";
+import {
+	type TemplateListItem,
+	useDeleteTemplate,
+	useTemplates,
+} from "@/hooks/use-prescriptions";
 import { authClient } from "@/lib/auth-client";
+import type { ApiError } from "@/lib/prescriptions-client";
 
 export const Route = createFileRoute("/dashboard/prescriptions/templates/")({
 	component: TemplatesListPage,
@@ -59,12 +77,29 @@ function TemplatesListPage() {
 	const [search, setSearch] = useState("");
 	const [categoryFilter, setCategoryFilter] = useState<string>("");
 	const [sorting, setSorting] = useState<SortingState>([]);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [selectedTemplate, setSelectedTemplate] =
+		useState<TemplateListItem | null>(null);
 
 	const { data: templatesData, isLoading: templatesLoading } = useTemplates({
 		search: search || undefined,
 		category:
 			categoryFilter && categoryFilter !== "ALL" ? categoryFilter : undefined,
 	});
+	const deleteTemplateMutation = useDeleteTemplate();
+
+	const handleDeleteTemplate = async () => {
+		if (!selectedTemplate) return;
+		try {
+			await deleteTemplateMutation.mutateAsync(selectedTemplate.id);
+			toast.success("Template deleted successfully");
+			setDeleteDialogOpen(false);
+			setSelectedTemplate(null);
+		} catch (error) {
+			const apiError = error as ApiError;
+			toast.error(apiError.message || "Failed to delete template");
+		}
+	};
 
 	const columns: ColumnDef<TemplateListItem>[] = [
 		{

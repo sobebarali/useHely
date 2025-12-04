@@ -5,7 +5,7 @@
  * Returns previously generated reports
  */
 
-import { ReportType } from "@hms/db";
+import { ReportStatus, ReportType } from "@hms/db";
 import { z } from "zod";
 
 /**
@@ -22,6 +22,9 @@ const historyQuerySchema = z.object({
 	limit: z.coerce.number().int().positive().max(100).default(20),
 	reportType: z
 		.enum(Object.values(ReportType) as [string, ...string[]])
+		.optional(),
+	status: z
+		.enum(Object.values(ReportStatus) as [string, ...string[]])
 		.optional(),
 	startDate: dateStringSchema.optional(),
 	endDate: dateStringSchema.optional(),

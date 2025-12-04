@@ -88,6 +88,7 @@ export interface ReportHistoryParams {
 	page?: number;
 	limit?: number;
 	reportType?: string;
+	status?: ReportStatus;
 	startDate?: string;
 	endDate?: string;
 }
@@ -144,6 +145,7 @@ export async function getReportHistory(
 	if (params.page) searchParams.set("page", String(params.page));
 	if (params.limit) searchParams.set("limit", String(params.limit));
 	if (params.reportType) searchParams.set("reportType", params.reportType);
+	if (params.status) searchParams.set("status", params.status);
 	if (params.startDate) searchParams.set("startDate", params.startDate);
 	if (params.endDate) searchParams.set("endDate", params.endDate);
 

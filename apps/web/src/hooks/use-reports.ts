@@ -55,6 +55,56 @@ export function useReport(reportId: string) {
 }
 
 /**
+ * Helper function to download report as a file
+ */
+export async function downloadReportAsFile(
+	reportId: string,
+	filename?: string,
+): Promise<void> {
+	const response = await reportsClient.downloadReport(reportId);
+
+	// Determine the file extension and MIME type based on format
+	const formatConfig: Record<string, { ext: string; mime: string }> = {
+		json: { ext: "json", mime: "application/json" },
+		csv: { ext: "csv", mime: "text/csv" },
+		pdf: { ext: "pdf", mime: "application/pdf" },
+		xlsx: {
+			ext: "xlsx",
+			mime: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+		},
+	};
+
+	const format = response.format?.toLowerCase() || "json";
+	const config = formatConfig[format] || formatConfig.json;
+
+	// Convert data to appropriate format
+	let blobData: BlobPart;
+	if (format === "json") {
+		blobData = JSON.stringify(response.data, null, 2);
+	} else if (typeof response.data === "string") {
+		blobData = response.data;
+	} else {
+		blobData = JSON.stringify(response.data);
+	}
+
+	const blob = new Blob([blobData], { type: config.mime });
+	const url = URL.createObjectURL(blob);
+
+	// Create download link
+	const link = document.createElement("a");
+	link.href = url;
+	link.download =
+		filename ||
+		`${response.reportType}-${new Date(response.generatedAt).toISOString().split("T")[0]}.${config.ext}`;
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+
+	// Cleanup
+	URL.revokeObjectURL(url);
+}
+
+/**
  * Hook for generating a new report
  */
 export function useGenerateReport() {

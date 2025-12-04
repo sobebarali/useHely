@@ -56,9 +56,10 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ApiError } from "@/hooks/use-reports";
 import {
+	type ApiError,
 	type AvailableReport,
+	downloadReportAsFile,
 	type ReportHistoryItem,
 	type ReportStatus,
 	useReportHistory,
@@ -130,6 +131,7 @@ function ReportsPage() {
 		page,
 		limit: 10,
 		reportType: normalizeSelectValue(reportTypeFilter) || undefined,
+		status: (normalizeSelectValue(statusFilter) as ReportStatus) || undefined,
 		startDate: dateFilter || undefined,
 	});
 
@@ -145,8 +147,9 @@ function ReportsPage() {
 
 	const handleDownload = async (report: ReportHistoryItem) => {
 		try {
-			// For now, just show a toast. In a real implementation, you'd download the file
-			toast.success(`Downloading ${report.reportType} report...`);
+			toast.info(`Downloading ${report.reportType} report...`);
+			await downloadReportAsFile(report.reportId);
+			toast.success("Report downloaded successfully");
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error(apiError.message || "Failed to download report");
