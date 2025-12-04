@@ -137,7 +137,8 @@ describe("GET /api/appointments/availability/:doctorId - Shows booked slot as un
 	it("shows booked slot as unavailable", async () => {
 		const tomorrow = new Date();
 		tomorrow.setDate(tomorrow.getDate() + 1);
-		const dateStr = tomorrow.toISOString().split("T")[0];
+		// Format date in local timezone to match how the appointment was created
+		const dateStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, "0")}-${String(tomorrow.getDate()).padStart(2, "0")}`;
 
 		const response = await request(app)
 			.get(`/api/appointments/availability/${doctorStaffId}`)
