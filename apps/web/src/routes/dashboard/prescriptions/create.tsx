@@ -43,6 +43,7 @@ import {
 } from "@/hooks/use-prescriptions";
 import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/prescriptions-client";
+import { SELECT_NONE_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/prescriptions/create")({
 	component: CreatePrescriptionPage,
@@ -525,7 +526,7 @@ function CreatePrescriptionPage() {
 									<SelectValue placeholder="Select a template" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">No template</SelectItem>
+									<SelectItem value={SELECT_NONE_VALUE}>No template</SelectItem>
 									{templatesData?.data.map((template) => (
 										<SelectItem key={template.id} value={template.id}>
 											<div className="flex flex-col">

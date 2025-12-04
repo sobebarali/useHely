@@ -26,6 +26,7 @@ import {
 	useReportTypes,
 } from "@/hooks/use-reports";
 import { authClient } from "@/lib/auth-client";
+import { normalizeSelectValue, SELECT_ALL_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/reports/generate")({
 	component: GenerateReportPage,
@@ -103,16 +104,25 @@ function GenerateReportPage() {
 		}
 
 		try {
+			const normalizedPatientType = normalizeSelectValue(patientType);
+			const normalizedGroupBy = normalizeSelectValue(groupBy);
 			await generateMutation.mutateAsync({
 				reportType,
 				format,
 				parameters: {
 					startDate: startDate || undefined,
 					endDate: endDate || undefined,
-					departmentId: departmentId || undefined,
-					doctorId: doctorId || undefined,
-					patientType: patientType || undefined,
-					groupBy: groupBy || undefined,
+					departmentId: normalizeSelectValue(departmentId) || undefined,
+					doctorId: normalizeSelectValue(doctorId) || undefined,
+					patientType: (normalizedPatientType || undefined) as
+						| "OPD"
+						| "IPD"
+						| undefined,
+					groupBy: (normalizedGroupBy || undefined) as
+						| "day"
+						| "week"
+						| "month"
+						| undefined,
 				},
 			});
 			toast.success("Report generation started successfully");
@@ -262,7 +272,9 @@ function GenerateReportPage() {
 												<SelectValue placeholder="All departments" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">All departments</SelectItem>
+												<SelectItem value={SELECT_ALL_VALUE}>
+													All departments
+												</SelectItem>
 												{/* TODO: Fetch departments from API */}
 											</SelectContent>
 										</Select>
@@ -279,7 +291,9 @@ function GenerateReportPage() {
 												<SelectValue placeholder="All doctors" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">All doctors</SelectItem>
+												<SelectItem value={SELECT_ALL_VALUE}>
+													All doctors
+												</SelectItem>
 												{/* TODO: Fetch doctors from API */}
 											</SelectContent>
 										</Select>
@@ -301,7 +315,9 @@ function GenerateReportPage() {
 												<SelectValue placeholder="All types" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">All types</SelectItem>
+												<SelectItem value={SELECT_ALL_VALUE}>
+													All types
+												</SelectItem>
 												<SelectItem value="OPD">OPD</SelectItem>
 												<SelectItem value="IPD">IPD</SelectItem>
 											</SelectContent>
@@ -324,7 +340,9 @@ function GenerateReportPage() {
 												<SelectValue placeholder="No grouping" />
 											</SelectTrigger>
 											<SelectContent>
-												<SelectItem value="">No grouping</SelectItem>
+												<SelectItem value={SELECT_ALL_VALUE}>
+													No grouping
+												</SelectItem>
 												<SelectItem value="day">Day</SelectItem>
 												<SelectItem value="week">Week</SelectItem>
 												<SelectItem value="month">Month</SelectItem>

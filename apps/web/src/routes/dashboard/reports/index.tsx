@@ -65,6 +65,7 @@ import {
 	useReportTypes,
 } from "@/hooks/use-reports";
 import { authClient } from "@/lib/auth-client";
+import { normalizeSelectValue, SELECT_ALL_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/reports/")({
 	component: ReportsPage,
@@ -128,7 +129,7 @@ function ReportsPage() {
 	const { data: historyData, isLoading: historyLoading } = useReportHistory({
 		page,
 		limit: 10,
-		reportType: reportTypeFilter || undefined,
+		reportType: normalizeSelectValue(reportTypeFilter) || undefined,
 		startDate: dateFilter || undefined,
 	});
 
@@ -391,7 +392,7 @@ function ReportsPage() {
 										<SelectValue placeholder="All Types" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="">All Types</SelectItem>
+										<SelectItem value={SELECT_ALL_VALUE}>All Types</SelectItem>
 										{reportTypesData?.reports.map((report) => (
 											<SelectItem key={report.id} value={report.id}>
 												{report.name}

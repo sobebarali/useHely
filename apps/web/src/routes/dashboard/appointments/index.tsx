@@ -11,6 +11,7 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table";
+import { format } from "date-fns";
 import {
 	AlertTriangle,
 	ArrowUpDown,
@@ -41,6 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -49,7 +51,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
 	Select,
@@ -142,13 +143,18 @@ function getPriorityBadgeVariant(
 
 function AppointmentsListPage() {
 	const [page, setPage] = useState(1);
-	const [dateFilter, setDateFilter] = useState<string>("");
+	const [dateFilter, setDateFilter] = useState<Date | undefined>(undefined);
 	const [statusFilter, setStatusFilter] = useState<string>("");
 	const [typeFilter, setTypeFilter] = useState<string>("");
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = useState({});
+
+	// Format date for API calls (YYYY-MM-DD)
+	const dateFilterString = dateFilter
+		? format(dateFilter, "yyyy-MM-dd")
+		: undefined;
 
 	// Cancel dialog state
 	const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -159,7 +165,7 @@ function AppointmentsListPage() {
 		useAppointments({
 			page,
 			limit: 10,
-			date: dateFilter || undefined,
+			date: dateFilterString,
 			status:
 				statusFilter && statusFilter !== "ALL"
 					? (statusFilter as AppointmentStatus)
@@ -485,23 +491,19 @@ function AppointmentsListPage() {
 
 				{/* Filters */}
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-					<div className="w-40">
+					<div className="w-48">
 						<Label htmlFor="date-filter" className="sr-only">
 							Date
 						</Label>
-						<div className="relative">
-							<Calendar className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="date-filter"
-								type="date"
-								value={dateFilter}
-								onChange={(e) => {
-									setDateFilter(e.target.value);
-									setPage(1);
-								}}
-								className="pl-9"
-							/>
-						</div>
+						<DatePicker
+							value={dateFilter}
+							onChange={(date) => {
+								setDateFilter(date);
+								setPage(1);
+							}}
+							placeholder="Filter by date"
+							dateFormat="MMM d, yyyy"
+						/>
 					</div>
 					<div className="flex gap-2">
 						<div className="w-40">
@@ -554,7 +556,7 @@ function AppointmentsListPage() {
 							<Button
 								variant="ghost"
 								onClick={() => {
-									setDateFilter("");
+									setDateFilter(undefined);
 									setStatusFilter("");
 									setTypeFilter("");
 									setPage(1);

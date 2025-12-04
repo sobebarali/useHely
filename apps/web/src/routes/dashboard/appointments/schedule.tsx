@@ -5,6 +5,7 @@ import {
 	redirect,
 	useNavigate,
 } from "@tanstack/react-router";
+import { format } from "date-fns";
 import {
 	AlertTriangle,
 	ArrowLeft,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { AppointmentScheduler } from "@/components/appointments";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -81,8 +83,16 @@ function ScheduleAppointmentPage() {
 	} | null>(null);
 	const [selectedDepartment, setSelectedDepartment] = useState("");
 	const [selectedDoctor, setSelectedDoctor] = useState("");
-	const [selectedDate, setSelectedDate] = useState("");
+	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+	const [selectedTimeSlot, setSelectedTimeSlot] = useState<
+		{ start: string; end: string } | undefined
+	>(undefined);
 	const [showPatientDropdown, setShowPatientDropdown] = useState(false);
+
+	// Format date for API calls (YYYY-MM-DD)
+	const selectedDateString = selectedDate
+		? format(selectedDate, "yyyy-MM-dd")
+		: "";
 
 	// Fetch departments
 	const { data: departmentsData } = useDepartments({});
@@ -103,13 +113,9 @@ function ScheduleAppointmentPage() {
 
 	// Fetch doctor availability
 	const { data: availability, isLoading: loadingAvailability } =
-		useDoctorAvailability(selectedDoctor, selectedDate);
+		useDoctorAvailability(selectedDoctor, selectedDateString);
 
 	const createAppointmentMutation = useCreateAppointment();
-
-	// Get available time slots
-	const availableSlots =
-		availability?.slots.filter((slot) => slot.available) ?? [];
 
 	const form = useForm({
 		defaultValues: {
@@ -203,11 +209,20 @@ function ScheduleAppointmentPage() {
 
 	// Update form when date changes
 	useEffect(() => {
-		form.setFieldValue("date", selectedDate);
+		form.setFieldValue("date", selectedDateString);
 		// Reset time slot when date changes
 		form.setFieldValue("timeSlotStart", "");
 		form.setFieldValue("timeSlotEnd", "");
-	}, [selectedDate, form]);
+		setSelectedTimeSlot(undefined);
+	}, [selectedDateString, form]);
+
+	// Update form when time slot changes
+	useEffect(() => {
+		if (selectedTimeSlot) {
+			form.setFieldValue("timeSlotStart", selectedTimeSlot.start);
+			form.setFieldValue("timeSlotEnd", selectedTimeSlot.end);
+		}
+	}, [selectedTimeSlot, form]);
 
 	const handlePatientSelect = (patient: {
 		id: string;
@@ -218,24 +233,6 @@ function ScheduleAppointmentPage() {
 		setSelectedPatient(patient);
 		setPatientSearch(`${patient.firstName} ${patient.lastName}`);
 		setShowPatientDropdown(false);
-	};
-
-	const handleTimeSlotSelect = (start: string, end: string) => {
-		form.setFieldValue("timeSlotStart", start);
-		form.setFieldValue("timeSlotEnd", end);
-	};
-
-	const formatTime = (time: string) => {
-		const [hours, minutes] = time.split(":");
-		const hour = Number.parseInt(hours, 10);
-		const ampm = hour >= 12 ? "PM" : "AM";
-		const hour12 = hour % 12 || 12;
-		return `${hour12}:${minutes} ${ampm}`;
-	};
-
-	const getTodayDate = () => {
-		const today = new Date();
-		return today.toISOString().split("T")[0];
 	};
 
 	return (
@@ -416,8 +413,8 @@ function ScheduleAppointmentPage() {
 					</CardContent>
 				</Card>
 
-				{/* Date & Time */}
-				<Card>
+				{/* Date & Time - Using new AppointmentScheduler */}
+				<Card className="md:col-span-2">
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2">
 							<Clock className="h-5 w-5" />
@@ -427,67 +424,23 @@ function ScheduleAppointmentPage() {
 							Choose appointment date and available time slot
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="space-y-2">
-							<Label>Date *</Label>
-							<Input
-								type="date"
-								value={selectedDate}
-								onChange={(e) => setSelectedDate(e.target.value)}
-								min={getTodayDate()}
+					<CardContent>
+						{!selectedDoctor ? (
+							<div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+								<Calendar className="mb-2 h-8 w-8 opacity-50" />
+								<p>Please select a department and doctor first</p>
+							</div>
+						) : (
+							<AppointmentScheduler
+								selectedDate={selectedDate}
+								selectedTimeSlot={selectedTimeSlot}
+								onDateChange={setSelectedDate}
+								onTimeSlotChange={setSelectedTimeSlot}
+								timeSlots={availability?.slots ?? []}
+								isLoadingSlots={loadingAvailability}
 								disabled={!selectedDoctor}
 							/>
-						</div>
-
-						{selectedDoctor && selectedDate && (
-							<div className="space-y-2">
-								<Label>Available Time Slots</Label>
-								{loadingAvailability ? (
-									<div className="flex items-center justify-center py-4">
-										<Loader2 className="h-4 w-4 animate-spin" />
-									</div>
-								) : availableSlots.length > 0 ? (
-									<div className="grid grid-cols-3 gap-2">
-										{availableSlots.map((slot) => (
-											<form.Field key={slot.start} name="timeSlotStart">
-												{(field) => (
-													<Button
-														type="button"
-														variant={
-															field.state.value === slot.start
-																? "default"
-																: "outline"
-														}
-														size="sm"
-														onClick={() =>
-															handleTimeSlotSelect(slot.start, slot.end)
-														}
-													>
-														{formatTime(slot.start)}
-													</Button>
-												)}
-											</form.Field>
-										))}
-									</div>
-								) : (
-									<p className="text-muted-foreground text-sm">
-										No available slots for this date
-									</p>
-								)}
-							</div>
 						)}
-
-						<form.Field name="timeSlotStart">
-							{(field) =>
-								field.state.value && (
-									<div className="flex items-center gap-2 text-sm">
-										<Clock className="h-4 w-4 text-muted-foreground" />
-										Selected: {formatTime(field.state.value)} -{" "}
-										{formatTime(form.getFieldValue("timeSlotEnd"))}
-									</div>
-								)
-							}
-						</form.Field>
 					</CardContent>
 				</Card>
 

@@ -27,6 +27,7 @@ import { Route as DashboardReportsIndexRouteImport } from './routes/dashboard/re
 import { Route as DashboardPrescriptionsIndexRouteImport } from './routes/dashboard/prescriptions/index'
 import { Route as DashboardPatientsIndexRouteImport } from './routes/dashboard/patients/index'
 import { Route as DashboardInventoryIndexRouteImport } from './routes/dashboard/inventory/index'
+import { Route as DashboardDoctorsIndexRouteImport } from './routes/dashboard/doctors/index'
 import { Route as DashboardDispensingIndexRouteImport } from './routes/dashboard/dispensing/index'
 import { Route as DashboardDepartmentsIndexRouteImport } from './routes/dashboard/departments/index'
 import { Route as DashboardAppointmentsIndexRouteImport } from './routes/dashboard/appointments/index'
@@ -34,14 +35,19 @@ import { Route as DashboardVitalsRecordRouteImport } from './routes/dashboard/vi
 import { Route as DashboardVitalsHistoryRouteImport } from './routes/dashboard/vitals/history'
 import { Route as DashboardVitalsIdRouteImport } from './routes/dashboard/vitals/$id'
 import { Route as DashboardStaffRolesRouteImport } from './routes/dashboard/staff/roles'
+import { Route as DashboardStaffAddRouteImport } from './routes/dashboard/staff/add'
 import { Route as DashboardStaffIdRouteImport } from './routes/dashboard/staff/$id'
 import { Route as DashboardSettingsSecurityRouteImport } from './routes/dashboard/settings/security'
 import { Route as DashboardSettingsProfileRouteImport } from './routes/dashboard/settings/profile'
 import { Route as DashboardSettingsPrivacyRouteImport } from './routes/dashboard/settings/privacy'
+import { Route as DashboardSettingsNotificationsRouteImport } from './routes/dashboard/settings/notifications'
 import { Route as DashboardSettingsGeneralRouteImport } from './routes/dashboard/settings/general'
 import { Route as DashboardSettingsDataExportRouteImport } from './routes/dashboard/settings/data-export'
 import { Route as DashboardSettingsDataDeletionRouteImport } from './routes/dashboard/settings/data-deletion'
+import { Route as DashboardReportsRevenueRouteImport } from './routes/dashboard/reports/revenue'
+import { Route as DashboardReportsPatientsRouteImport } from './routes/dashboard/reports/patients'
 import { Route as DashboardReportsGenerateRouteImport } from './routes/dashboard/reports/generate'
+import { Route as DashboardReportsAppointmentsRouteImport } from './routes/dashboard/reports/appointments'
 import { Route as DashboardReportsIdRouteImport } from './routes/dashboard/reports/$id'
 import { Route as DashboardPrescriptionsCreateRouteImport } from './routes/dashboard/prescriptions/create'
 import { Route as DashboardPrescriptionsIdRouteImport } from './routes/dashboard/prescriptions/$id'
@@ -52,11 +58,13 @@ import { Route as DashboardInventoryTransactionsRouteImport } from './routes/das
 import { Route as DashboardInventoryMedicinesRouteImport } from './routes/dashboard/inventory/medicines'
 import { Route as DashboardInventoryExpiringRouteImport } from './routes/dashboard/inventory/expiring'
 import { Route as DashboardInventoryIdRouteImport } from './routes/dashboard/inventory/$id'
+import { Route as DashboardDoctorsAvailabilityRouteImport } from './routes/dashboard/doctors/availability'
 import { Route as DashboardDispensingHistoryRouteImport } from './routes/dashboard/dispensing/history'
 import { Route as DashboardDispensingIdRouteImport } from './routes/dashboard/dispensing/$id'
 import { Route as DashboardDepartmentsAddRouteImport } from './routes/dashboard/departments/add'
 import { Route as DashboardDepartmentsIdRouteImport } from './routes/dashboard/departments/$id'
 import { Route as DashboardAppointmentsScheduleRouteImport } from './routes/dashboard/appointments/schedule'
+import { Route as DashboardAppointmentsCalendarRouteImport } from './routes/dashboard/appointments/calendar'
 import { Route as DashboardAppointmentsIdRouteImport } from './routes/dashboard/appointments/$id'
 import { Route as DashboardAdminSecurityRouteImport } from './routes/dashboard/admin/security'
 import { Route as DashboardAdminComplianceRouteImport } from './routes/dashboard/admin/compliance'
@@ -158,6 +166,11 @@ const DashboardInventoryIndexRoute = DashboardInventoryIndexRouteImport.update({
   path: '/inventory/',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardDoctorsIndexRoute = DashboardDoctorsIndexRouteImport.update({
+  id: '/doctors/',
+  path: '/doctors/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardDispensingIndexRoute =
   DashboardDispensingIndexRouteImport.update({
     id: '/dispensing/',
@@ -196,6 +209,11 @@ const DashboardStaffRolesRoute = DashboardStaffRolesRouteImport.update({
   path: '/staff/roles',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardStaffAddRoute = DashboardStaffAddRouteImport.update({
+  id: '/staff/add',
+  path: '/staff/add',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardStaffIdRoute = DashboardStaffIdRouteImport.update({
   id: '/staff/$id',
   path: '/staff/$id',
@@ -219,6 +237,12 @@ const DashboardSettingsPrivacyRoute =
     path: '/privacy',
     getParentRoute: () => DashboardSettingsRoute,
   } as any)
+const DashboardSettingsNotificationsRoute =
+  DashboardSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => DashboardSettingsRoute,
+  } as any)
 const DashboardSettingsGeneralRoute =
   DashboardSettingsGeneralRouteImport.update({
     id: '/general',
@@ -237,10 +261,27 @@ const DashboardSettingsDataDeletionRoute =
     path: '/data-deletion',
     getParentRoute: () => DashboardSettingsRoute,
   } as any)
+const DashboardReportsRevenueRoute = DashboardReportsRevenueRouteImport.update({
+  id: '/reports/revenue',
+  path: '/reports/revenue',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardReportsPatientsRoute =
+  DashboardReportsPatientsRouteImport.update({
+    id: '/reports/patients',
+    path: '/reports/patients',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardReportsGenerateRoute =
   DashboardReportsGenerateRouteImport.update({
     id: '/reports/generate',
     path: '/reports/generate',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardReportsAppointmentsRoute =
+  DashboardReportsAppointmentsRouteImport.update({
+    id: '/reports/appointments',
+    path: '/reports/appointments',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardReportsIdRoute = DashboardReportsIdRouteImport.update({
@@ -300,6 +341,12 @@ const DashboardInventoryIdRoute = DashboardInventoryIdRouteImport.update({
   path: '/inventory/$id',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardDoctorsAvailabilityRoute =
+  DashboardDoctorsAvailabilityRouteImport.update({
+    id: '/doctors/availability',
+    path: '/doctors/availability',
+    getParentRoute: () => DashboardRoute,
+  } as any)
 const DashboardDispensingHistoryRoute =
   DashboardDispensingHistoryRouteImport.update({
     id: '/dispensing/history',
@@ -325,6 +372,12 @@ const DashboardAppointmentsScheduleRoute =
   DashboardAppointmentsScheduleRouteImport.update({
     id: '/appointments/schedule',
     path: '/appointments/schedule',
+    getParentRoute: () => DashboardRoute,
+  } as any)
+const DashboardAppointmentsCalendarRoute =
+  DashboardAppointmentsCalendarRouteImport.update({
+    id: '/appointments/calendar',
+    path: '/appointments/calendar',
     getParentRoute: () => DashboardRoute,
   } as any)
 const DashboardAppointmentsIdRoute = DashboardAppointmentsIdRouteImport.update({
@@ -395,11 +448,13 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
+  '/dashboard/appointments/calendar': typeof DashboardAppointmentsCalendarRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/departments/$id': typeof DashboardDepartmentsIdRoute
   '/dashboard/departments/add': typeof DashboardDepartmentsAddRoute
   '/dashboard/dispensing/$id': typeof DashboardDispensingIdRoute
   '/dashboard/dispensing/history': typeof DashboardDispensingHistoryRoute
+  '/dashboard/doctors/availability': typeof DashboardDoctorsAvailabilityRoute
   '/dashboard/inventory/$id': typeof DashboardInventoryIdRoute
   '/dashboard/inventory/expiring': typeof DashboardInventoryExpiringRoute
   '/dashboard/inventory/medicines': typeof DashboardInventoryMedicinesRoute
@@ -410,14 +465,19 @@ export interface FileRoutesByFullPath {
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
+  '/dashboard/reports/appointments': typeof DashboardReportsAppointmentsRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/reports/patients': typeof DashboardReportsPatientsRoute
+  '/dashboard/reports/revenue': typeof DashboardReportsRevenueRoute
   '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
   '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/notifications': typeof DashboardSettingsNotificationsRoute
   '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
@@ -425,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing': typeof DashboardDispensingIndexRoute
+  '/dashboard/doctors': typeof DashboardDoctorsIndexRoute
   '/dashboard/inventory': typeof DashboardInventoryIndexRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions': typeof DashboardPrescriptionsIndexRoute
@@ -451,11 +512,13 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardIndexRoute
   '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
+  '/dashboard/appointments/calendar': typeof DashboardAppointmentsCalendarRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/departments/$id': typeof DashboardDepartmentsIdRoute
   '/dashboard/departments/add': typeof DashboardDepartmentsAddRoute
   '/dashboard/dispensing/$id': typeof DashboardDispensingIdRoute
   '/dashboard/dispensing/history': typeof DashboardDispensingHistoryRoute
+  '/dashboard/doctors/availability': typeof DashboardDoctorsAvailabilityRoute
   '/dashboard/inventory/$id': typeof DashboardInventoryIdRoute
   '/dashboard/inventory/expiring': typeof DashboardInventoryExpiringRoute
   '/dashboard/inventory/medicines': typeof DashboardInventoryMedicinesRoute
@@ -466,14 +529,19 @@ export interface FileRoutesByTo {
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
+  '/dashboard/reports/appointments': typeof DashboardReportsAppointmentsRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/reports/patients': typeof DashboardReportsPatientsRoute
+  '/dashboard/reports/revenue': typeof DashboardReportsRevenueRoute
   '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
   '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/notifications': typeof DashboardSettingsNotificationsRoute
   '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
@@ -481,6 +549,7 @@ export interface FileRoutesByTo {
   '/dashboard/appointments': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing': typeof DashboardDispensingIndexRoute
+  '/dashboard/doctors': typeof DashboardDoctorsIndexRoute
   '/dashboard/inventory': typeof DashboardInventoryIndexRoute
   '/dashboard/patients': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions': typeof DashboardPrescriptionsIndexRoute
@@ -511,11 +580,13 @@ export interface FileRoutesById {
   '/dashboard/admin/compliance': typeof DashboardAdminComplianceRoute
   '/dashboard/admin/security': typeof DashboardAdminSecurityRouteWithChildren
   '/dashboard/appointments/$id': typeof DashboardAppointmentsIdRoute
+  '/dashboard/appointments/calendar': typeof DashboardAppointmentsCalendarRoute
   '/dashboard/appointments/schedule': typeof DashboardAppointmentsScheduleRoute
   '/dashboard/departments/$id': typeof DashboardDepartmentsIdRoute
   '/dashboard/departments/add': typeof DashboardDepartmentsAddRoute
   '/dashboard/dispensing/$id': typeof DashboardDispensingIdRoute
   '/dashboard/dispensing/history': typeof DashboardDispensingHistoryRoute
+  '/dashboard/doctors/availability': typeof DashboardDoctorsAvailabilityRoute
   '/dashboard/inventory/$id': typeof DashboardInventoryIdRoute
   '/dashboard/inventory/expiring': typeof DashboardInventoryExpiringRoute
   '/dashboard/inventory/medicines': typeof DashboardInventoryMedicinesRoute
@@ -526,14 +597,19 @@ export interface FileRoutesById {
   '/dashboard/prescriptions/$id': typeof DashboardPrescriptionsIdRoute
   '/dashboard/prescriptions/create': typeof DashboardPrescriptionsCreateRoute
   '/dashboard/reports/$id': typeof DashboardReportsIdRoute
+  '/dashboard/reports/appointments': typeof DashboardReportsAppointmentsRoute
   '/dashboard/reports/generate': typeof DashboardReportsGenerateRoute
+  '/dashboard/reports/patients': typeof DashboardReportsPatientsRoute
+  '/dashboard/reports/revenue': typeof DashboardReportsRevenueRoute
   '/dashboard/settings/data-deletion': typeof DashboardSettingsDataDeletionRoute
   '/dashboard/settings/data-export': typeof DashboardSettingsDataExportRoute
   '/dashboard/settings/general': typeof DashboardSettingsGeneralRoute
+  '/dashboard/settings/notifications': typeof DashboardSettingsNotificationsRoute
   '/dashboard/settings/privacy': typeof DashboardSettingsPrivacyRoute
   '/dashboard/settings/profile': typeof DashboardSettingsProfileRoute
   '/dashboard/settings/security': typeof DashboardSettingsSecurityRoute
   '/dashboard/staff/$id': typeof DashboardStaffIdRoute
+  '/dashboard/staff/add': typeof DashboardStaffAddRoute
   '/dashboard/staff/roles': typeof DashboardStaffRolesRoute
   '/dashboard/vitals/$id': typeof DashboardVitalsIdRoute
   '/dashboard/vitals/history': typeof DashboardVitalsHistoryRoute
@@ -541,6 +617,7 @@ export interface FileRoutesById {
   '/dashboard/appointments/': typeof DashboardAppointmentsIndexRoute
   '/dashboard/departments/': typeof DashboardDepartmentsIndexRoute
   '/dashboard/dispensing/': typeof DashboardDispensingIndexRoute
+  '/dashboard/doctors/': typeof DashboardDoctorsIndexRoute
   '/dashboard/inventory/': typeof DashboardInventoryIndexRoute
   '/dashboard/patients/': typeof DashboardPatientsIndexRoute
   '/dashboard/prescriptions/': typeof DashboardPrescriptionsIndexRoute
@@ -572,11 +649,13 @@ export interface FileRouteTypes {
     | '/dashboard/admin/compliance'
     | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
+    | '/dashboard/appointments/calendar'
     | '/dashboard/appointments/schedule'
     | '/dashboard/departments/$id'
     | '/dashboard/departments/add'
     | '/dashboard/dispensing/$id'
     | '/dashboard/dispensing/history'
+    | '/dashboard/doctors/availability'
     | '/dashboard/inventory/$id'
     | '/dashboard/inventory/expiring'
     | '/dashboard/inventory/medicines'
@@ -587,14 +666,19 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
+    | '/dashboard/reports/appointments'
     | '/dashboard/reports/generate'
+    | '/dashboard/reports/patients'
+    | '/dashboard/reports/revenue'
     | '/dashboard/settings/data-deletion'
     | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/notifications'
     | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
     | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
@@ -602,6 +686,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments'
     | '/dashboard/departments'
     | '/dashboard/dispensing'
+    | '/dashboard/doctors'
     | '/dashboard/inventory'
     | '/dashboard/patients'
     | '/dashboard/prescriptions'
@@ -628,11 +713,13 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/admin/compliance'
     | '/dashboard/appointments/$id'
+    | '/dashboard/appointments/calendar'
     | '/dashboard/appointments/schedule'
     | '/dashboard/departments/$id'
     | '/dashboard/departments/add'
     | '/dashboard/dispensing/$id'
     | '/dashboard/dispensing/history'
+    | '/dashboard/doctors/availability'
     | '/dashboard/inventory/$id'
     | '/dashboard/inventory/expiring'
     | '/dashboard/inventory/medicines'
@@ -643,14 +730,19 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
+    | '/dashboard/reports/appointments'
     | '/dashboard/reports/generate'
+    | '/dashboard/reports/patients'
+    | '/dashboard/reports/revenue'
     | '/dashboard/settings/data-deletion'
     | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/notifications'
     | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
     | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
@@ -658,6 +750,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments'
     | '/dashboard/departments'
     | '/dashboard/dispensing'
+    | '/dashboard/doctors'
     | '/dashboard/inventory'
     | '/dashboard/patients'
     | '/dashboard/prescriptions'
@@ -687,11 +780,13 @@ export interface FileRouteTypes {
     | '/dashboard/admin/compliance'
     | '/dashboard/admin/security'
     | '/dashboard/appointments/$id'
+    | '/dashboard/appointments/calendar'
     | '/dashboard/appointments/schedule'
     | '/dashboard/departments/$id'
     | '/dashboard/departments/add'
     | '/dashboard/dispensing/$id'
     | '/dashboard/dispensing/history'
+    | '/dashboard/doctors/availability'
     | '/dashboard/inventory/$id'
     | '/dashboard/inventory/expiring'
     | '/dashboard/inventory/medicines'
@@ -702,14 +797,19 @@ export interface FileRouteTypes {
     | '/dashboard/prescriptions/$id'
     | '/dashboard/prescriptions/create'
     | '/dashboard/reports/$id'
+    | '/dashboard/reports/appointments'
     | '/dashboard/reports/generate'
+    | '/dashboard/reports/patients'
+    | '/dashboard/reports/revenue'
     | '/dashboard/settings/data-deletion'
     | '/dashboard/settings/data-export'
     | '/dashboard/settings/general'
+    | '/dashboard/settings/notifications'
     | '/dashboard/settings/privacy'
     | '/dashboard/settings/profile'
     | '/dashboard/settings/security'
     | '/dashboard/staff/$id'
+    | '/dashboard/staff/add'
     | '/dashboard/staff/roles'
     | '/dashboard/vitals/$id'
     | '/dashboard/vitals/history'
@@ -717,6 +817,7 @@ export interface FileRouteTypes {
     | '/dashboard/appointments/'
     | '/dashboard/departments/'
     | '/dashboard/dispensing/'
+    | '/dashboard/doctors/'
     | '/dashboard/inventory/'
     | '/dashboard/patients/'
     | '/dashboard/prescriptions/'
@@ -871,6 +972,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInventoryIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/doctors/': {
+      id: '/dashboard/doctors/'
+      path: '/doctors'
+      fullPath: '/dashboard/doctors'
+      preLoaderRoute: typeof DashboardDoctorsIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/dispensing/': {
       id: '/dashboard/dispensing/'
       path: '/dispensing'
@@ -920,6 +1028,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStaffRolesRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/staff/add': {
+      id: '/dashboard/staff/add'
+      path: '/staff/add'
+      fullPath: '/dashboard/staff/add'
+      preLoaderRoute: typeof DashboardStaffAddRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/staff/$id': {
       id: '/dashboard/staff/$id'
       path: '/staff/$id'
@@ -948,6 +1063,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsPrivacyRouteImport
       parentRoute: typeof DashboardSettingsRoute
     }
+    '/dashboard/settings/notifications': {
+      id: '/dashboard/settings/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/settings/notifications'
+      preLoaderRoute: typeof DashboardSettingsNotificationsRouteImport
+      parentRoute: typeof DashboardSettingsRoute
+    }
     '/dashboard/settings/general': {
       id: '/dashboard/settings/general'
       path: '/general'
@@ -969,11 +1091,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSettingsDataDeletionRouteImport
       parentRoute: typeof DashboardSettingsRoute
     }
+    '/dashboard/reports/revenue': {
+      id: '/dashboard/reports/revenue'
+      path: '/reports/revenue'
+      fullPath: '/dashboard/reports/revenue'
+      preLoaderRoute: typeof DashboardReportsRevenueRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reports/patients': {
+      id: '/dashboard/reports/patients'
+      path: '/reports/patients'
+      fullPath: '/dashboard/reports/patients'
+      preLoaderRoute: typeof DashboardReportsPatientsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/reports/generate': {
       id: '/dashboard/reports/generate'
       path: '/reports/generate'
       fullPath: '/dashboard/reports/generate'
       preLoaderRoute: typeof DashboardReportsGenerateRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/reports/appointments': {
+      id: '/dashboard/reports/appointments'
+      path: '/reports/appointments'
+      fullPath: '/dashboard/reports/appointments'
+      preLoaderRoute: typeof DashboardReportsAppointmentsRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/reports/$id': {
@@ -1046,6 +1189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardInventoryIdRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/doctors/availability': {
+      id: '/dashboard/doctors/availability'
+      path: '/doctors/availability'
+      fullPath: '/dashboard/doctors/availability'
+      preLoaderRoute: typeof DashboardDoctorsAvailabilityRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/dispensing/history': {
       id: '/dashboard/dispensing/history'
       path: '/dispensing/history'
@@ -1079,6 +1229,13 @@ declare module '@tanstack/react-router' {
       path: '/appointments/schedule'
       fullPath: '/dashboard/appointments/schedule'
       preLoaderRoute: typeof DashboardAppointmentsScheduleRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/appointments/calendar': {
+      id: '/dashboard/appointments/calendar'
+      path: '/appointments/calendar'
+      fullPath: '/dashboard/appointments/calendar'
+      preLoaderRoute: typeof DashboardAppointmentsCalendarRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/dashboard/appointments/$id': {
@@ -1183,6 +1340,7 @@ interface DashboardSettingsRouteChildren {
   DashboardSettingsDataDeletionRoute: typeof DashboardSettingsDataDeletionRoute
   DashboardSettingsDataExportRoute: typeof DashboardSettingsDataExportRoute
   DashboardSettingsGeneralRoute: typeof DashboardSettingsGeneralRoute
+  DashboardSettingsNotificationsRoute: typeof DashboardSettingsNotificationsRoute
   DashboardSettingsPrivacyRoute: typeof DashboardSettingsPrivacyRoute
   DashboardSettingsProfileRoute: typeof DashboardSettingsProfileRoute
   DashboardSettingsSecurityRoute: typeof DashboardSettingsSecurityRoute
@@ -1193,6 +1351,7 @@ const DashboardSettingsRouteChildren: DashboardSettingsRouteChildren = {
   DashboardSettingsDataDeletionRoute: DashboardSettingsDataDeletionRoute,
   DashboardSettingsDataExportRoute: DashboardSettingsDataExportRoute,
   DashboardSettingsGeneralRoute: DashboardSettingsGeneralRoute,
+  DashboardSettingsNotificationsRoute: DashboardSettingsNotificationsRoute,
   DashboardSettingsPrivacyRoute: DashboardSettingsPrivacyRoute,
   DashboardSettingsProfileRoute: DashboardSettingsProfileRoute,
   DashboardSettingsSecurityRoute: DashboardSettingsSecurityRoute,
@@ -1207,11 +1366,13 @@ interface DashboardRouteChildren {
   DashboardSettingsRoute: typeof DashboardSettingsRouteWithChildren
   DashboardIndexRoute: typeof DashboardIndexRoute
   DashboardAppointmentsIdRoute: typeof DashboardAppointmentsIdRoute
+  DashboardAppointmentsCalendarRoute: typeof DashboardAppointmentsCalendarRoute
   DashboardAppointmentsScheduleRoute: typeof DashboardAppointmentsScheduleRoute
   DashboardDepartmentsIdRoute: typeof DashboardDepartmentsIdRoute
   DashboardDepartmentsAddRoute: typeof DashboardDepartmentsAddRoute
   DashboardDispensingIdRoute: typeof DashboardDispensingIdRoute
   DashboardDispensingHistoryRoute: typeof DashboardDispensingHistoryRoute
+  DashboardDoctorsAvailabilityRoute: typeof DashboardDoctorsAvailabilityRoute
   DashboardInventoryIdRoute: typeof DashboardInventoryIdRoute
   DashboardInventoryExpiringRoute: typeof DashboardInventoryExpiringRoute
   DashboardInventoryMedicinesRoute: typeof DashboardInventoryMedicinesRoute
@@ -1222,8 +1383,12 @@ interface DashboardRouteChildren {
   DashboardPrescriptionsIdRoute: typeof DashboardPrescriptionsIdRoute
   DashboardPrescriptionsCreateRoute: typeof DashboardPrescriptionsCreateRoute
   DashboardReportsIdRoute: typeof DashboardReportsIdRoute
+  DashboardReportsAppointmentsRoute: typeof DashboardReportsAppointmentsRoute
   DashboardReportsGenerateRoute: typeof DashboardReportsGenerateRoute
+  DashboardReportsPatientsRoute: typeof DashboardReportsPatientsRoute
+  DashboardReportsRevenueRoute: typeof DashboardReportsRevenueRoute
   DashboardStaffIdRoute: typeof DashboardStaffIdRoute
+  DashboardStaffAddRoute: typeof DashboardStaffAddRoute
   DashboardStaffRolesRoute: typeof DashboardStaffRolesRoute
   DashboardVitalsIdRoute: typeof DashboardVitalsIdRoute
   DashboardVitalsHistoryRoute: typeof DashboardVitalsHistoryRoute
@@ -1231,6 +1396,7 @@ interface DashboardRouteChildren {
   DashboardAppointmentsIndexRoute: typeof DashboardAppointmentsIndexRoute
   DashboardDepartmentsIndexRoute: typeof DashboardDepartmentsIndexRoute
   DashboardDispensingIndexRoute: typeof DashboardDispensingIndexRoute
+  DashboardDoctorsIndexRoute: typeof DashboardDoctorsIndexRoute
   DashboardInventoryIndexRoute: typeof DashboardInventoryIndexRoute
   DashboardPatientsIndexRoute: typeof DashboardPatientsIndexRoute
   DashboardPrescriptionsIndexRoute: typeof DashboardPrescriptionsIndexRoute
@@ -1247,11 +1413,13 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardSettingsRoute: DashboardSettingsRouteWithChildren,
   DashboardIndexRoute: DashboardIndexRoute,
   DashboardAppointmentsIdRoute: DashboardAppointmentsIdRoute,
+  DashboardAppointmentsCalendarRoute: DashboardAppointmentsCalendarRoute,
   DashboardAppointmentsScheduleRoute: DashboardAppointmentsScheduleRoute,
   DashboardDepartmentsIdRoute: DashboardDepartmentsIdRoute,
   DashboardDepartmentsAddRoute: DashboardDepartmentsAddRoute,
   DashboardDispensingIdRoute: DashboardDispensingIdRoute,
   DashboardDispensingHistoryRoute: DashboardDispensingHistoryRoute,
+  DashboardDoctorsAvailabilityRoute: DashboardDoctorsAvailabilityRoute,
   DashboardInventoryIdRoute: DashboardInventoryIdRoute,
   DashboardInventoryExpiringRoute: DashboardInventoryExpiringRoute,
   DashboardInventoryMedicinesRoute: DashboardInventoryMedicinesRoute,
@@ -1262,8 +1430,12 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardPrescriptionsIdRoute: DashboardPrescriptionsIdRoute,
   DashboardPrescriptionsCreateRoute: DashboardPrescriptionsCreateRoute,
   DashboardReportsIdRoute: DashboardReportsIdRoute,
+  DashboardReportsAppointmentsRoute: DashboardReportsAppointmentsRoute,
   DashboardReportsGenerateRoute: DashboardReportsGenerateRoute,
+  DashboardReportsPatientsRoute: DashboardReportsPatientsRoute,
+  DashboardReportsRevenueRoute: DashboardReportsRevenueRoute,
   DashboardStaffIdRoute: DashboardStaffIdRoute,
+  DashboardStaffAddRoute: DashboardStaffAddRoute,
   DashboardStaffRolesRoute: DashboardStaffRolesRoute,
   DashboardVitalsIdRoute: DashboardVitalsIdRoute,
   DashboardVitalsHistoryRoute: DashboardVitalsHistoryRoute,
@@ -1271,6 +1443,7 @@ const DashboardRouteChildren: DashboardRouteChildren = {
   DashboardAppointmentsIndexRoute: DashboardAppointmentsIndexRoute,
   DashboardDepartmentsIndexRoute: DashboardDepartmentsIndexRoute,
   DashboardDispensingIndexRoute: DashboardDispensingIndexRoute,
+  DashboardDoctorsIndexRoute: DashboardDoctorsIndexRoute,
   DashboardInventoryIndexRoute: DashboardInventoryIndexRoute,
   DashboardPatientsIndexRoute: DashboardPatientsIndexRoute,
   DashboardPrescriptionsIndexRoute: DashboardPrescriptionsIndexRoute,

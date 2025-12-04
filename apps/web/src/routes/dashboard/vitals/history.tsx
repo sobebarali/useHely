@@ -62,6 +62,7 @@ import {
 	type VitalsRecordOutput,
 } from "@/hooks/use-vitals";
 import { authClient } from "@/lib/auth-client";
+import { normalizeSelectValue, SELECT_ALL_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/vitals/history")({
 	component: VitalsHistoryPage,
@@ -108,6 +109,7 @@ function VitalsHistoryPage() {
 	});
 
 	// Fetch vitals for selected patient
+	const normalizedParameterFilter = normalizeSelectValue(parameterFilter);
 	const { data: vitalsData, isLoading: vitalsLoading } = usePatientVitals(
 		selectedPatient?.id || "",
 		{
@@ -115,8 +117,8 @@ function VitalsHistoryPage() {
 			limit: 10,
 			startDate: startDate || undefined,
 			endDate: endDate || undefined,
-			parameter: parameterFilter
-				? (parameterFilter as VitalParameter)
+			parameter: normalizedParameterFilter
+				? (normalizedParameterFilter as VitalParameter)
 				: undefined,
 		},
 	);
@@ -580,7 +582,9 @@ function VitalsHistoryPage() {
 									<SelectValue placeholder="All parameters" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">All parameters</SelectItem>
+									<SelectItem value={SELECT_ALL_VALUE}>
+										All parameters
+									</SelectItem>
 									<SelectItem value="temperature">Temperature</SelectItem>
 									<SelectItem value="bloodPressure">Blood Pressure</SelectItem>
 									<SelectItem value="heartRate">Heart Rate</SelectItem>

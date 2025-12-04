@@ -86,6 +86,7 @@ import {
 import { useUsers } from "@/hooks/use-users";
 import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/departments-client";
+import { normalizeSelectValue, SELECT_NONE_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/departments/$id")({
 	component: DepartmentDetailPage,
@@ -185,8 +186,8 @@ function DepartmentDetailPage() {
 					data: {
 						name: value.name,
 						description: value.description || undefined,
-						parentId: value.parentId || null,
-						headId: value.headId || null,
+						parentId: normalizeSelectValue(value.parentId) || null,
+						headId: normalizeSelectValue(value.headId) || null,
 						location: value.location || undefined,
 						contactPhone: value.contactPhone || undefined,
 						contactEmail: value.contactEmail || undefined,
@@ -468,7 +469,9 @@ function DepartmentDetailPage() {
 															<SelectValue placeholder="None (top-level)" />
 														</SelectTrigger>
 														<SelectContent>
-															<SelectItem value="">None (top-level)</SelectItem>
+															<SelectItem value={SELECT_NONE_VALUE}>
+																None (top-level)
+															</SelectItem>
 															{availableParents?.map((dept) => (
 																<SelectItem key={dept.id} value={dept.id}>
 																	{dept.name} ({dept.code})
@@ -512,7 +515,9 @@ function DepartmentDetailPage() {
 															<SelectValue placeholder="Select head" />
 														</SelectTrigger>
 														<SelectContent>
-															<SelectItem value="">Not assigned</SelectItem>
+															<SelectItem value={SELECT_NONE_VALUE}>
+																Not assigned
+															</SelectItem>
 															{allStaffData?.data.map((staff) => (
 																<SelectItem key={staff.id} value={staff.id}>
 																	{staff.firstName} {staff.lastName}
@@ -854,9 +859,9 @@ function DepartmentDetailPage() {
 											</SelectItem>
 										))
 									) : (
-										<SelectItem value="" disabled>
+										<div className="px-2 py-1.5 text-muted-foreground text-sm">
 											No available staff
-										</SelectItem>
+										</div>
 									)}
 								</SelectContent>
 							</Select>

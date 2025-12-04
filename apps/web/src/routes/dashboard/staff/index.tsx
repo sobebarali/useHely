@@ -709,9 +709,9 @@ function StaffListPage() {
 												{!departmentsLoading &&
 													(!departmentsData?.data ||
 														departmentsData.data.length === 0) && (
-														<SelectItem value="" disabled>
+														<div className="px-2 py-1.5 text-muted-foreground text-sm">
 															No departments available
-														</SelectItem>
+														</div>
 													)}
 											</SelectContent>
 										</Select>
@@ -748,9 +748,9 @@ function StaffListPage() {
 												))}
 												{!rolesLoading &&
 													(!rolesData?.data || rolesData.data.length === 0) && (
-														<SelectItem value="" disabled>
+														<div className="px-2 py-1.5 text-muted-foreground text-sm">
 															No roles available
-														</SelectItem>
+														</div>
 													)}
 											</SelectContent>
 										</Select>

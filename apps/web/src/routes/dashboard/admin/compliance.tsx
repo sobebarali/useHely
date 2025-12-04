@@ -58,6 +58,7 @@ import {
 } from "@/hooks/use-compliance";
 import { authClient } from "@/lib/auth-client";
 import type { ApiError } from "@/lib/compliance-client";
+import { normalizeSelectValue, SELECT_ALL_VALUE } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard/admin/compliance")({
 	component: AdminCompliancePage,
@@ -90,7 +91,7 @@ function AdminCompliancePage() {
 	) => {
 		setFilters((prev) => ({
 			...prev,
-			[key]: value,
+			[key]: normalizeSelectValue(value),
 			page: 1, // Reset to first page on filter change
 		}));
 	};
@@ -193,7 +194,7 @@ function AdminCompliancePage() {
 									<SelectValue placeholder="All statuses" />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="">All Statuses</SelectItem>
+									<SelectItem value={SELECT_ALL_VALUE}>All Statuses</SelectItem>
 									<SelectItem value="pending">Pending</SelectItem>
 									<SelectItem value="pending_verification">
 										Pending Verification
