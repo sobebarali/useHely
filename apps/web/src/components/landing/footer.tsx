@@ -41,8 +41,8 @@ export function Footer() {
 								<span className="font-bold text-lg">useHely</span>
 							</div>
 							<p className="mt-4 text-muted-foreground text-sm">
-								Multi-tenant Hospital Management System for modern healthcare
-								operations.
+								Simplifying healthcare operations for hospitals, clinics, and
+								practices.
 							</p>
 							<a
 								href="mailto:info@usehely.com"

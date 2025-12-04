@@ -46,7 +46,7 @@ export const FULL_MENU_STRUCTURE: MenuItem[] = [
 				id: "users-roles",
 				label: "Roles",
 				path: "/dashboard/staff/roles",
-				permission: "USER:MANAGE",
+				permission: "ROLE:READ",
 				order: 3,
 			},
 		],

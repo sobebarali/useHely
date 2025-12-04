@@ -25,10 +25,11 @@ import {
 	Search,
 	Shield,
 	ShieldCheck,
+	ShieldPlus,
 	Trash2,
 	Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
 	AlertDialog,
@@ -337,12 +338,21 @@ function RoleFormSheet({
 	const isLoading = createMutation.isPending || updateMutation.isPending;
 	const isSystem = role?.isSystem || false;
 
-	const resetForm = () => {
-		setName(role?.name || "");
-		setDescription(role?.description || "");
-		setPermissions(role?.permissions || []);
-		setErrors({});
-	};
+	// Sync form state when role prop changes or sheet opens/closes
+	useEffect(() => {
+		if (open) {
+			setName(role?.name || "");
+			setDescription(role?.description || "");
+			setPermissions(role?.permissions || []);
+			setErrors({});
+		} else {
+			// Reset to empty state when closing
+			setName("");
+			setDescription("");
+			setPermissions([]);
+			setErrors({});
+		}
+	}, [open, role]);
 
 	const validate = (): boolean => {
 		const newErrors: Record<string, string> = {};
@@ -390,26 +400,14 @@ function RoleFormSheet({
 				toast.success("Role updated successfully");
 			}
 			onOpenChange(false);
-			resetForm();
 		} catch (error) {
 			const apiError = error as ApiError;
 			toast.error(apiError.message || "An error occurred");
 		}
 	};
 
-	// Reset form when role changes
-	const handleOpenChange = (newOpen: boolean) => {
-		if (newOpen) {
-			setName(role?.name || "");
-			setDescription(role?.description || "");
-			setPermissions(role?.permissions || []);
-			setErrors({});
-		}
-		onOpenChange(newOpen);
-	};
-
 	return (
-		<Sheet open={open} onOpenChange={handleOpenChange}>
+		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent className="overflow-y-auto sm:max-w-lg">
 				<SheetHeader>
 					<SheetTitle className="flex items-center gap-2">
@@ -517,12 +515,22 @@ function RoleFormSheet({
 function RolesPage() {
 	const [page, setPage] = useState(1);
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [typeFilter, setTypeFilter] = useState<string>("ALL");
 	const [statusFilter, setStatusFilter] = useState<string>("ALL");
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = useState({});
+
+	// Debounce search input
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			setDebouncedSearch(search);
+			setPage(1);
+		}, 300);
+		return () => clearTimeout(timer);
+	}, [search]);
 
 	// Sheet/Dialog states
 	const [createSheetOpen, setCreateSheetOpen] = useState(false);
@@ -534,7 +542,7 @@ function RolesPage() {
 	const queryParams = {
 		page,
 		limit: 10,
-		search: search || undefined,
+		search: debouncedSearch || undefined,
 		isSystem:
 			typeFilter === "SYSTEM"
 				? true
@@ -725,10 +733,7 @@ function RolesPage() {
 						<Input
 							placeholder="Search roles..."
 							value={search}
-							onChange={(e) => {
-								setSearch(e.target.value);
-								setPage(1);
-							}}
+							onChange={(e) => setSearch(e.target.value)}
 							className="pl-9"
 						/>
 					</div>
@@ -821,9 +826,30 @@ function RolesPage() {
 								<TableRow>
 									<TableCell
 										colSpan={columns.length}
-										className="h-24 text-center"
+										className="h-32 text-center"
 									>
-										No roles found.
+										<div className="flex flex-col items-center gap-2">
+											<ShieldPlus className="h-8 w-8 text-muted-foreground" />
+											<p className="text-muted-foreground">
+												{debouncedSearch ||
+												typeFilter !== "ALL" ||
+												statusFilter !== "ALL"
+													? "No roles match your filters."
+													: "No custom roles created yet."}
+											</p>
+											{!debouncedSearch &&
+												typeFilter === "ALL" &&
+												statusFilter === "ALL" && (
+													<Button
+														variant="outline"
+														size="sm"
+														onClick={() => setCreateSheetOpen(true)}
+													>
+														<Plus className="mr-2 h-4 w-4" />
+														Create your first role
+													</Button>
+												)}
+										</div>
 									</TableCell>
 								</TableRow>
 							)}
@@ -904,30 +930,41 @@ function RolesPage() {
 					<AlertDialogHeader>
 						<AlertDialogTitle>Delete Role</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to delete the role{" "}
-							<span className="font-medium">{selectedRole?.name}</span>? This
-							action will deactivate the role and it will no longer be available
-							for assignment.
-							{(selectedRole?.usersCount ?? 0) > 0 && (
-								<span className="mt-2 block text-amber-600">
-									Warning: This role is currently assigned to{" "}
-									{selectedRole?.usersCount} user(s).
-								</span>
+							{(selectedRole?.usersCount ?? 0) > 0 ? (
+								<>
+									The role{" "}
+									<span className="font-medium">{selectedRole?.name}</span>{" "}
+									cannot be deleted because it is currently assigned to{" "}
+									<span className="font-medium">
+										{selectedRole?.usersCount} user(s)
+									</span>
+									. Please reassign these users to a different role before
+									deleting.
+								</>
+							) : (
+								<>
+									Are you sure you want to delete the role{" "}
+									<span className="font-medium">{selectedRole?.name}</span>?
+									This action will deactivate the role and it will no longer be
+									available for assignment.
+								</>
 							)}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							onClick={handleDelete}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-							disabled={deleteMutation.isPending}
-						>
-							{deleteMutation.isPending ? (
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-							) : null}
-							Delete
-						</AlertDialogAction>
+						{(selectedRole?.usersCount ?? 0) === 0 && (
+							<AlertDialogAction
+								onClick={handleDelete}
+								className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+								disabled={deleteMutation.isPending}
+							>
+								{deleteMutation.isPending ? (
+									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+								) : null}
+								Delete
+							</AlertDialogAction>
+						)}
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
