@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { UseHelyLogo } from "@/components/icons";
+import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { useIsAuthenticated } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ export function Header() {
 
 					{/* Desktop CTA */}
 					<div className="hidden items-center gap-3 md:flex">
+						<ModeToggle />
 						{isAuthenticated ? (
 							<Button asChild>
 								<Link to="/dashboard">Go to Dashboard</Link>
@@ -90,6 +92,10 @@ export function Header() {
 						</a>
 					))}
 					<div className="mt-4 flex flex-col gap-2 pt-4">
+						<div className="flex items-center justify-between pb-2">
+							<span className="text-muted-foreground text-sm">Theme</span>
+							<ModeToggle />
+						</div>
 						{isAuthenticated ? (
 							<Button asChild>
 								<Link to="/dashboard">Go to Dashboard</Link>
